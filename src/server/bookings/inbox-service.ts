@@ -10,6 +10,23 @@ export async function getBookingInbox(
   role: "TRAINER" | "STUDENT",
 ) {
   if (role === "TRAINER") {
+    const [disputes, confirmNeeded] = await Promise.all([
+      db.booking.findMany({
+        where: { trainerId: userId, disputed: true, disputeResolvedAt: null },
+        include: { student: { select: { name: true } } },
+        orderBy: { disputeAt: "asc" },
+      }),
+      db.booking.findMany({
+        where: {
+          trainerId: userId,
+          status: "PENDING_APPROVAL",
+          trainerConfirmNeeded: true,
+          disputed: false,
+        },
+        include: { student: { select: { name: true } } },
+        orderBy: { startAt: "asc" },
+      }),
+    ]);
     const [requests, cancels, changes] = await Promise.all([
       db.booking.findMany({
         where: { trainerId: userId, status: "REQUESTED" },
@@ -62,17 +79,46 @@ export async function getBookingInbox(
         expiresAt: iso(c.expiresAt),
       })),
       confirmRequests: [],
+      approvalRequests: [],
+      disputes: disputes.map((b) => ({
+        bookingId: b.id,
+        name: b.student.name,
+        kind: b.disputeKind,
+        startAt: iso(b.startAt),
+        endAt: iso(b.endAt),
+        reason: b.disputeStudentReason,
+        disputeAt: iso(b.disputeAt!),
+      })),
+      trainerConfirms: confirmNeeded.map((b) => ({
+        bookingId: b.id,
+        name: b.student.name,
+        startAt: iso(b.startAt),
+        endAt: iso(b.endAt),
+      })),
     };
   }
 
   const student = await db.student.findUnique({ where: { userId } });
-  if (!student)
+  if (!student) {
     return {
       bookingRequests: [],
       cancelRequests: [],
       changeRequests: [],
       confirmRequests: [],
+      approvalRequests: [],
+      disputes: [],
+      trainerConfirms: [],
     };
+  }
+  const approvals = await db.booking.findMany({
+    where: {
+      studentId: student.id,
+      status: "PENDING_APPROVAL",
+      disputed: false,
+    },
+    include: { trainer: { select: { name: true } } },
+    orderBy: { startAt: "asc" },
+  });
   const [pending, changes] = await Promise.all([
     db.booking.findMany({
       where: { studentId: student.id, status: "PENDING_CONFIRM" },
@@ -110,6 +156,14 @@ export async function getBookingInbox(
         endAt: iso(b.endAt),
       })),
     })),
+    approvalRequests: approvals.map((b) => ({
+      bookingId: b.id,
+      trainerName: b.trainer.name,
+      startAt: iso(b.startAt),
+      endAt: iso(b.endAt),
+    })),
+    disputes: [],
+    trainerConfirms: [],
     changeRequests: changes.map((c) => ({
       requestId: c.id,
       kind: c.kind,

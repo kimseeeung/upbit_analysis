@@ -1,4 +1,5 @@
 import { expect, type APIRequestContext, type Page } from "@playwright/test";
+import pg from "pg";
 
 /** 실행마다 겹치지 않는 아이디·전화번호 */
 export function uniq() {
@@ -94,4 +95,138 @@ export async function signupViaUi(page: Page, o: SignupOpts) {
   await page.getByLabel("전체 동의").check();
   await page.getByRole("button", { name: "가입하기" }).click();
   await expect(page).toHaveURL(/\/onboarding\/(notifications|merge)/);
+}
+
+/** 다음 주 같은 요일(월=1)의 한국 날짜 YYYY-MM-DD */
+export function nextWeekday(weekday: number, weeksAhead = 1): string {
+  const kstNow = new Date(Date.now() + 9 * 3600_000);
+  const d = new Date(
+    Date.UTC(
+      kstNow.getUTCFullYear(),
+      kstNow.getUTCMonth(),
+      kstNow.getUTCDate(),
+    ),
+  );
+  const diff =
+    ((weekday - d.getUTCDay() + 7) % 7) +
+    7 * weeksAhead -
+    (weekday >= d.getUTCDay() ? 7 : 0);
+  d.setUTCDate(d.getUTCDate() + (diff <= 0 ? diff + 7 : diff));
+  return d.toISOString().slice(0, 10);
+}
+
+export async function api(
+  page: Page,
+  method: "GET" | "POST" | "PUT",
+  url: string,
+  data?: unknown,
+) {
+  const res = await page.request.fetch(url, {
+    method,
+    data,
+    headers: data ? { "content-type": "application/json" } : {},
+  });
+  expect(res.ok(), `${method} ${url}: ${await res.text()}`).toBe(true);
+  return res.json();
+}
+
+/** 트레이너·수강생 가입, 연결, 이용권, 규칙 동의, 근무 시간 (API로 빠르게) */
+export async function setupPair(trainer: Page, student: Page) {
+  const t = uniq();
+  const trainerName = `강코치${t.id}`;
+  await signupViaUi(trainer, {
+    role: "트레이너",
+    loginId: `tr${t.id}`,
+    phone: t.phone,
+    name: trainerName,
+  });
+  const s = uniq();
+  const studentName = `윤수강${s.id}`;
+  await signupViaUi(student, {
+    role: "수강생",
+    loginId: `st${s.id}`,
+    phone: s.phone,
+    name: studentName,
+    trainerName,
+  });
+
+  const inbox = await api(trainer, "GET", "/api/requests");
+  await api(trainer, "POST", `/api/requests/link/${inbox.linkRequests[0].id}`, {
+    accept: true,
+  });
+  const { students } = await api(trainer, "GET", "/api/t/students");
+  const studentId = students[0].studentId as string;
+  // 지난 수업도 이 이용권으로 처리되도록 30일 전부터 시작
+  const kst = new Date(Date.now() + 9 * 3600_000 - 30 * 24 * 3600_000)
+    .toISOString()
+    .slice(0, 10);
+  await api(trainer, "POST", `/api/t/students/${studentId}/passes`, {
+    name: "PT 10회",
+    count: 10,
+    startDate: kst,
+    endDate: "2099-12-31",
+  });
+  const sInbox = await api(student, "GET", "/api/requests");
+  await api(
+    student,
+    "POST",
+    `/api/s/rule-consents/${sInbox.ruleConsents[0].id}`,
+    { action: "AGREE" },
+  );
+  await api(trainer, "PUT", "/api/t/availability", {
+    rules: [0, 1, 2, 3, 4, 5, 6].map((weekday) => ({
+      weekday,
+      startTime: "09:00",
+      endTime: "22:00",
+    })),
+    exceptions: [],
+  });
+  return { studentName, studentId };
+}
+
+/** E2E DB에 직접 쓰기 (지난 수업 같은 시간 의존 상황을 만들 때만) */
+export async function withE2eDb<T>(
+  fn: (c: pg.Client) => Promise<T>,
+): Promise<T> {
+  const c = new pg.Client({ connectionString: process.env.DATABASE_URL_E2E });
+  await c.connect();
+  try {
+    return await fn(c);
+  } finally {
+    await c.end();
+  }
+}
+
+/** 지난 수업(확정 상태)을 만든다 */
+export async function insertPastBooking(
+  studentId: string,
+  minutesAgoStart: number,
+  durationMinutes = 50,
+) {
+  return withE2eDb(async (c) => {
+    const s = await c.query(
+      'SELECT "currentTrainerId" FROM "Student" WHERE id = $1',
+      [studentId],
+    );
+    const trainerId = s.rows[0].currentTrainerId as string;
+    const id = `e2e${Date.now()}${Math.floor(Math.random() * 1000)}`;
+    const start = new Date(Date.now() - minutesAgoStart * 60_000);
+    const end = new Date(start.getTime() + durationMinutes * 60_000);
+    await c.query(
+      `INSERT INTO "Booking" (id, "studentId", "trainerId", "startAt", "endAt", source, status, "createdBy", "updatedAt")
+       VALUES ($1, $2, $3, $4, $5, 'TRAINER', 'CONFIRMED', $3, now())`,
+      [id, studentId, trainerId, start, end],
+    );
+    return { id, start, end };
+  });
+}
+
+export const CRON_SECRET = "e2e-cron-secret";
+
+export async function cronTick(page: Page) {
+  const res = await page.request.post("/api/cron/tick", {
+    headers: { authorization: `Bearer ${CRON_SECRET}` },
+  });
+  expect(res.ok()).toBe(true);
+  return res.json();
 }

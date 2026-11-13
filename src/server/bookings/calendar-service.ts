@@ -6,7 +6,8 @@ import { AppError } from "@/server/errors";
 import { getPassSummaries } from "@/server/passes/availability-service";
 import { getStudentOfUser } from "@/server/students/access";
 import { getAvailability } from "./availability-settings";
-import { sessionMinutesFor } from "./core";
+import { describeRules } from "@/lib/rules/rule-set";
+import { bookingPassContext, sessionMinutesFor } from "./core";
 
 function range(from: string, to: string) {
   let start: Date;
@@ -101,6 +102,16 @@ export async function getTrainerCalendar(
         deductReason: b.deductReason,
         deductSkippedReason: b.deductSkippedReason,
         rejectReason: b.rejectReason,
+        approvalRequestedAt: iso(b.approvalRequestedAt),
+        approvedAt: iso(b.approvedAt),
+        approvalMethod: b.approvalMethod,
+        trainerConfirmNeeded: b.trainerConfirmNeeded,
+        disputed: b.disputed,
+        disputeKind: b.disputeKind,
+        disputeStudentReason: b.disputeStudentReason,
+        disputeTrainerDecision: b.disputeTrainerDecision,
+        disputeTrainerReason: b.disputeTrainerReason,
+        disputeResolvedAt: iso(b.disputeResolvedAt),
         changeRequest: cr
           ? {
               id: cr.id,
@@ -185,6 +196,20 @@ export async function getStudentCalendar(
   const usable = passes.filter(
     (p) => toKstDateKey(p.endDate) >= toKstDateKey(now),
   );
+  // 노쇼·당일 취소에는 적용한 규칙을 함께 보여 준다 (3.5, 10장)
+  const ruleText = new Map<string, string>();
+  for (const b of bookings) {
+    if (
+      b.status !== "NO_SHOW" &&
+      !(b.status === "CANCELED" && (b.deducted || b.deductSkippedReason))
+    )
+      continue;
+    const ctx = await bookingPassContext(db, b);
+    const line = describeRules(ctx.rules).find(
+      (l) => l.title === (b.status === "NO_SHOW" ? "노쇼" : "당일 취소"),
+    );
+    if (line) ruleText.set(b.id, line.text);
+  }
   const next = await db.booking.findFirst({
     where: {
       studentId: student.id,
@@ -234,6 +259,16 @@ export async function getStudentCalendar(
         deductReason: b.deductReason,
         deductSkippedReason: b.deductSkippedReason,
         rejectReason: b.rejectReason,
+        approvalRequestedAt: iso(b.approvalRequestedAt),
+        approvedAt: iso(b.approvedAt),
+        approvalMethod: b.approvalMethod,
+        trainerConfirmNeeded: b.trainerConfirmNeeded,
+        disputed: b.disputed,
+        disputeKind: b.disputeKind,
+        disputeStudentReason: b.disputeStudentReason,
+        disputeTrainerDecision: b.disputeTrainerDecision,
+        disputeTrainerReason: b.disputeTrainerReason,
+        disputeResolvedAt: iso(b.disputeResolvedAt),
         changeRequest: cr
           ? {
               id: cr.id,
@@ -243,10 +278,11 @@ export async function getStudentCalendar(
               expiresAt: cr.expiresAt.toISOString(),
             }
           : null,
+        appliedRule: ruleText.get(b.id) ?? null,
         /** 처리할 일이 있으면 빨간 점 */
         needsAction:
           b.status === "PENDING_CONFIRM" ||
-          b.status === "PENDING_APPROVAL" ||
+          (b.status === "PENDING_APPROVAL" && !b.disputed) ||
           (!!cr && cr.requestedBy !== userId && cr.kind === "CHANGE"),
       };
     }),

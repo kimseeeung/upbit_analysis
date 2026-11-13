@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { api } from "./api";
+import { ApprovalInboxItems, type ApprovalInbox } from "./ApprovalInboxItems";
 import { fmtDateTime, fmtRange } from "./fmt";
 import { RulesLines } from "./RulesEditor";
 import { Button, Card, Notice, TextField } from "./ui";
@@ -43,7 +44,7 @@ interface BookingInbox {
   }[];
 }
 
-interface Inbox extends BookingInbox {
+interface Inbox extends BookingInbox, ApprovalInbox {
   linkRequests: {
     id: string;
     fromName: string;
@@ -161,7 +162,10 @@ export function RequestsInbox() {
     data.bookingRequests.length === 0 &&
     data.cancelRequests.length === 0 &&
     data.changeRequests.length === 0 &&
-    data.confirmRequests.length === 0;
+    data.confirmRequests.length === 0 &&
+    data.approvalRequests.length === 0 &&
+    data.disputes.length === 0 &&
+    data.trainerConfirms.length === 0;
   return (
     <div className="flex flex-col gap-3">
       {error && <Notice tone="error">{error}</Notice>}
@@ -195,6 +199,7 @@ export function RequestsInbox() {
           </div>
         </Card>
       ))}
+      <ApprovalInboxItems data={data} post={post} />
       {data.confirmRequests.map((c) => (
         <Card
           key={c.bookingId}

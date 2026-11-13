@@ -507,6 +507,26 @@ enum BookingStatus {
   EXPIRED
 }
 
+enum ApprovalMethod {
+  PIN_ONSITE
+  PIN_APP
+  AUTO
+  TRAINER_CONFIRM
+  DISPUTE_RESOLUTION
+}
+
+enum DisputeKind {
+  /// 수강생이 완료 승인을 거절
+  COMPLETION_REJECTED
+  /// 노쇼에 이의 제기
+  NO_SHOW_OBJECTION
+}
+
+enum DisputeDecision {
+  ACCEPT_STUDENT
+  KEEP
+}
+
 enum BookingSource {
   TRAINER
   STUDENT
@@ -519,43 +539,58 @@ enum DeductReason {
 }
 
 model Booking {
-  id                  String         @id @default(cuid())
-  studentId           String
-  student             Student        @relation(fields: [studentId], references: [id])
+  id                     String           @id @default(cuid())
+  studentId              String
+  student                Student          @relation(fields: [studentId], references: [id])
   /// 진행 트레이너 (기록용으로 고정)
-  trainerId           String
-  trainer             User           @relation("BookingTrainer", fields: [trainerId], references: [id])
+  trainerId              String
+  trainer                User             @relation("BookingTrainer", fields: [trainerId], references: [id])
   /// 차감된 이용권 (차감될 때 정해짐)
-  passId              String?
-  pass                Pass?          @relation(fields: [passId], references: [id])
-  startAt             DateTime
-  endAt               DateTime
-  source              BookingSource
-  status              BookingStatus
+  passId                 String?
+  pass                   Pass?            @relation(fields: [passId], references: [id])
+  startAt                DateTime
+  endAt                  DateTime
+  source                 BookingSource
+  status                 BookingStatus
   /// 잔여 부족으로 바뀌기 전 상태 (복구용)
-  prevStatus          BookingStatus?
-  insufficientAt      DateTime?
-  autoConfirmed       Boolean        @default(false)
-  recurringGroupId    String?
-  memo                String?
+  prevStatus             BookingStatus?
+  insufficientAt         DateTime?
+  autoConfirmed          Boolean          @default(false)
+  recurringGroupId       String?
+  memo                   String?
   /// 수강생 취소 요청 (명세 4.7). 차감 판단은 요청 시각 기준
-  cancelRequestedAt   DateTime?
-  cancelRequestedBy   String?
-  cancelRequestReason String?
-  canceledAt          DateTime?
+  cancelRequestedAt      DateTime?
+  cancelRequestedBy      String?
+  cancelRequestReason    String?
+  canceledAt             DateTime?
   /// 사용자 id 또는 "SYSTEM"
-  canceledBy          String?
-  cancelReason        String?
-  rejectReason        String?
-  deducted            Boolean        @default(false)
-  deductReason        DeductReason?
-  deductSkippedReason String?
-  notifyDayBeforeOff  Boolean        @default(false)
-  notify2hOff         Boolean        @default(false)
+  canceledBy             String?
+  cancelReason           String?
+  rejectReason           String?
+  deducted               Boolean          @default(false)
+  deductReason           DeductReason?
+  deductSkippedReason    String?
+  /// 완료 승인 (명세 5)
+  approvalRequestedAt    DateTime?
+  approvalRequestedBy    String?
+  approvedAt             DateTime?
+  approvalMethod         ApprovalMethod?
+  /// 미동의 수강생의 미승인 기한이 지나 트레이너가 직접 완료 처리해야 함
+  trainerConfirmNeeded   Boolean          @default(false)
+  /// 이견 (5.2): 완료 거절 또는 노쇼 이의 제기
+  disputed               Boolean          @default(false)
+  disputeKind            DisputeKind?
+  disputeStudentReason   String?
+  disputeAt              DateTime?
+  disputeTrainerDecision DisputeDecision?
+  disputeTrainerReason   String?
+  disputeResolvedAt      DateTime?
+  notifyDayBeforeOff     Boolean          @default(false)
+  notify2hOff            Boolean          @default(false)
   /// 하위 호환: 이전 버전 코드가 넣는 행도 들어가도록 기본값을 둔다
-  createdBy           String         @default("SYSTEM")
-  createdAt           DateTime       @default(now())
-  updatedAt           DateTime       @updatedAt
+  createdBy              String           @default("SYSTEM")
+  createdAt              DateTime         @default(now())
+  updatedAt              DateTime         @updatedAt
 
   changeRequests BookingChangeRequest[]
   statusLogs     BookingStatusLog[]

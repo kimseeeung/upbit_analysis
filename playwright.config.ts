@@ -34,6 +34,7 @@ export default defineConfig({
       SMS_PROVIDER: "console",
       SMS_DEV_OUTBOX: "1",
       COOKIE_INSECURE: "1",
+      CRON_SECRET: "e2e-cron-secret",
     },
   },
 });

@@ -2,11 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { api } from "@/components/api";
+import type { ApprovalFields } from "@/components/approval-types";
+import { StudentApprovalActions } from "./StudentApprovalActions";
 import { STATUS_STYLE, fmtDateTime, fmtRange } from "@/components/fmt";
 import { SlotInputs, type Slot } from "@/components/SlotInputs";
 import { Button, Checkbox, Modal, Notice, TextField } from "@/components/ui";
 
-export interface StudentBooking {
+export interface StudentBooking extends ApprovalFields {
+  appliedRule: string | null;
   id: string;
   trainerName: string;
   startAt: string;
@@ -363,6 +366,7 @@ export function StudentBookingSheet({
               : "차감 없음"}
         </p>
       )}
+      <StudentApprovalActions b={b} call={call} />
       {b.status === "INSUFFICIENT" && (
         <Notice tone="warning">
           잔여 횟수가 부족해 이 예약을 진행할 수 없습니다. 이용권을 추가하면

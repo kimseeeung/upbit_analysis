@@ -99,7 +99,10 @@ export function TrainerCalendar() {
         startEditable:
           b.status === "PENDING_CONFIRM" || b.status === "CONFIRMED",
         durationEditable: false,
-        classNames: b.status === "INSUFFICIENT" ? ["opacity-60"] : [],
+        classNames: [
+          `booking-${b.id}`,
+          ...(b.status === "INSUFFICIENT" ? ["opacity-60"] : []),
+        ],
         extendedProps: { kind: "booking" },
       });
       // 변경 요청 중인 새 시간은 점선
@@ -225,7 +228,8 @@ export function TrainerCalendar() {
           }}
           buttonText={{ today: "오늘", month: "월", week: "주", day: "일" }}
           height="auto"
-          slotMinTime="06:00:00"
+          slotMinTime="00:00:00"
+          scrollTime="07:00:00"
           slotMaxTime="24:00:00"
           slotDuration="00:30:00"
           allDaySlot={false}

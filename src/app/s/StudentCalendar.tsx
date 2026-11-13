@@ -81,6 +81,7 @@ export function StudentCalendar() {
         end: b.endAt,
         backgroundColor: STATUS_STYLE[b.status].color,
         borderColor: b.needsAction ? "#dc2626" : STATUS_STYLE[b.status].color,
+        classNames: [`booking-${b.id}`],
         extendedProps: { kind: "booking" },
       }));
     if (data.hasAvailability) {
@@ -184,7 +185,8 @@ export function StudentCalendar() {
           }}
           buttonText={{ today: "오늘", month: "월", week: "주" }}
           height="auto"
-          slotMinTime="06:00:00"
+          slotMinTime="00:00:00"
+          scrollTime="07:00:00"
           slotMaxTime="24:00:00"
           allDaySlot={false}
           nowIndicator

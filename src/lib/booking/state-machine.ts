@@ -4,6 +4,8 @@
  *  - 신청 대기 → 취소 (수강생 철회, 탈퇴·일시정지·잔여 부족으로 인한 취소)
  *  - 신청 대기·확정 대기 → 잔여 부족, 잔여 부족 → 원래 상태(신청 대기·확정 대기·예약 확정)로 복구
  *  - "이견 처리"는 상태가 아니라 표시. 노쇼 → 취소는 이견 처리 결과일 때만
+ *  - 완료 승인 대기 → 취소의 "종료 후 24시간" 제한은 트레이너가 직접 바꿀 때만.
+ *    수강생의 완료 거절을 받아들이는 이견 처리 결과는 그 뒤에도 가능
  */
 
 import type { BookingStatus } from "@/lib/rules/availability";
@@ -98,7 +100,11 @@ export function assertTransition(
       );
     }
   }
-  if (from === "PENDING_APPROVAL" && (to === "NO_SHOW" || to === "CANCELED")) {
+  if (
+    from === "PENDING_APPROVAL" &&
+    (to === "NO_SHOW" || to === "CANCELED") &&
+    !ctx.viaDispute
+  ) {
     if (ctx.now.getTime() > ctx.endAt.getTime() + 24 * HOUR) {
       throw new TransitionError(
         from,

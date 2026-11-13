@@ -1,6 +1,7 @@
 import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
+import { runApprovalJobs } from "@/server/bookings/approval-service";
 import { runBookingJobs } from "@/server/bookings/booking-service";
 
 /**
@@ -18,6 +19,8 @@ export async function POST(request: Request) {
   ) {
     return new NextResponse(null, { status: 404 });
   }
-  const result = await runBookingJobs(getDb());
-  return NextResponse.json(result);
+  const db = getDb();
+  const bookings = await runBookingJobs(db);
+  const approvals = await runApprovalJobs(db);
+  return NextResponse.json({ ...bookings, ...approvals });
 }
