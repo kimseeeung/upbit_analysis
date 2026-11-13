@@ -83,6 +83,7 @@ model User {
   birthDate           DateTime?
   status              UserStatus  @default(ACTIVE)
   withdrawRequestedAt DateTime?
+  withdrawReason      String?
   deleteScheduledAt   DateTime?
   loginFailCount      Int         @default(0)
   lockedUntil         DateTime?
@@ -939,4 +940,21 @@ model CenterInvite {
   usedBy    String?
   createdAt DateTime         @default(now())
   updatedAt DateTime         @updatedAt
+}
+
+// ───────────────────────── M8: 탈퇴·개인정보 ─────────────────────────
+
+/**
+ * 삭제 표시: 상대방 휴대폰의 오프라인 백업에서도 지우도록 동기화할 때 쓴다 (2.4)
+ */
+model DeletionTombstone {
+  id        String   @id @default(cuid())
+  /// Student | Booking | Pass ...
+  entity    String
+  entityId  String
+  deletedAt DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([deletedAt])
 }

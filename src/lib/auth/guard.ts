@@ -36,6 +36,9 @@ export async function requireArea(area: Area): Promise<Principal> {
     redirect(homePathFor(principal));
   }
   if (principal.kind === "user") {
+    // 탈퇴 신청 중인 계정은 정지 상태: 탈퇴 취소 화면만 (2.4)
+    if ((await getCurrentSession())?.userStatus === "WITHDRAWING")
+      redirect("/withdraw/cancel");
     const pending = await getTermsNeedingReconsent(getDb(), principal.userId);
     if (pending.length > 0) redirect("/terms/reconsent");
   }

@@ -6,6 +6,7 @@ import { validatePassword, validatePin } from "@/lib/auth/policy";
 import { api } from "./api";
 import { PhoneVerification } from "./PhoneVerification";
 import { PushSetup } from "./PushSetup";
+import { WithdrawCard } from "./WithdrawCard";
 import {
   Button,
   Card,
@@ -396,6 +397,7 @@ export function AccountPanel() {
         <PushSetup />
       </Card>
       <DevicesCard />
+      <WithdrawCard />
     </div>
   );
 }

@@ -25,9 +25,18 @@ export const POST = route(async (request) => {
     role: r.role,
     hasCenterAdmin: false,
   });
+  const user = await db.user.findUniqueOrThrow({
+    where: { id: r.userId },
+    select: { status: true },
+  });
   const res = NextResponse.json({
     ok: true,
-    next: needsReconsent ? "/terms/reconsent" : home,
+    next:
+      user.status === "WITHDRAWING"
+        ? "/withdraw/cancel"
+        : needsReconsent
+          ? "/terms/reconsent"
+          : home,
   });
   setSessionCookies(res, r.token, r.persistent);
   return res;

@@ -8,7 +8,8 @@ import {
 } from "@/lib/auth/policy";
 import { normalizePhone } from "@/lib/phone";
 import { parseKstDateKey, toKstDateKey } from "@/lib/time";
-import type { RootDb } from "@/server/db-types";
+import { retiredLoginId } from "@/lib/account/withdraw";
+import type { Db, RootDb } from "@/server/db-types";
 import { AppError } from "@/server/errors";
 import { consumeVerification } from "./sms-service";
 import { recordConsents, type ConsentInput } from "./terms-service";
@@ -65,9 +66,10 @@ export function parseBirthDate(value: string | null | undefined, now: Date) {
   return d;
 }
 
-export async function isLoginIdAvailable(db: RootDb, loginId: string) {
-  const exists = await db.user.findUnique({
-    where: { loginId },
+/** 이미 쓰는 아이디이거나 탈퇴한 아이디(해시로 남김)면 쓸 수 없다 (2.4 재가입 불가) */
+export async function isLoginIdAvailable(db: Db, loginId: string) {
+  const exists = await db.user.findFirst({
+    where: { loginId: { in: [loginId, retiredLoginId(loginId)] } },
     select: { id: true },
   });
   return !exists;
@@ -134,9 +136,7 @@ export async function signup(
         { verificationId: input.verificationId, purpose: "SIGNUP", phone },
         now,
       );
-      if (
-        await tx.user.findUnique({ where: { loginId }, select: { id: true } })
-      ) {
+      if (!(await isLoginIdAvailable(tx, loginId))) {
         throw new AppError("LOGIN_ID_TAKEN", "이미 사용 중인 아이디입니다");
       }
       if (

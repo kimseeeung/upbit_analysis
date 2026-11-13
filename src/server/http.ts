@@ -74,11 +74,18 @@ export function route<C = unknown>(handler: Handler<C>): Handler<C> {
 /** API에서 로그인한 회원 세션을 요구한다. 서버에서 매 요청 검사. */
 export async function requireApiSession(
   roles?: Array<"TRAINER" | "STUDENT" | "CENTER_ADMIN">,
+  options: { allowWithdrawing?: boolean } = {},
 ): Promise<ResolvedSession> {
   const session = await getCurrentSession();
   if (!session) throw new UnauthorizedError();
   if (roles && !roles.includes(session.principal.role))
     throw new ForbiddenError();
+  // 탈퇴 신청 중인 계정은 정지 상태 (탈퇴 취소·로그아웃만)
+  if (session.userStatus === "WITHDRAWING" && !options.allowWithdrawing) {
+    throw new ForbiddenError(
+      "탈퇴 신청 중인 계정입니다. 탈퇴를 취소한 뒤 이용할 수 있습니다",
+    );
+  }
   return session;
 }
 
