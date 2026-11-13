@@ -122,7 +122,7 @@ export function CenterCalendar() {
           </button>
         ))}
       </div>
-      <div className="text-sm [&_.fc-toolbar-title]:text-base">
+      <div className="text-sm [&_.fc-button]:whitespace-nowrap [&_.fc-toolbar]:flex-wrap [&_.fc-toolbar]:gap-2 [&_.fc-toolbar-title]:text-base max-sm:[&_.fc-toolbar-title]:text-sm">
         <FullCalendar
           key={displayMode}
           plugins={[dayGridPlugin, timeGridPlugin, luxonPlugin, listPlugin]}
@@ -146,7 +146,7 @@ export function CenterCalendar() {
             day: "일",
             list: "목록",
           }}
-          height="auto"
+          height={displayMode === "MOBILE" ? "72vh" : "78vh"}
           slotMinTime="00:00:00"
           scrollTime="07:00:00"
           allDaySlot={false}

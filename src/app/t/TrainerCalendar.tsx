@@ -303,7 +303,7 @@ export function TrainerCalendar() {
         onChange={(e) => setNameFilter(e.target.value)}
       />
       {msg && <Notice tone={msg.tone}>{msg.text}</Notice>}
-      <div className="text-sm [&_.fc-toolbar-title]:text-base">
+      <div className="text-sm [&_.fc-button]:whitespace-nowrap [&_.fc-toolbar]:flex-wrap [&_.fc-toolbar]:gap-2 [&_.fc-toolbar-title]:text-base max-sm:[&_.fc-toolbar-title]:text-sm">
         <FullCalendar
           key={displayMode}
           ref={calRef}
@@ -335,7 +335,7 @@ export function TrainerCalendar() {
             day: "일",
             list: "목록",
           }}
-          height="auto"
+          height={displayMode === "MOBILE" ? "72vh" : "78vh"}
           slotMinTime="00:00:00"
           scrollTime="07:00:00"
           slotMaxTime="24:00:00"

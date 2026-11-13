@@ -33,26 +33,49 @@ export function AppShell({
 }: ShellProps) {
   const mode = useDisplayMode();
   const pathname = usePathname();
-  const header = (
-    <header className="flex items-center justify-between gap-2 border-b border-zinc-200 px-4 py-3 dark:border-zinc-800">
-      <div className="flex items-center gap-3">
-        <span className="font-semibold">{title}</span>
-        {switchTo && (
-          <Link
-            href={switchTo.href}
-            className="rounded border border-zinc-300 px-2 py-0.5 text-xs dark:border-zinc-700"
-          >
-            {switchTo.label}
-          </Link>
-        )}
-      </div>
-      <div className="flex items-center gap-3 text-sm">
-        <DisplayToggle />
-        <Link href={meHref}>{name}님</Link>
-        <LogoutButton />
-      </div>
-    </header>
+  const switchLink = switchTo && (
+    <Link
+      href={switchTo.href}
+      className="rounded border border-zinc-300 px-2 py-0.5 text-xs whitespace-nowrap dark:border-zinc-700"
+    >
+      {switchTo.label}
+    </Link>
   );
+  // 모바일: 좁은 화면에서 글자가 깨지지 않게 두 줄로 나눔
+  const header =
+    mode === "MOBILE" ? (
+      <header className="flex flex-col gap-2 border-b border-zinc-200 px-4 py-2.5 dark:border-zinc-800">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex min-w-0 items-center gap-2">
+            <span className="truncate font-semibold whitespace-nowrap">
+              {title}
+            </span>
+            {switchLink}
+          </div>
+          <div className="text-sm whitespace-nowrap">
+            <LogoutButton />
+          </div>
+        </div>
+        <div className="flex items-center justify-between gap-2 text-sm">
+          <DisplayToggle />
+          <Link href={meHref} className="truncate whitespace-nowrap">
+            {name}님
+          </Link>
+        </div>
+      </header>
+    ) : (
+      <header className="flex items-center justify-between gap-2 border-b border-zinc-200 px-4 py-3 dark:border-zinc-800">
+        <div className="flex items-center gap-3">
+          <span className="font-semibold whitespace-nowrap">{title}</span>
+          {switchLink}
+        </div>
+        <div className="flex items-center gap-3 text-sm whitespace-nowrap">
+          <DisplayToggle />
+          <Link href={meHref}>{name}님</Link>
+          <LogoutButton />
+        </div>
+      </header>
+    );
   const link = (t: { href: string; label: string }, cls: string) => (
     <Link
       key={t.href}

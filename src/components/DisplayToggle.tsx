@@ -17,7 +17,7 @@ export function DisplayToggle() {
           type="button"
           aria-pressed={mode === m}
           onClick={() => setDisplayMode(m)}
-          className={`px-2 py-0.5 ${mode === m ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900" : ""}`}
+          className={`px-2 py-0.5 whitespace-nowrap ${mode === m ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900" : ""}`}
         >
           {m === "MOBILE" ? "모바일 화면" : "PC 화면"}
         </button>
