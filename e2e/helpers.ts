@@ -41,11 +41,13 @@ export interface SignupOpts {
   name: string;
   password?: string;
   trainerName?: string;
+  /** 이미 열린 가입 화면에서 이어서 (쿼리 유지) */
+  fromCurrentPage?: boolean;
 }
 
 export async function signupViaUi(page: Page, o: SignupOpts) {
   const password = o.password ?? "abcd123!";
-  await page.goto("/signup");
+  if (!o.fromCurrentPage) await page.goto("/signup");
   await page.getByRole("radio", { name: o.role }).click();
   await page.getByRole("button", { name: "다음" }).click();
 

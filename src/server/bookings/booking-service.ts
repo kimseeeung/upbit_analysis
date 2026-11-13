@@ -12,6 +12,8 @@ import {
 } from "@/lib/booking/schedule";
 import { STATUS_LABEL } from "@/lib/booking/state-machine";
 import { pickBookableDates } from "@/lib/rules/availability";
+import { describeRules } from "@/lib/rules/rule-set";
+import { onBookingEvent } from "@/server/notify/events";
 import { toKstDateKey, toKstParts, kstDateTime } from "@/lib/time";
 import type { Db, RootDb } from "@/server/db-types";
 import { AppError } from "@/server/errors";
@@ -517,7 +519,7 @@ export async function proposeOtherTimes(
       });
     }
     await closeOpenChangeRequests(tx, b.id, now);
-    return tx.bookingChangeRequest.create({
+    const created = await tx.bookingChangeRequest.create({
       data: {
         bookingId: b.id,
         kind: "PROPOSAL",
@@ -530,6 +532,8 @@ export async function proposeOtherTimes(
         createdAt: now,
       },
     });
+    await onBookingEvent(tx, b, "PROPOSAL", { by: input.userId }, now);
+    return created;
   });
 }
 
@@ -696,7 +700,7 @@ export async function requestTimeChange(
       );
     }
     await closeOpenChangeRequests(tx, b.id, now);
-    return tx.bookingChangeRequest.create({
+    const created = await tx.bookingChangeRequest.create({
       data: {
         bookingId: b.id,
         kind: "CHANGE",
@@ -709,6 +713,14 @@ export async function requestTimeChange(
         createdAt: now,
       },
     });
+    await onBookingEvent(
+      tx,
+      b,
+      "CHANGE_REQUEST",
+      { by: input.actorUserId },
+      now,
+    );
+    return created;
   });
 }
 
@@ -763,6 +775,13 @@ export async function respondTimeChange(
           respondedBy: input.actorUserId,
         },
       });
+      await onBookingEvent(
+        tx,
+        b,
+        "CHANGE_RESULT",
+        { by: input.actorUserId, text: "거절되어 원래 시간대로 진행합니다" },
+        now,
+      );
       return;
     }
     if (input.action === "COUNTER") {
@@ -784,7 +803,7 @@ export async function respondTimeChange(
           respondedBy: input.actorUserId,
         },
       });
-      return tx.bookingChangeRequest.create({
+      const created = await tx.bookingChangeRequest.create({
         data: {
           bookingId: b.id,
           kind: "CHANGE",
@@ -797,6 +816,14 @@ export async function respondTimeChange(
           createdAt: now,
         },
       });
+      await onBookingEvent(
+        tx,
+        b,
+        "CHANGE_REQUEST",
+        { by: input.actorUserId },
+        now,
+      );
+      return created;
     }
     const slots = req.proposedSlots as { startAt: string; endAt: string }[];
     const chosen = slots[input.index ?? 0];
@@ -842,6 +869,13 @@ export async function respondTimeChange(
         respondedBy: input.actorUserId,
       },
     });
+    await onBookingEvent(
+      tx,
+      { ...b, startAt: range.start, endAt: range.end },
+      "CHANGE_RESULT",
+      { by: input.actorUserId, text: "수락되어 시간이 바뀌었습니다" },
+      now,
+    );
   });
 }
 
@@ -938,6 +972,7 @@ export async function requestCancelByStudent(
         at: now,
       },
     });
+    await onBookingEvent(tx, b, "CANCEL_REQUEST", { by: input.userId }, now);
   });
 }
 
@@ -973,6 +1008,12 @@ async function finalizeStudentCancel(
       deductSkippedReason: d.skippedReason,
       passId: d.deduct ? ctx.passId : b.passId,
     },
+    notify: {
+      deducted: d.deduct,
+      skippedReason: d.skippedReason,
+      ruleText: describeRules(ctx.rules).find((l) => l.title === "당일 취소")
+        ?.text,
+    },
   });
   if (d.deduct && ctx.passId) {
     await tx.pass.update({
@@ -981,7 +1022,6 @@ async function finalizeStudentCancel(
     });
   }
   await reconcileInsufficient(tx, b.studentId, now);
-  // 차감 알림(적용 규칙 포함)은 M5
   return d;
 }
 
@@ -1020,6 +1060,13 @@ export async function respondCancelRequest(
         at: now,
       },
     });
+    await onBookingEvent(
+      tx,
+      b,
+      "CANCEL_REJECTED",
+      { by: input.trainerId, text: input.reason },
+      now,
+    );
     return null;
   });
 }

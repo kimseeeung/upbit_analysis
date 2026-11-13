@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { SignupWizard } from "./SignupWizard";
 
 export default function SignupPage() {
@@ -8,7 +9,9 @@ export default function SignupPage() {
         ← 처음으로
       </Link>
       <h1 className="text-xl font-semibold">회원가입</h1>
-      <SignupWizard />
+      <Suspense>
+        <SignupWizard />
+      </Suspense>
     </main>
   );
 }

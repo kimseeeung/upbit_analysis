@@ -12,6 +12,7 @@ import {
   resolveRuleSetForPass,
 } from "@/server/rules/rule-service";
 import { reconcileInsufficient } from "@/server/bookings/insufficient";
+import { queueNotification } from "@/server/notify/notify-service";
 import { assertTrainerStudent } from "@/server/students/access";
 
 export interface PassInput {
@@ -244,6 +245,32 @@ export async function updatePass(
         after: Object.fromEntries(changes.map((k) => [k, show(data[k])])),
         at: now,
       });
+    }
+    // 횟수·만료일을 바꾸면 수강생에게 알림 (3.2)
+    const notable = changes.filter(
+      (k) => k === "count" || k === "bonusCount" || k === "endDate",
+    );
+    if (notable.length > 0) {
+      const st = await tx.student.findUniqueOrThrow({
+        where: { id: before.studentId },
+      });
+      const label = {
+        count: "등록 횟수",
+        bonusCount: "서비스 횟수",
+        endDate: "만료일",
+      } as const;
+      await queueNotification(
+        tx,
+        {
+          userId: st.userId,
+          studentId: st.id,
+          type: "PASS_CHANGED",
+          title: "이용권 변경",
+          body: `${updated.name}: ${notable.map((k) => `${label[k as keyof typeof label]} ${show(before[k])} → ${show(data[k])}`).join(", ")}`,
+          url: "/s/passes",
+        },
+        now,
+      );
     }
     await reconcileInsufficient(tx, before.studentId, now);
     return updated;

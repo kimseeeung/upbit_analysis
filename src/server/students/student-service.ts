@@ -9,6 +9,7 @@ import { toKstDateKey } from "@/lib/time";
 import type { Db, RootDb } from "@/server/db-types";
 import { AppError } from "@/server/errors";
 import { loadCountInputs } from "@/server/passes/availability-service";
+import { queueNotification } from "@/server/notify/notify-service";
 import { assertTrainerStudent } from "./access";
 
 /** 가입 수강생 불러오기: 이름 또는 전화번호 검색. 전화번호는 마스킹 (3.1) */
@@ -91,6 +92,22 @@ export async function requestLinkToStudent(
       after: { studentId },
       at: now,
     });
+    const trainer = await tx.user.findUniqueOrThrow({
+      where: { id: trainerId },
+    });
+    await queueNotification(
+      tx,
+      {
+        userId: s.userId,
+        studentId,
+        type: "LINK_REQUEST",
+        title: "트레이너 연결 요청",
+        body: `${trainer.name} 트레이너가 연결을 요청했습니다.`,
+        url: "/s/requests",
+        responseRequired: true,
+      },
+      now,
+    );
     return req;
   });
 }
@@ -172,6 +189,18 @@ export async function respondLinkRequest(
       after: { studentId: req.studentId, trainerId },
       at: now,
     });
+    const me = await tx.user.findUniqueOrThrow({ where: { id: input.userId } });
+    await queueNotification(
+      tx,
+      {
+        userId: req.fromUserId,
+        type: "LINK_RESULT",
+        title: input.accept ? "연결 수락" : "연결 거절",
+        body: `${me.name}님이 연결 요청을 ${input.accept ? "수락" : "거절"}했습니다.`,
+        url: req.fromUser.role === "TRAINER" ? "/t/students" : "/s",
+      },
+      now,
+    );
   });
 }
 
@@ -301,6 +330,8 @@ export async function listTrainerStudents(
         availableToday: computeAvailableCount(passes, bookings, today),
         nextExpiry,
         ruleUnagreed,
+        notifyDayBefore: l.notifyDayBefore,
+        notify2h: l.notify2h,
       } as const;
     }),
   );

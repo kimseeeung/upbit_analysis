@@ -76,6 +76,7 @@ export async function getTrainerCalendar(
       ],
     },
   });
+  const notice = await bookingNoticeStatus(db, trainerId, bookings);
   return {
     now: now.toISOString(),
     hasAvailability: av.rules.length > 0,
@@ -102,6 +103,7 @@ export async function getTrainerCalendar(
         deductReason: b.deductReason,
         deductSkippedReason: b.deductSkippedReason,
         rejectReason: b.rejectReason,
+        notice: notice.get(b.id) ?? null,
         approvalRequestedAt: iso(b.approvalRequestedAt),
         approvedAt: iso(b.approvedAt),
         approvalMethod: b.approvalMethod,
@@ -287,4 +289,74 @@ export async function getStudentCalendar(
       };
     }),
   };
+}
+
+/** 예약 칸 알림 아이콘 (4.8, 8.4) */
+async function bookingNoticeStatus(
+  db: Db,
+  trainerId: string,
+  bookings: {
+    id: string;
+    studentId: string;
+    notifyDayBeforeOff: boolean;
+    notify2hOff: boolean;
+  }[],
+) {
+  const ids = bookings.map((b) => b.id);
+  const [notes, links] = await Promise.all([
+    db.notification.findMany({
+      where: {
+        bookingId: { in: ids },
+        OR: [
+          { type: { in: ["DAY_BEFORE", "TWO_HOURS"] } },
+          { needsManualShare: true },
+        ],
+      },
+      orderBy: { createdAt: "desc" },
+    }),
+    db.trainerStudentLink.findMany({
+      where: {
+        trainerId,
+        endedAt: null,
+        studentId: { in: [...new Set(bookings.map((b) => b.studentId))] },
+      },
+      select: { studentId: true, notifyDayBefore: true, notify2h: true },
+    }),
+  ]);
+  const linkBy = new Map(links.map((l) => [l.studentId, l]));
+  const out = new Map<string, unknown>();
+  for (const b of bookings) {
+    const mine = notes.filter((n) => n.bookingId === b.id);
+    const day = mine.find((n) => n.type === "DAY_BEFORE");
+    const two = mine.find((n) => n.type === "TWO_HOURS");
+    const link = linkBy.get(b.studentId);
+    const dayOff = b.notifyDayBeforeOff || link?.notifyDayBefore === false;
+    const twoOff = b.notify2hOff || link?.notify2h === false;
+    // 회색 종(예정) · 파란 종(보냄, 미확인) · 초록 체크(확인) · 빨간 느낌표(못 보냄) · 빗금 종(꺼짐)
+    const icon = dayOff
+      ? "OFF"
+      : !day
+        ? null
+        : day.confirmedAt
+          ? "CONFIRMED"
+          : day.status === "SENT"
+            ? "SENT"
+            : day.status === "FAILED"
+              ? "FAILED"
+              : day.status === "SCHEDULED"
+                ? "SCHEDULED"
+                : null;
+    out.set(b.id, {
+      dayBefore: icon,
+      dayBeforeSendAt: day?.sendAt.toISOString() ?? null,
+      dayBeforeSentAt: day?.sentAt?.toISOString() ?? null,
+      dayBeforeConfirmedAt: day?.confirmedAt?.toISOString() ?? null,
+      twoHours: twoOff ? "OFF" : (two?.status ?? null),
+      twoHoursSentAt: two?.sentAt?.toISOString() ?? null,
+      manualShare: mine.some((n) => n.needsManualShare),
+      dayBeforeOff: b.notifyDayBeforeOff,
+      twoHoursOff: b.notify2hOff,
+    });
+  }
+  return out;
 }

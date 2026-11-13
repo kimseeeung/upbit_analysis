@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { api } from "@/components/api";
+import { KakaoShareButton } from "@/components/KakaoShareButton";
 import { PassSummary, type PassView } from "@/components/PassCards";
+import { StudentNotify } from "./StudentNotify";
 import { Button, Card, Notice } from "@/components/ui";
 
 interface Detail {
@@ -15,6 +17,8 @@ interface Detail {
   linkedSince: string;
   hidden: boolean;
   memo: string;
+  notifyDayBefore: boolean;
+  notify2h: boolean;
   availableToday: number;
   passes: PassView[];
 }
@@ -107,8 +111,30 @@ export function StudentDetail({ id }: { id: string }) {
           메모 저장
         </Button>
       </Card>
+      <StudentNotify
+        studentId={id}
+        notifyDayBefore={d.notifyDayBefore}
+        notify2h={d.notify2h}
+        onChanged={load}
+      />
+      {d.passes
+        .filter(
+          (p) =>
+            p.consent &&
+            p.consent.status !== "AGREED" &&
+            p.consent.status !== "SUPERSEDED",
+        )
+        .map((p) => (
+          <Card key={p.id} title={`규칙 동의 요청 · ${p.name}`}>
+            <KakaoShareButton
+              purpose="RULE_CONSENT"
+              refId={p.consent!.id}
+              label="카톡으로 규칙 동의 요청 보내기"
+            />
+          </Card>
+        ))}
       <p className="text-sm text-zinc-500">
-        수업 이력과 알림 설정은 준비 중입니다.
+        수업 이력은 수강 현황에서 볼 수 있습니다 (준비 중).
       </p>
       {msg && <Notice tone={msg.tone}>{msg.text}</Notice>}
       <Button

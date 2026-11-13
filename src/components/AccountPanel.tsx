@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { validatePassword, validatePin } from "@/lib/auth/policy";
 import { api } from "./api";
 import { PhoneVerification } from "./PhoneVerification";
+import { PushSetup } from "./PushSetup";
 import {
   Button,
   Card,
@@ -391,6 +392,9 @@ export function AccountPanel() {
       <PasswordCard loginId={profile.loginId} />
       {profile.role === "STUDENT" && <PinCard locked={profile.pinLocked} />}
       {profile.marketing && <MarketingCard agreed={profile.marketing.agreed} />}
+      <Card title="알림 설정">
+        <PushSetup />
+      </Card>
       <DevicesCard />
     </div>
   );

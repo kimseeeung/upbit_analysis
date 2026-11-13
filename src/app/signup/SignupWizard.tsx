@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { api } from "@/components/api";
 import { PhoneVerification } from "@/components/PhoneVerification";
@@ -61,8 +61,15 @@ function useDebounced<T>(value: T, ms = 300) {
 
 export function SignupWizard() {
   const router = useRouter();
+  const params = useSearchParams();
+  // 카톡 링크의 "가입하고 승인하기": 유형·이름·전화번호를 미리 채우고 가입 뒤 원래 화면으로
+  const prefillRole = params.get("role") === "STUDENT" ? "STUDENT" : null;
+  const thenPath = (() => {
+    const t = params.get("then");
+    return t && t.startsWith("/l/") ? t : null;
+  })();
   const [step, setStep] = useState<Step>("role");
-  const [role, setRole] = useState<RoleKey | null>(null);
+  const [role, setRole] = useState<RoleKey | null>(prefillRole);
 
   // 정보
   const [loginId, setLoginId] = useState("");
@@ -73,7 +80,7 @@ export function SignupWizard() {
   } | null>(null);
   const [password, setPassword] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
-  const [name, setName] = useState("");
+  const [name, setName] = useState(params.get("name") ?? "");
   const [gender, setGender] = useState<"" | "MALE" | "FEMALE">("");
   const [birthDate, setBirthDate] = useState("");
 
@@ -285,7 +292,15 @@ export function SignupWizard() {
       setError(r.message);
       return;
     }
-    router.replace(r.data.next);
+    if (thenPath) {
+      router.replace(
+        r.data.next.startsWith("/onboarding/merge")
+          ? `/onboarding/merge?then=${encodeURIComponent(thenPath)}`
+          : thenPath,
+      );
+    } else {
+      router.replace(r.data.next);
+    }
   }
 
   return (
@@ -560,7 +575,7 @@ export function SignupWizard() {
       {step === "verify" && (
         <PhoneVerification
           purpose="SIGNUP"
-          initialPhone={verification?.phone ?? ""}
+          initialPhone={verification?.phone ?? params.get("phone") ?? ""}
           onVerified={(v) => setVerification(v)}
         />
       )}

@@ -104,6 +104,8 @@ model User {
   trainerBookings        Booking[]               @relation("BookingTrainer")
   availabilityRules      AvailabilityRule[]
   availabilityExceptions AvailabilityException[]
+  pushSubscriptions      PushSubscription[]
+  notifications          Notification[]
   linkRequestsTo         LinkRequest[]           @relation("LinkTo")
 
   @@index([role, name])
@@ -685,4 +687,93 @@ model AvailabilityException {
   updatedAt DateTime @updatedAt
 
   @@index([trainerId, date])
+}
+
+// ───────────────────────── M5: 알림 ─────────────────────────
+
+model PushSubscription {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  endpoint  String    @unique
+  p256dh    String
+  auth      String
+  userAgent String?
+  failedAt  DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([userId])
+}
+
+enum NotificationChannel {
+  WEB_PUSH
+  KAKAO_SHARE
+  SMS
+}
+
+enum NotificationStatus {
+  SCHEDULED
+  SENT
+  FAILED
+  SKIPPED
+  CANCELED
+}
+
+/// 모든 발송 내역 (성공/실패, 8.2)
+model Notification {
+  id               String              @id @default(cuid())
+  userId           String?
+  user             User?               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// 미가입 수강생 등 사람 단위 대상
+  studentId        String?
+  bookingId        String?
+  /// 8.2의 알림 종류 (예: DAY_BEFORE, TWO_HOURS, CONFIRM_REQUEST)
+  type             String
+  channel          NotificationChannel @default(WEB_PUSH)
+  title            String
+  body             String
+  url              String?
+  /// 원래 알림 시각
+  scheduledAt      DateTime
+  /// 야간 보정 후 실제 보낼 시각
+  sendAt           DateTime
+  sentAt           DateTime?
+  status           NotificationStatus  @default(SCHEDULED)
+  failReason       String?
+  /// "확인했어요"·수락을 누르거나 알림을 눌러 앱을 연 시각
+  confirmedAt      DateTime?
+  /// 알림을 못 받아 트레이너가 카톡으로 직접 보내야 함 (8.4)
+  needsManualShare Boolean             @default(false)
+  /// 같은 알림을 두 번 만들지 않기 위한 키 (예: 예약·종류·수업 시각)
+  dedupeKey        String?             @unique
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+
+  @@index([status, sendAt])
+  @@index([bookingId, type])
+  @@index([userId, createdAt])
+}
+
+enum ShareLinkPurpose {
+  CONFIRM_BOOKING
+  APPROVE
+  RULE_CONSENT
+  TRANSFER_CHOICE
+  LINK_REQUEST
+}
+
+/// 카톡 공유용 1회용 링크 (토큰은 해시로 저장)
+model ShareLink {
+  id        String           @id @default(cuid())
+  tokenHash String           @unique
+  purpose   ShareLinkPurpose
+  refId     String
+  createdBy String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  @@index([purpose, refId])
 }

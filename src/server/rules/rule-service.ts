@@ -6,6 +6,29 @@ import {
   type RuleValues,
 } from "@/lib/rules/rule-set";
 import type { Db, RootDb } from "@/server/db-types";
+import { queueNotification } from "@/server/notify/notify-service";
+
+async function notifyConsentRequest(
+  db: Db,
+  studentId: string,
+  passName: string,
+  now: Date,
+) {
+  const s = await db.student.findUniqueOrThrow({ where: { id: studentId } });
+  await queueNotification(
+    db,
+    {
+      userId: s.userId,
+      studentId,
+      type: "RULE_CONSENT_REQUEST",
+      title: "수강 규칙 동의 요청",
+      body: `${passName} 수강 규칙을 확인하고 동의해 주세요.`,
+      url: "/s/requests",
+      responseRequired: true,
+    },
+    now,
+  );
+}
 import { AppError } from "@/server/errors";
 
 /** 트레이너 기본 규칙의 최신 버전. 없으면 기본값으로 v1을 만든다. */
@@ -110,10 +133,12 @@ export async function requestRuleConsent(
   });
   if (pending) {
     // 다시 보내기: 요청 시각만 새로 (리마인드 기준)
-    return db.ruleConsent.update({
+    const again = await db.ruleConsent.update({
       where: { id: pending.id },
       data: { status: "PENDING", requestedAt: now },
     });
+    await notifyConsentRequest(db, pass.studentId, pass.name, now);
+    return again;
   }
   const consent = await db.ruleConsent.create({
     data: {
@@ -131,6 +156,7 @@ export async function requestRuleConsent(
     after: { passId, ruleSetVersionId: pass.ruleSetVersionId },
     at: now,
   });
+  await notifyConsentRequest(db, pass.studentId, pass.name, now);
   return consent;
 }
 
@@ -138,7 +164,8 @@ export async function requestRuleConsent(
 export async function respondRuleConsent(
   db: RootDb,
   input: {
-    studentUserId: string;
+    /** null이면 카톡 1회용 링크로 응답 (링크가 본인 확인을 대신함) */
+    studentUserId: string | null;
     consentId: string;
     action: "AGREE" | "INQUIRE";
     inquiryText?: string;
@@ -147,7 +174,12 @@ export async function respondRuleConsent(
 ) {
   return db.$transaction(async (tx) => {
     const consent = await tx.ruleConsent.findFirst({
-      where: { id: input.consentId, student: { userId: input.studentUserId } },
+      where: {
+        id: input.consentId,
+        ...(input.studentUserId
+          ? { student: { userId: input.studentUserId } }
+          : {}),
+      },
       include: { pass: true },
     });
     if (!consent)
@@ -183,7 +215,9 @@ export async function respondRuleConsent(
       });
     }
     await writeAuditLog(tx, {
-      actor: { type: "USER", id: input.studentUserId },
+      actor: input.studentUserId
+        ? { type: "USER", id: input.studentUserId }
+        : { type: "SYSTEM" },
       entity: "RuleConsent",
       entityId: consent.id,
       action: input.action === "AGREE" ? "rules.agree" : "rules.inquire",
@@ -193,6 +227,23 @@ export async function respondRuleConsent(
       },
       at: now,
     });
+    const student = await tx.student.findUniqueOrThrow({
+      where: { id: consent.studentId },
+    });
+    await queueNotification(
+      tx,
+      {
+        userId: consent.pass.soldByTrainerId,
+        type: "RULE_CONSENT_RESULT",
+        title: input.action === "AGREE" ? "규칙 동의" : "규칙 문의",
+        body:
+          input.action === "AGREE"
+            ? `${student.name}님이 ${consent.pass.name} 수강 규칙에 동의했습니다.`
+            : `${student.name}님이 ${consent.pass.name} 수강 규칙에 대해 문의했습니다.`,
+        url: `/t/students/${consent.studentId}/passes`,
+      },
+      now,
+    );
   });
 }
 

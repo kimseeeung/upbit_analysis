@@ -3,12 +3,17 @@
 import { useState } from "react";
 import { api } from "@/components/api";
 import type { ApprovalFields } from "@/components/approval-types";
+import {
+  BookingNoticeControls,
+  type BookingNotice,
+} from "./BookingNoticeControls";
 import { TrainerApprovalActions } from "./TrainerApprovalActions";
 import { STATUS_STYLE, fmtDateTime, fmtRange } from "@/components/fmt";
 import { SlotInputs, type Slot } from "@/components/SlotInputs";
 import { Button, Modal, Notice, TextField } from "@/components/ui";
 
 export interface TrainerBooking extends ApprovalFields {
+  notice: BookingNotice | null;
   id: string;
   studentId: string;
   studentName: string;
@@ -343,7 +348,12 @@ export function TrainerBookingSheet({
           </Button>
         ))}
       <TrainerApprovalActions b={b} call={call} onChanged={onChanged} />
-      <p className="text-xs text-zinc-400">카톡으로 보내기는 준비 중입니다.</p>
+      <BookingNoticeControls
+        bookingId={b.id}
+        status={b.status}
+        notice={b.notice}
+        onChanged={onChanged}
+      />
     </Modal>
   );
 }

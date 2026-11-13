@@ -13,6 +13,7 @@ import {
   type RuleValues,
 } from "@/lib/rules/rule-set";
 import { toKstDateKey } from "@/lib/time";
+import { onBookingCreated, onBookingTransition } from "@/server/notify/events";
 import type { Db } from "@/server/db-types";
 import { AppError } from "@/server/errors";
 import { loadCountInputs } from "@/server/passes/availability-service";
@@ -73,6 +74,11 @@ export async function transition(
     now: Date;
     data?: Prisma.BookingUncheckedUpdateManyInput;
     viaDispute?: boolean;
+    notify?: {
+      deducted?: boolean;
+      skippedReason?: string | null;
+      ruleText?: string | null;
+    };
   },
 ): Promise<void> {
   try {
@@ -109,6 +115,19 @@ export async function transition(
       at: opts.now,
     },
   });
+  // 알림 (8.2): 바뀐 값으로 다시 읽어 보낸다
+  const updated = await tx.booking.findUniqueOrThrow({
+    where: { id: booking.id },
+  });
+  await onBookingTransition(
+    tx,
+    updated,
+    booking.status,
+    to,
+    opts.by,
+    opts.now,
+    opts.notify,
+  );
   await writeAuditLog(tx, {
     actor:
       opts.by === SYSTEM ? { type: "SYSTEM" } : { type: "USER", id: opts.by },
@@ -140,6 +159,7 @@ export async function logCreated(
       at: now,
     },
   });
+  await onBookingCreated(tx, booking, now);
   await writeAuditLog(tx, {
     actor: by === SYSTEM ? { type: "SYSTEM" } : { type: "USER", id: by },
     entity: "Booking",

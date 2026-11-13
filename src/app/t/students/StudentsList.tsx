@@ -15,6 +15,8 @@ interface Row {
   availableToday: number;
   nextExpiry: string | null;
   ruleUnagreed: boolean;
+  notifyDayBefore: boolean;
+  notify2h: boolean;
 }
 
 interface Hit {
@@ -177,6 +179,7 @@ export function StudentsList() {
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<(typeof FILTERS)[number]["key"]>("ALL");
   const [adding, setAdding] = useState(false);
+  const [selected, setSelected] = useState<string[]>([]);
 
   const load = useCallback(async () => {
     const r = await api<{ students: Row[] }>(
@@ -184,6 +187,16 @@ export function StudentsList() {
     );
     if (r.ok) setRows(r.data.students);
   }, [filter, q]);
+  /** 수강생별 알림 설정 (3.6): 한 명 또는 여러 명 */
+  async function bulk(
+    studentIds: string[],
+    flags: { notifyDayBefore?: boolean; notify2h?: boolean },
+  ) {
+    const r = await api("/api/t/students/notify-bulk", {
+      body: { studentIds, ...flags },
+    });
+    if (r.ok) void load();
+  }
   useEffect(() => {
     const t = setTimeout(() => void load(), 200);
     return () => clearTimeout(t);
@@ -223,12 +236,48 @@ export function StudentsList() {
       {rows?.length === 0 && (
         <p className="text-sm text-zinc-500">수강생이 없습니다.</p>
       )}
+      {selected.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2 rounded-lg bg-zinc-100 p-2 text-sm dark:bg-zinc-800">
+          <span>{selected.length}명 선택</span>
+          <Button
+            variant="secondary"
+            onClick={() =>
+              bulk(selected, { notifyDayBefore: true, notify2h: true })
+            }
+          >
+            알림 켜기
+          </Button>
+          <Button
+            variant="secondary"
+            onClick={() =>
+              bulk(selected, { notifyDayBefore: false, notify2h: false })
+            }
+          >
+            알림 끄기
+          </Button>
+          <Button variant="ghost" onClick={() => setSelected([])}>
+            선택 해제
+          </Button>
+        </div>
+      )}
       <ul className="flex flex-col divide-y divide-zinc-200 dark:divide-zinc-800">
         {rows?.map((s) => (
-          <li key={s.studentId}>
+          <li key={s.studentId} className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              aria-label={`${s.name} 선택`}
+              checked={selected.includes(s.studentId)}
+              onChange={(e) =>
+                setSelected((x) =>
+                  e.target.checked
+                    ? [...x, s.studentId]
+                    : x.filter((y) => y !== s.studentId),
+                )
+              }
+            />
             <Link
               href={`/t/students/${s.studentId}`}
-              className="flex items-center justify-between gap-2 py-3"
+              className="flex flex-1 items-center justify-between gap-2 py-3"
             >
               <span className="flex flex-col">
                 <span className="font-medium">
@@ -249,6 +298,28 @@ export function StudentsList() {
               </span>
               <span className="text-zinc-400">›</span>
             </Link>
+            <div className="flex flex-col gap-0.5 text-xs">
+              <label className="flex items-center gap-1">
+                <input
+                  type="checkbox"
+                  checked={s.notifyDayBefore}
+                  onChange={(e) =>
+                    bulk([s.studentId], { notifyDayBefore: e.target.checked })
+                  }
+                />
+                전일
+              </label>
+              <label className="flex items-center gap-1">
+                <input
+                  type="checkbox"
+                  checked={s.notify2h}
+                  onChange={(e) =>
+                    bulk([s.studentId], { notify2h: e.target.checked })
+                  }
+                />
+                2시간
+              </label>
+            </div>
           </li>
         ))}
       </ul>

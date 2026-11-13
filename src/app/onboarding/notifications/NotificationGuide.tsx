@@ -2,7 +2,8 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Button, Card, Notice } from "@/components/ui";
+import { PushSetup } from "@/components/PushSetup";
+import { Button, Card } from "@/components/ui";
 
 type Platform = "android" | "iphone";
 
@@ -15,15 +16,6 @@ export function NotificationGuide() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     if (/iPhone|iPad/.test(navigator.userAgent)) setPlatform("iphone");
   }, []);
-  const [permission, setPermission] = useState<string | null>(null);
-
-  async function requestPermission() {
-    if (typeof Notification === "undefined") {
-      setPermission("unsupported");
-      return;
-    }
-    setPermission(await Notification.requestPermission());
-  }
 
   const nextHref =
     params.get("then") === "availability" ? "/onboarding/availability" : "/";
@@ -78,24 +70,7 @@ export function NotificationGuide() {
           </p>
         </Card>
       )}
-      <Button variant="secondary" onClick={requestPermission}>
-        알림 허용
-      </Button>
-      {permission === "granted" && (
-        <Notice tone="success">알림을 허용했습니다.</Notice>
-      )}
-      {permission === "denied" && (
-        <Notice tone="warning">
-          알림이 차단되었습니다. 브라우저 설정에서 알림을 허용해야 자동 알림을
-          받을 수 있습니다.
-        </Notice>
-      )}
-      {permission === "unsupported" && (
-        <Notice tone="warning">
-          이 브라우저는 알림을 지원하지 않습니다. 홈 화면에 추가한 앱에서 다시
-          시도해 주세요.
-        </Notice>
-      )}
+      <PushSetup />
       <Button onClick={() => router.replace(nextHref)}>다음</Button>
     </div>
   );

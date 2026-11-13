@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { api } from "@/components/api";
 import { Button, Card, Notice } from "@/components/ui";
@@ -18,7 +18,11 @@ export function MergePrompt() {
   const router = useRouter();
   const [list, setList] = useState<Candidate[] | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const next = () => router.replace("/onboarding/notifications");
+  const then = useSearchParams().get("then");
+  const next = () =>
+    router.replace(
+      then && then.startsWith("/l/") ? then : "/onboarding/notifications",
+    );
 
   useEffect(() => {
     api<{ candidates: Candidate[] }>("/api/s/merge").then((r) => {

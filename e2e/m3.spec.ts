@@ -62,7 +62,7 @@ test("트레이너 등록 → 수강생 확정 → 트레이너 변경 요청 �
   // 수락 전까지 원래 시간 유지
   await expect(
     trainer.locator(".fc-event", {
-      hasText: `${studentName} · 예약 확정 · 변경요청`,
+      hasText: new RegExp(`${studentName} · 예약 확정 · .*변경요청`),
     }),
   ).toBeVisible();
 

@@ -19,6 +19,7 @@ import { useCallback, useMemo, useRef, useState } from "react";
 import { api } from "@/components/api";
 import { STATUS_STYLE, fmtRange, kstDateKey } from "@/components/fmt";
 import { Notice, TextField } from "@/components/ui";
+import { NOTICE_ICON } from "./BookingNoticeControls";
 import { CreateBookingSheet } from "./CreateBookingSheet";
 import {
   TrainerBookingSheet,
@@ -83,6 +84,7 @@ export function TrainerCalendar() {
       if (nameFilter && !b.studentName.includes(nameFilter)) continue;
       const st = STATUS_STYLE[b.status];
       const flags = [
+        b.notice?.manualShare ? "📨" : "",
         b.ruleUnagreed ? "⚠" : "",
         b.cancelRequestedAt ? "취소요청" : "",
         b.changeRequest?.kind === "CHANGE" ? "변경요청" : "",
@@ -103,7 +105,10 @@ export function TrainerCalendar() {
           `booking-${b.id}`,
           ...(b.status === "INSUFFICIENT" ? ["opacity-60"] : []),
         ],
-        extendedProps: { kind: "booking" },
+        extendedProps: {
+          kind: "booking",
+          noticeIcon: b.notice?.dayBefore ?? null,
+        },
       });
       // 변경 요청 중인 새 시간은 점선
       if (b.changeRequest?.kind === "CHANGE") {
@@ -242,6 +247,28 @@ export function TrainerCalendar() {
           datesSet={onDatesSet}
           eventDrop={onDrop}
           eventClick={onClick}
+          eventContent={(arg) => {
+            const key = arg.event.extendedProps.noticeIcon as
+              keyof typeof NOTICE_ICON | null;
+            const icon = key ? NOTICE_ICON[key] : null;
+            return (
+              <div className="flex items-start gap-1 overflow-hidden px-0.5 text-xs leading-tight">
+                {icon && (
+                  <span
+                    title={icon.label}
+                    aria-label={icon.label}
+                    className={`shrink-0 rounded px-0.5 ${icon.cls}`}
+                  >
+                    {icon.icon}
+                  </span>
+                )}
+                <span className="truncate">
+                  {arg.timeText && <b className="mr-1">{arg.timeText}</b>}
+                  {arg.event.title}
+                </span>
+              </div>
+            );
+          }}
           select={onSelect}
         />
       </div>
@@ -258,6 +285,11 @@ export function TrainerCalendar() {
             </li>
           ))}
         <li>⚠ 규칙 미동의</li>
+        <li>🔔 전일 알림(예정·미확인)</li>
+        <li>✓ 확인</li>
+        <li>! 못 보냄</li>
+        <li>🔕 꺼짐</li>
+        <li>📨 직접 보내야 함</li>
       </ul>
 
       {data && (

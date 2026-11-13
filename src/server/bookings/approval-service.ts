@@ -14,7 +14,9 @@ import {
   registerFailure,
   registerSuccess,
 } from "@/lib/auth/lockout";
+import { describeRules } from "@/lib/rules/rule-set";
 import type { Db, RootDb } from "@/server/db-types";
+import { onBookingEvent } from "@/server/notify/events";
 import { AppError } from "@/server/errors";
 import {
   assertTrainerStudent,
@@ -225,6 +227,12 @@ export async function markNoShow(
         passId: d.deduct ? ctx.passId : b.passId,
         trainerConfirmNeeded: false,
       },
+      notify: {
+        deducted: d.deduct && !!ctx.passId,
+        skippedReason: d.skippedReason,
+        ruleText: describeRules(ctx.rules).find((l) => l.title === "노쇼")
+          ?.text,
+      },
     });
     if (d.deduct && ctx.passId) {
       await tx.pass.update({
@@ -233,7 +241,6 @@ export async function markNoShow(
       });
     }
     await reconcileInsufficient(tx, b.studentId, now);
-    // 차감 알림(적용 규칙 포함)은 M5
     return {
       deducted: d.deduct && !!ctx.passId,
       skippedReason: d.skippedReason,
@@ -327,6 +334,7 @@ export async function raiseDispute(
       after: { reason },
       at: now,
     });
+    await onBookingEvent(tx, b, "DISPUTE", { by: input.studentUserId }, now);
   });
 }
 
@@ -393,6 +401,19 @@ async function resolve(
       await reconcileInsufficient(tx, b.studentId, now);
     }
   }
+  await onBookingEvent(
+    tx,
+    b,
+    "DISPUTE_RESULT",
+    {
+      by: b.trainerId,
+      text:
+        decision === "KEEP"
+          ? "트레이너가 기존 처리를 유지했습니다"
+          : "트레이너가 의견을 수락했습니다",
+    },
+    now,
+  );
 }
 
 /** 트레이너: 이견 처리 — "수강생 의견 수락" / "기존 처리 유지". 선택하면 종결 */
