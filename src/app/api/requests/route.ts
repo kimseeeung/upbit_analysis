@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import { describeRules, pickRuleValues } from "@/lib/rules/rule-set";
 import { maskPhone } from "@/lib/phone";
+import { getBookingInbox } from "@/server/bookings/inbox-service";
 import { requireApiSession, route } from "@/server/http";
 
 /** 요청함: 받은 연결 요청 + (수강생) 규칙 동의 요청 */
@@ -36,7 +37,13 @@ export const GET = route(async () => {
           orderBy: { requestedAt: "desc" },
         })
       : [];
+  const bookings = await getBookingInbox(
+    db,
+    s.principal.userId,
+    s.principal.role === "TRAINER" ? "TRAINER" : "STUDENT",
+  );
   return NextResponse.json({
+    ...bookings,
     linkRequests: links.map((l) => ({
       id: l.id,
       fromName: l.fromUser.name,

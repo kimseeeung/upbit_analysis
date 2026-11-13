@@ -131,6 +131,6 @@ test("수강 규칙 기본값 설정", async ({ page }) => {
   await expect(
     page.getByText("수업 12시간 전 이후에 취소하면 1회 차감됩니다"),
   ).toBeVisible();
-  await page.getByRole("button", { name: "저장" }).click();
+  await page.getByRole("button", { name: "저장", exact: true }).click();
   await expect(page.getByText("수강 규칙 (기본) · v2")).toBeVisible();
 });

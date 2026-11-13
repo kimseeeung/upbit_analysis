@@ -90,18 +90,21 @@ model User {
   createdAt           DateTime    @default(now())
   updatedAt           DateTime    @updatedAt
 
-  studentProfile   StudentProfile?
-  trainerProfile   TrainerProfile?
-  sessions         Session[]
-  termsConsents    TermsConsent[]
-  student          Student?             @relation("StudentUser")
-  centerAdmins     CenterAdmin[]        @relation("CenterAdminUser")
-  memberships      CenterMembership[]
-  linkRequestsFrom LinkRequest[]        @relation("LinkFrom")
-  trainerLinks     TrainerStudentLink[]
-  passesSold       Pass[]               @relation("PassSoldBy")
-  ruleSets         RuleSet[]
-  linkRequestsTo   LinkRequest[]        @relation("LinkTo")
+  studentProfile         StudentProfile?
+  trainerProfile         TrainerProfile?
+  sessions               Session[]
+  termsConsents          TermsConsent[]
+  student                Student?                @relation("StudentUser")
+  centerAdmins           CenterAdmin[]           @relation("CenterAdminUser")
+  memberships            CenterMembership[]
+  linkRequestsFrom       LinkRequest[]           @relation("LinkFrom")
+  trainerLinks           TrainerStudentLink[]
+  passesSold             Pass[]                  @relation("PassSoldBy")
+  ruleSets               RuleSet[]
+  trainerBookings        Booking[]               @relation("BookingTrainer")
+  availabilityRules      AvailabilityRule[]
+  availabilityExceptions AvailabilityException[]
+  linkRequestsTo         LinkRequest[]           @relation("LinkTo")
 
   @@index([role, name])
 }
@@ -516,23 +519,135 @@ enum DeductReason {
 }
 
 model Booking {
-  id           String        @id @default(cuid())
-  studentId    String
-  student      Student       @relation(fields: [studentId], references: [id])
+  id                  String         @id @default(cuid())
+  studentId           String
+  student             Student        @relation(fields: [studentId], references: [id])
   /// 진행 트레이너 (기록용으로 고정)
-  trainerId    String
+  trainerId           String
+  trainer             User           @relation("BookingTrainer", fields: [trainerId], references: [id])
   /// 차감된 이용권 (차감될 때 정해짐)
-  passId       String?
-  pass         Pass?         @relation(fields: [passId], references: [id])
-  startAt      DateTime
-  endAt        DateTime
-  source       BookingSource
-  status       BookingStatus
-  deducted     Boolean       @default(false)
-  deductReason DeductReason?
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  passId              String?
+  pass                Pass?          @relation(fields: [passId], references: [id])
+  startAt             DateTime
+  endAt               DateTime
+  source              BookingSource
+  status              BookingStatus
+  /// 잔여 부족으로 바뀌기 전 상태 (복구용)
+  prevStatus          BookingStatus?
+  insufficientAt      DateTime?
+  autoConfirmed       Boolean        @default(false)
+  recurringGroupId    String?
+  memo                String?
+  /// 수강생 취소 요청 (명세 4.7). 차감 판단은 요청 시각 기준
+  cancelRequestedAt   DateTime?
+  cancelRequestedBy   String?
+  cancelRequestReason String?
+  canceledAt          DateTime?
+  /// 사용자 id 또는 "SYSTEM"
+  canceledBy          String?
+  cancelReason        String?
+  rejectReason        String?
+  deducted            Boolean        @default(false)
+  deductReason        DeductReason?
+  deductSkippedReason String?
+  notifyDayBeforeOff  Boolean        @default(false)
+  notify2hOff         Boolean        @default(false)
+  /// 하위 호환: 이전 버전 코드가 넣는 행도 들어가도록 기본값을 둔다
+  createdBy           String         @default("SYSTEM")
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+
+  changeRequests BookingChangeRequest[]
+  statusLogs     BookingStatusLog[]
 
   @@index([studentId, status])
   @@index([trainerId, startAt])
+  @@index([status, startAt])
+  @@index([recurringGroupId])
+}
+
+enum ChangeRequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  EXPIRED
+  /// 상대방이 다른 시간을 제안해 새 요청으로 바뀜
+  COUNTERED
+  /// 예약이 취소되는 등으로 필요 없어짐
+  CANCELED
+}
+
+enum ChangeRequestKind {
+  /// 확정된 예약의 시간 변경 요청 (4.6)
+  CHANGE
+  /// 확정 대기 예약에 수강생이 다른 시간 제안 (4.4)
+  PROPOSAL
+}
+
+model BookingChangeRequest {
+  id            String              @id @default(cuid())
+  bookingId     String
+  booking       Booking             @relation(fields: [bookingId], references: [id])
+  kind          ChangeRequestKind
+  requestedBy   String
+  /// [{ startAt, endAt }] 1~3개 (ISO)
+  proposedSlots Json
+  status        ChangeRequestStatus @default(PENDING)
+  expiresAt     DateTime
+  chosenSlot    Json?
+  respondedAt   DateTime?
+  respondedBy   String?
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  @@index([bookingId, status])
+  @@index([status, expiresAt])
+}
+
+model BookingStatusLog {
+  id        String         @id @default(cuid())
+  bookingId String
+  booking   Booking        @relation(fields: [bookingId], references: [id])
+  from      BookingStatus?
+  to        BookingStatus
+  /// 사용자 id 또는 "SYSTEM"
+  by        String
+  reason    String?
+  at        DateTime       @default(now())
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@index([bookingId, at])
+}
+
+/// 근무 가능 시간 (요일별 시간대, 4.3)
+model AvailabilityRule {
+  id        String   @id @default(cuid())
+  trainerId String
+  trainer   User     @relation(fields: [trainerId], references: [id])
+  /// 0(일)~6(토)
+  weekday   Int
+  /// "HH:mm"
+  startTime String
+  endTime   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([trainerId, weekday])
+}
+
+/// 휴무일·예외일
+model AvailabilityException {
+  id        String   @id @default(cuid())
+  trainerId String
+  trainer   User     @relation(fields: [trainerId], references: [id])
+  /// 한국 날짜 00:00 KST의 UTC 시점
+  date      DateTime
+  startTime String?
+  endTime   String?
+  isOff     Boolean
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([trainerId, date])
 }

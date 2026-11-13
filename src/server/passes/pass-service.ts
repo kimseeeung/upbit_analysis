@@ -11,6 +11,7 @@ import {
   requestRuleConsent,
   resolveRuleSetForPass,
 } from "@/server/rules/rule-service";
+import { reconcileInsufficient } from "@/server/bookings/insufficient";
 import { assertTrainerStudent } from "@/server/students/access";
 
 export interface PassInput {
@@ -124,6 +125,8 @@ export async function createPass(
       at: now,
     });
     await requestRuleConsent(tx, pass.id, trainerId, now);
+    // 이용권이 추가되면 잔여 부족 예약을 원래 상태로 복구 (3.4)
+    await reconcileInsufficient(tx, studentId, now);
     return pass;
   });
 }
@@ -242,6 +245,7 @@ export async function updatePass(
         at: now,
       });
     }
+    await reconcileInsufficient(tx, before.studentId, now);
     return updated;
   });
 }
@@ -316,6 +320,7 @@ export async function refundPass(
       after: { status: "REFUNDED" },
       at: now,
     });
+    await reconcileInsufficient(tx, p.studentId, now);
     return updated;
   });
 }
