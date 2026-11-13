@@ -23,3 +23,12 @@ body {
   font-family:
     "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
 }
+
+/* 일시정지 기간 빗금 (4.2) */
+.pt-paused {
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgb(161 161 170 / 0.35) 0 6px,
+    transparent 6px 12px
+  ) !important;
+}

@@ -1005,6 +1005,7 @@ async function finalizeStudentCancel(
       cancelReason: b.cancelRequestReason ?? "수강생 취소",
       deducted: d.deduct,
       deductReason: d.deduct ? "LATE_CANCEL" : null,
+      lateCancel: d.lateCancel,
       deductSkippedReason: d.skippedReason,
       passId: d.deduct ? ctx.passId : b.passId,
     },

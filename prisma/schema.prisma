@@ -443,6 +443,7 @@ model Pass {
   changeLogs PassChangeLog[]
   consents   RuleConsent[]
   bookings   Booking[]
+  pauses     PassPause[]
 
   @@index([studentId, status])
 }
@@ -570,6 +571,8 @@ model Booking {
   cancelReason           String?
   rejectReason           String?
   deducted               Boolean          @default(false)
+  /// 당일 취소에 해당 (차감 여부와 별개, 수강 현황의 "당일 취소")
+  lateCancel             Boolean          @default(false)
   deductReason           DeductReason?
   deductSkippedReason    String?
   /// 완료 승인 (명세 5)
@@ -776,4 +779,37 @@ model ShareLink {
   updatedAt DateTime         @updatedAt
 
   @@index([purpose, refId])
+}
+
+// ───────────────────────── M6: 일시정지 ─────────────────────────
+
+enum PassPauseStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  ENDED_EARLY
+  /// 승인 전에 신청한 쪽이 취소
+  CANCELED
+}
+
+model PassPause {
+  id            String          @id @default(cuid())
+  passId        String
+  pass          Pass            @relation(fields: [passId], references: [id])
+  requestedBy   String
+  /// TRAINER | STUDENT
+  requestedRole String
+  /// 한국 날짜 00:00 KST의 UTC 시점 (양 끝 포함)
+  startDate     DateTime
+  endDate       DateTime
+  reason        String
+  status        PassPauseStatus @default(PENDING)
+  /// 조기 재개 시 실제로 쉰 마지막 날 (쉰 날이 없으면 null)
+  actualEndDate DateTime?
+  approvedBy    String?
+  respondedAt   DateTime?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@index([passId, status])
 }

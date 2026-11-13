@@ -18,6 +18,7 @@ const AREA_META: Record<
       { href: "/t", label: "캘린더" },
       { href: "/t/students", label: "수강생" },
       { href: "/t/requests", label: "요청함" },
+      { href: "/t/stats", label: "수강 현황" },
       { href: "/t/manual-notify", label: "직접 보낼 알림" },
       { href: "/t/settings", label: "설정" },
     ],

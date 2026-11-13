@@ -134,7 +134,7 @@ export function StudentDetail({ id }: { id: string }) {
           </Card>
         ))}
       <p className="text-sm text-zinc-500">
-        수업 이력은 수강 현황에서 볼 수 있습니다 (준비 중).
+        수업 이력은 수강 현황에서 볼 수 있습니다.
       </p>
       {msg && <Notice tone={msg.tone}>{msg.text}</Notice>}
       <Button

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { api } from "@/components/api";
 import { PassSummary, type PassView } from "@/components/PassCards";
+import { PausePanel } from "@/components/PausePanel";
 import { Notice } from "@/components/ui";
 
 export function MyPasses() {
@@ -37,7 +38,9 @@ export function MyPasses() {
         <p className="text-sm text-zinc-500">등록된 이용권이 없습니다.</p>
       )}
       {current.map((p) => (
-        <PassSummary key={p.id} p={p} />
+        <PassSummary key={p.id} p={p}>
+          <PausePanel passId={p.id} role="STUDENT" />
+        </PassSummary>
       ))}
       {past.length > 0 && (
         <>
@@ -47,7 +50,6 @@ export function MyPasses() {
           ))}
         </>
       )}
-      <p className="text-xs text-zinc-500">일시정지 신청은 준비 중입니다.</p>
     </div>
   );
 }

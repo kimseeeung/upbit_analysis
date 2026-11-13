@@ -45,6 +45,14 @@ interface BookingInbox {
 }
 
 interface Inbox extends BookingInbox, ApprovalInbox {
+  pauseRequests: {
+    id: string;
+    passName: string;
+    studentName: string;
+    startDate: string;
+    endDate: string;
+    reason: string;
+  }[];
   linkRequests: {
     id: string;
     fromName: string;
@@ -165,7 +173,8 @@ export function RequestsInbox() {
     data.confirmRequests.length === 0 &&
     data.approvalRequests.length === 0 &&
     data.disputes.length === 0 &&
-    data.trainerConfirms.length === 0;
+    data.trainerConfirms.length === 0 &&
+    data.pauseRequests.length === 0;
   return (
     <div className="flex flex-col gap-3">
       {error && <Notice tone="error">{error}</Notice>}
@@ -200,6 +209,35 @@ export function RequestsInbox() {
         </Card>
       ))}
       <ApprovalInboxItems data={data} post={post} />
+      {data.pauseRequests.map((p) => (
+        <Card key={p.id} title="일시정지 요청">
+          <p className="text-sm">
+            {p.studentName} · {p.passName} · {p.startDate}~{p.endDate}
+            <span className="block text-xs text-zinc-500">
+              사유: {p.reason}
+            </span>
+          </p>
+          <div className="flex gap-2">
+            <Button
+              className="flex-1"
+              onClick={() =>
+                post(`/api/pauses/${p.id}/respond`, { approve: true })
+              }
+            >
+              승인
+            </Button>
+            <Button
+              variant="secondary"
+              className="flex-1"
+              onClick={() =>
+                post(`/api/pauses/${p.id}/respond`, { approve: false })
+              }
+            >
+              거절
+            </Button>
+          </div>
+        </Card>
+      ))}
       {data.confirmRequests.map((c) => (
         <Card
           key={c.bookingId}

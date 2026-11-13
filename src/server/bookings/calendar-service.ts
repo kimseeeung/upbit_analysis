@@ -5,6 +5,7 @@ import type { Db } from "@/server/db-types";
 import { AppError } from "@/server/errors";
 import { getPassSummaries } from "@/server/passes/availability-service";
 import { getStudentOfUser } from "@/server/students/access";
+import { pauseRangesFor } from "@/server/passes/pause-service";
 import { getAvailability } from "./availability-settings";
 import { describeRules } from "@/lib/rules/rule-set";
 import { bookingPassContext, sessionMinutesFor } from "./core";
@@ -77,7 +78,15 @@ export async function getTrainerCalendar(
     },
   });
   const notice = await bookingNoticeStatus(db, trainerId, bookings);
+  const linked = await db.trainerStudentLink.findMany({
+    where: { trainerId, endedAt: null },
+    select: { studentId: true },
+  });
+  const pauses = (
+    await pauseRangesFor(db, { studentIds: linked.map((l) => l.studentId) })
+  ).filter((p) => p.startDate <= to && from <= p.endDate);
   return {
+    pauses,
     now: now.toISOString(),
     hasAvailability: av.rules.length > 0,
     working,
@@ -221,7 +230,11 @@ export async function getStudentCalendar(
     orderBy: { startAt: "asc" },
   });
 
+  const pauses = (
+    await pauseRangesFor(db, { studentIds: [student.id] })
+  ).filter((p) => p.startDate <= to && from <= p.endDate);
   return {
+    pauses,
     now: now.toISOString(),
     hasTrainer: !!student.currentTrainerId,
     hasAvailability,

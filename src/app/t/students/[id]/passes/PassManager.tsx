@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { api } from "@/components/api";
 import { PassSummary, type PassView } from "@/components/PassCards";
+import { PausePanel } from "@/components/PausePanel";
 import { RulesEditor } from "@/components/RulesEditor";
 import { Button, Card, Checkbox, Notice, TextField } from "@/components/ui";
 import { suggestEndDate, type RuleValues } from "@/lib/rules/rule-set";
@@ -439,6 +440,9 @@ export function PassManager({ studentId }: { studentId: string }) {
                 </Button>
               </div>
             </div>
+          )}
+          {(p.status === "ACTIVE" || p.status === "PAUSED") && (
+            <PausePanel passId={p.id} role="TRAINER" onChanged={load} />
           )}
           {p.changeLogs.length > 0 && (
             <details className="text-xs">

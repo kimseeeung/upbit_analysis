@@ -3,6 +3,7 @@ import { getDb } from "@/lib/db";
 import { describeRules, pickRuleValues } from "@/lib/rules/rule-set";
 import { maskPhone } from "@/lib/phone";
 import { getBookingInbox } from "@/server/bookings/inbox-service";
+import { pendingPausesFor } from "@/server/passes/pause-service";
 import { requireApiSession, route } from "@/server/http";
 
 /** 요청함: 받은 연결 요청 + (수강생) 규칙 동의 요청 */
@@ -42,8 +43,14 @@ export const GET = route(async () => {
     s.principal.userId,
     s.principal.role === "TRAINER" ? "TRAINER" : "STUDENT",
   );
+  const pauseRequests = await pendingPausesFor(
+    db,
+    s.principal.userId,
+    s.principal.role === "TRAINER" ? "TRAINER" : "STUDENT",
+  );
   return NextResponse.json({
     ...bookings,
+    pauseRequests,
     linkRequests: links.map((l) => ({
       id: l.id,
       fromName: l.fromUser.name,

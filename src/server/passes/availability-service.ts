@@ -14,7 +14,12 @@ export async function loadCountInputs(
   studentId: string,
 ): Promise<{ passes: PassForCount[]; bookings: BookingForCount[] }> {
   const [passes, bookings] = await Promise.all([
-    db.pass.findMany({ where: { studentId } }),
+    db.pass.findMany({
+      where: { studentId },
+      include: {
+        pauses: { where: { status: { in: ["APPROVED", "ENDED_EARLY"] } } },
+      },
+    }),
     db.booking.findMany({
       where: {
         studentId,
@@ -43,7 +48,6 @@ export async function loadCountInputs(
     }),
   ]);
   return {
-    // 일시정지 기간은 M6(PassPause)에서 채운다
     passes: passes.map((p) => ({
       id: p.id,
       count: p.count,
@@ -51,7 +55,15 @@ export async function loadCountInputs(
       startDate: toKstDateKey(p.startDate),
       endDate: toKstDateKey(p.endDate),
       status: p.status,
-      pauses: [],
+      // 일시정지 기간에는 예약 불가 (조기 재개는 실제로 쉰 날까지)
+      pauses: p.pauses
+        .filter((x) => x.status === "APPROVED" || x.actualEndDate)
+        .map((x) => ({
+          startDate: toKstDateKey(x.startDate),
+          endDate: toKstDateKey(
+            x.status === "ENDED_EARLY" ? x.actualEndDate! : x.endDate,
+          ),
+        })),
       order: p.createdAt.toISOString(),
     })),
     bookings: bookings.map((b) => ({

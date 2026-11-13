@@ -27,6 +27,12 @@ import {
 } from "./StudentBookingSheet";
 
 interface Data {
+  pauses?: {
+    studentId: string;
+    studentName: string;
+    startDate: string;
+    endDate: string;
+  }[];
   hasTrainer: boolean;
   hasAvailability: boolean;
   summary: {
@@ -97,6 +103,19 @@ export function StudentCalendar() {
           extendedProps: { kind: "slot", start: s.start, end: s.end },
         }),
       );
+    }
+    // 일시정지 기간은 빗금 (4.2)
+    for (const pz of data.pauses ?? []) {
+      const end = new Date(`${pz.endDate}T00:00:00+09:00`);
+      end.setUTCDate(end.getUTCDate() + 1);
+      list.push({
+        id: `pause-${pz.studentId}-${pz.startDate}`,
+        title: `${pz.studentName} 일시정지`,
+        start: `${pz.startDate}T00:00:00+09:00`,
+        end: end.toISOString(),
+        display: "background",
+        classNames: ["pt-paused"],
+      });
     }
     return list;
   }, [data]);
