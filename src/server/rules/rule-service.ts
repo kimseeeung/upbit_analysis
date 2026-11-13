@@ -38,12 +38,22 @@ export async function getTrainerDefaultRuleSet(db: Db, trainerId: string) {
     orderBy: { version: "desc" },
   });
   if (latest) return latest;
+  // 센터 기본 규칙이 있으면 초기값으로 (3.5)
+  const membership = await db.centerMembership.findFirst({
+    where: { trainerId, status: "ACTIVE" },
+  });
+  const center = membership
+    ? await db.ruleSet.findFirst({
+        where: { kind: "CENTER_DEFAULT", ownerCenterId: membership.centerId },
+        orderBy: { version: "desc" },
+      })
+    : null;
   return db.ruleSet.create({
     data: {
       kind: "TRAINER_DEFAULT",
       ownerTrainerId: trainerId,
       version: 1,
-      ...DEFAULT_RULES,
+      ...(center ? pickRuleValues(center) : DEFAULT_RULES),
     },
   });
 }

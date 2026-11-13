@@ -136,6 +136,9 @@ export function StudentDetail({ id }: { id: string }) {
       <p className="text-sm text-zinc-500">
         수업 이력은 수강 현황에서 볼 수 있습니다.
       </p>
+      <Link href={`/t/students/${id}/transfer`} className="text-sm underline">
+        담당 트레이너 인계
+      </Link>
       {msg && <Notice tone={msg.tone}>{msg.text}</Notice>}
       <Button
         variant="ghost"

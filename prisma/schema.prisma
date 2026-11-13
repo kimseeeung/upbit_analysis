@@ -287,6 +287,7 @@ model Center {
   updatedAt   DateTime           @updatedAt
   admins      CenterAdmin[]
   memberships CenterMembership[]
+  invites     CenterInvite[]
 
   @@index([name])
 }
@@ -312,17 +313,20 @@ enum MembershipStatus {
 }
 
 model CenterMembership {
-  id        String           @id @default(cuid())
-  centerId  String
-  center    Center           @relation(fields: [centerId], references: [id])
-  trainerId String
-  trainer   User             @relation(fields: [trainerId], references: [id])
-  status    MembershipStatus @default(PENDING)
-  consentAt DateTime?
-  joinedAt  DateTime?
-  leftAt    DateTime?
-  createdAt DateTime         @default(now())
-  updatedAt DateTime         @updatedAt
+  id         String           @id @default(cuid())
+  centerId   String
+  center     Center           @relation(fields: [centerId], references: [id])
+  trainerId  String
+  trainer    User             @relation(fields: [trainerId], references: [id])
+  status     MembershipStatus @default(PENDING)
+  /// 센터 관리자 승인 (초대 코드로 들어오면 바로). 그 뒤 트레이너 동의로 ACTIVE
+  approvedAt DateTime?
+  approvedBy String?
+  consentAt  DateTime?
+  joinedAt   DateTime?
+  leftAt     DateTime?
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
 
   @@index([trainerId, status])
   @@index([centerId, status])
@@ -812,4 +816,127 @@ model PassPause {
   updatedAt     DateTime        @updatedAt
 
   @@index([passId, status])
+}
+
+// ───────────────────────── M7: 센터와 인계 ─────────────────────────
+
+enum TransferInitiator {
+  STUDENT
+  TRAINER
+  CENTER_ADMIN
+}
+
+enum PassTransferStatus {
+  PENDING
+  AGREED
+  REFUSED
+  CENTER_APPROVED
+  NOT_NEEDED
+}
+
+enum TransferStatus {
+  /// 새 트레이너 수락 대기
+  PENDING_TRAINER
+  /// 수강생 동의 대기
+  PENDING_STUDENT
+  COMPLETED
+  REJECTED
+  CANCELED
+}
+
+/// 담당 트레이너 변경 (7.2)
+model TransferRequest {
+  id                  String             @id @default(cuid())
+  studentId           String
+  fromTrainerId       String?
+  toTrainerId         String
+  initiatedBy         TransferInitiator
+  initiatedByUserId   String
+  /// 센터 관리자가 시작했을 때의 센터
+  centerId            String?
+  toTrainerAcceptedAt DateTime?
+  studentAgreedAt     DateTime?
+  passTransfer        PassTransferStatus
+  passDecidedAt       DateTime?
+  passDecidedBy       String?
+  /// { bookingId: "KEEP" | "CANCEL" } — 새 트레이너가 수락할 때 정함
+  bookingDecisions    Json?
+  /// 이전 트레이너가 메모를 넘길지
+  memoTransfer        Boolean            @default(false)
+  status              TransferStatus     @default(PENDING_TRAINER)
+  completedAt         DateTime?
+  /// 이용권 넘기기 무응답 기한 (7일)
+  deadlineAt          DateTime
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  @@index([studentId, status])
+  @@index([toTrainerId, status])
+  @@index([fromTrainerId, passTransfer])
+}
+
+enum DepartureType {
+  MOVE
+  WITHDRAW
+}
+
+/// 트레이너 센터 이동·탈퇴 시 수강생 선택 (7.3, 7.4)
+model TrainerDeparture {
+  id             String            @id @default(cuid())
+  trainerId      String
+  type           DepartureType
+  /// 떠나는 센터 (없으면 개인 트레이너)
+  fromCenterId   String?
+  targetCenterId String?
+  deadlineAt     DateTime
+  appliedAt      DateTime?
+  createdBy      String
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  choices        DepartureChoice[]
+
+  @@index([trainerId, appliedAt])
+}
+
+enum DepartureChoiceKind {
+  FOLLOW
+  STAY
+  CENTER_ASSIGN
+  FIND_OWN
+}
+
+model DepartureChoice {
+  id          String               @id @default(cuid())
+  departureId String
+  departure   TrainerDeparture     @relation(fields: [departureId], references: [id])
+  studentId   String
+  choice      DepartureChoiceKind?
+  chosenAt    DateTime?
+  /// 기한까지 고르지 않아 기본값 적용
+  defaulted   Boolean              @default(false)
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+
+  @@unique([departureId, studentId])
+}
+
+enum CenterInviteKind {
+  TRAINER
+  ADMIN
+}
+
+/// 센터 초대 코드·링크 (9.1, 9.2)
+model CenterInvite {
+  id        String           @id @default(cuid())
+  centerId  String
+  center    Center           @relation(fields: [centerId], references: [id])
+  kind      CenterInviteKind
+  /// 짧은 초대 코드 (트레이너가 입력)
+  code      String           @unique
+  createdBy String
+  expiresAt DateTime
+  usedAt    DateTime?
+  usedBy    String?
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
 }

@@ -36,7 +36,14 @@ const AREA_META: Record<
   center: {
     title: "PT 관리 · 센터",
     me: "/c/me",
-    tabs: [{ href: "/c", label: "센터 캘린더" }],
+    tabs: [
+      { href: "/c", label: "센터 캘린더" },
+      { href: "/c/trainers", label: "트레이너" },
+      { href: "/c/students", label: "수강생" },
+      { href: "/c/stats", label: "수강 현황" },
+      { href: "/c/payments", label: "결제 기록" },
+      { href: "/c/settings", label: "센터 설정" },
+    ],
   },
 };
 

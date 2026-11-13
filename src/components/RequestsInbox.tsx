@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { api } from "./api";
 import { ApprovalInboxItems, type ApprovalInbox } from "./ApprovalInboxItems";
+import { TransferInboxItems, type TransferInbox } from "./TransferInboxItems";
 import { fmtDateTime, fmtRange } from "./fmt";
 import { RulesLines } from "./RulesEditor";
 import { Button, Card, Notice, TextField } from "./ui";
@@ -44,7 +45,7 @@ interface BookingInbox {
   }[];
 }
 
-interface Inbox extends BookingInbox, ApprovalInbox {
+interface Inbox extends BookingInbox, ApprovalInbox, TransferInbox {
   pauseRequests: {
     id: string;
     passName: string;
@@ -174,7 +175,11 @@ export function RequestsInbox() {
     data.approvalRequests.length === 0 &&
     data.disputes.length === 0 &&
     data.trainerConfirms.length === 0 &&
-    data.pauseRequests.length === 0;
+    data.pauseRequests.length === 0 &&
+    data.transferRequests.length === 0 &&
+    data.passDecisions.length === 0 &&
+    data.transferConsents.length === 0 &&
+    data.departureChoices.every((c) => c.choice);
   return (
     <div className="flex flex-col gap-3">
       {error && <Notice tone="error">{error}</Notice>}
@@ -208,6 +213,7 @@ export function RequestsInbox() {
           </div>
         </Card>
       ))}
+      <TransferInboxItems data={data} post={post} />
       <ApprovalInboxItems data={data} post={post} />
       {data.pauseRequests.map((p) => (
         <Card key={p.id} title="일시정지 요청">

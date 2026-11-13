@@ -4,6 +4,8 @@ import { describeRules, pickRuleValues } from "@/lib/rules/rule-set";
 import { maskPhone } from "@/lib/phone";
 import { getBookingInbox } from "@/server/bookings/inbox-service";
 import { pendingPausesFor } from "@/server/passes/pause-service";
+import { pendingDepartureChoices } from "@/server/center/departure-service";
+import { transferInbox } from "@/server/center/transfer-service";
 import { requireApiSession, route } from "@/server/http";
 
 /** 요청함: 받은 연결 요청 + (수강생) 규칙 동의 요청 */
@@ -48,8 +50,19 @@ export const GET = route(async () => {
     s.principal.userId,
     s.principal.role === "TRAINER" ? "TRAINER" : "STUDENT",
   );
+  const transfers = await transferInbox(
+    db,
+    s.principal.userId,
+    s.principal.role === "TRAINER" ? "TRAINER" : "STUDENT",
+  );
+  const departureChoices =
+    s.principal.role === "STUDENT"
+      ? await pendingDepartureChoices(db, s.principal.userId)
+      : [];
   return NextResponse.json({
     ...bookings,
+    ...transfers,
+    departureChoices,
     pauseRequests,
     linkRequests: links.map((l) => ({
       id: l.id,
