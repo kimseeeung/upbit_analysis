@@ -10,13 +10,16 @@ export default function Home() {
       <div className="flex gap-3">
         <Link
           href="/login"
-          className="rounded-lg bg-zinc-900 px-4 py-2 text-sm text-white dark:bg-zinc-100 dark:text-zinc-900"
+          className="rounded-lg bg-zinc-900 px-4 py-2.5 text-sm text-white dark:bg-zinc-100 dark:text-zinc-900"
         >
           로그인
         </Link>
-        <span className="rounded-lg border border-zinc-300 px-4 py-2 text-sm text-zinc-400 dark:border-zinc-700">
-          회원가입 (준비 중)
-        </span>
+        <Link
+          href="/signup"
+          className="rounded-lg border border-zinc-300 px-4 py-2.5 text-sm dark:border-zinc-700"
+        >
+          회원가입
+        </Link>
       </div>
     </main>
   );

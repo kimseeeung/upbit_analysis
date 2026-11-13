@@ -37,3 +37,279 @@ model AuditLog {
   @@index([actorType, actorId])
   @@index([at])
 }
+
+// ───────────────────────── M1: 계정·인증 ─────────────────────────
+
+enum UserRole {
+  TRAINER
+  STUDENT
+  CENTER_ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  WITHDRAWING
+  DELETED
+}
+
+enum DisplayMode {
+  AUTO
+  MOBILE
+  PC
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+model User {
+  id                  String      @id @default(cuid())
+  loginId             String      @unique
+  /// 형식: pbkdf2-sha256$<반복>$<base64 해시>
+  passwordHash        String
+  passwordSalt        String
+  passwordChangedAt   DateTime    @default(now())
+  /// 직전 비밀번호(재설정 시 같은 비밀번호 금지 검사용)
+  prevPasswordHash    String?
+  prevPasswordSalt    String?
+  role                UserRole
+  name                String
+  /// 숫자만 저장 (01012345678)
+  phone               String      @unique
+  phoneVerifiedAt     DateTime
+  gender              Gender?
+  /// 한국 날짜 00:00 KST의 UTC 시점
+  birthDate           DateTime?
+  status              UserStatus  @default(ACTIVE)
+  withdrawRequestedAt DateTime?
+  deleteScheduledAt   DateTime?
+  loginFailCount      Int         @default(0)
+  lockedUntil         DateTime?
+  displayMode         DisplayMode @default(AUTO)
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+
+  studentProfile   StudentProfile?
+  trainerProfile   TrainerProfile?
+  sessions         Session[]
+  termsConsents    TermsConsent[]
+  student          Student?           @relation("StudentUser")
+  centerAdmins     CenterAdmin[]      @relation("CenterAdminUser")
+  memberships      CenterMembership[]
+  linkRequestsFrom LinkRequest[]      @relation("LinkFrom")
+  linkRequestsTo   LinkRequest[]      @relation("LinkTo")
+
+  @@index([role, name])
+}
+
+model StudentProfile {
+  id                   String    @id @default(cuid())
+  userId               String    @unique
+  user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pinHash              String
+  pinSalt              String
+  pinFailCount         Int       @default(0)
+  pinLockedUntil       DateTime?
+  /// 가입 때 고른 트레이너가 미가입이면 이름만 저장 (명세 1.1)
+  requestedTrainerName String?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+}
+
+model TrainerProfile {
+  id                  String   @id @default(cuid())
+  userId              String   @unique
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// 센터 미가입 시 직접 입력한 근무지
+  workplaceText       String?
+  workplaceAddress    String?
+  /// "HH:mm", 08:00~21:00
+  dayBeforeNotifyTime String   @default("20:00")
+  hasCenterAdmin      Boolean  @default(false)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+model Session {
+  id          String    @id @default(cuid())
+  /// 토큰의 SHA-256 (토큰은 32바이트 난수라 단일 해시로 충분)
+  tokenHash   String    @unique
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// 자동 로그인 여부. true면 30일 슬라이딩, false면 브라우저 세션 + 12시간 슬라이딩
+  persistent  Boolean   @default(false)
+  deviceLabel String
+  lastSeenAt  DateTime  @default(now())
+  expiresAt   DateTime
+  revokedAt   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([userId, revokedAt])
+}
+
+enum SmsPurpose {
+  SIGNUP
+  FIND_ID
+  RESET_PW
+  RESET_PIN
+  CHANGE_PHONE
+  WITHDRAW
+  ADMIN_2FA
+}
+
+model SmsVerification {
+  id         String     @id @default(cuid())
+  phone      String
+  purpose    SmsPurpose
+  codeHash   String
+  codeSalt   String
+  expiresAt  DateTime
+  attempts   Int        @default(0)
+  verifiedAt DateTime?
+  /// 인증 결과를 가입·재설정 등에 한 번 쓰면 기록 (재사용 금지)
+  consumedAt DateTime?
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  @@index([phone, createdAt])
+}
+
+enum TermsKind {
+  SERVICE
+  PRIVACY
+  THIRD_PARTY
+  NOTIFY
+  MARKETING
+}
+
+model TermsVersion {
+  id          String         @id @default(cuid())
+  kind        TermsKind
+  version     String
+  title       String
+  required    Boolean
+  body        String
+  effectiveAt DateTime
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  consents    TermsConsent[]
+
+  @@unique([kind, version])
+}
+
+model TermsConsent {
+  id             String       @id @default(cuid())
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  termsVersionId String
+  termsVersion   TermsVersion @relation(fields: [termsVersionId], references: [id])
+  agreed         Boolean
+  agreedAt       DateTime
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([userId, termsVersionId])
+}
+
+// ───────── 가입 때 필요한 최소 연결 정보 (화면·처리는 M2, M7에서 확장) ─────────
+
+/// 사람 단위 수강생. 미가입 수강생도 여기 (docs/02)
+model Student {
+  id               String        @id @default(cuid())
+  userId           String?       @unique
+  user             User?         @relation("StudentUser", fields: [userId], references: [id])
+  name             String
+  phone            String
+  currentTrainerId String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  linkRequests     LinkRequest[]
+
+  @@index([phone])
+  @@index([currentTrainerId])
+}
+
+enum LinkRequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+model LinkRequest {
+  id          String            @id @default(cuid())
+  fromUserId  String
+  fromUser    User              @relation("LinkFrom", fields: [fromUserId], references: [id])
+  toUserId    String
+  toUser      User              @relation("LinkTo", fields: [toUserId], references: [id])
+  studentId   String?
+  student     Student?          @relation(fields: [studentId], references: [id])
+  status      LinkRequestStatus @default(PENDING)
+  respondedAt DateTime?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@index([toUserId, status])
+}
+
+enum CenterStatus {
+  ACTIVE
+  DISSOLVING
+  DISSOLVED
+}
+
+model Center {
+  id          String             @id @default(cuid())
+  name        String
+  address     String
+  phone       String
+  bizNo       String?
+  /// 사업자등록번호 입력 시 "인증 센터"
+  verified    Boolean            @default(false)
+  status      CenterStatus       @default(ACTIVE)
+  dissolveAt  DateTime?
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  admins      CenterAdmin[]
+  memberships CenterMembership[]
+
+  @@index([name])
+}
+
+model CenterAdmin {
+  id        String   @id @default(cuid())
+  centerId  String
+  center    Center   @relation(fields: [centerId], references: [id])
+  userId    String
+  user      User     @relation("CenterAdminUser", fields: [userId], references: [id])
+  invitedBy String?
+  addedAt   DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([centerId, userId])
+}
+
+enum MembershipStatus {
+  PENDING
+  ACTIVE
+  LEFT
+}
+
+model CenterMembership {
+  id        String           @id @default(cuid())
+  centerId  String
+  center    Center           @relation(fields: [centerId], references: [id])
+  trainerId String
+  trainer   User             @relation(fields: [trainerId], references: [id])
+  status    MembershipStatus @default(PENDING)
+  consentAt DateTime?
+  joinedAt  DateTime?
+  leftAt    DateTime?
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  @@index([trainerId, status])
+  @@index([centerId, status])
+}

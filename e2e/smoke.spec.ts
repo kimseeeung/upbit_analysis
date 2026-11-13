@@ -18,7 +18,9 @@ for (const path of ["/t", "/s/requests", "/c"]) {
   }) => {
     await page.goto(path);
     await expect(page).toHaveURL(/\/login\?next=/);
-    await expect(page.getByRole("heading", { name: "로그인" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "로그인", exact: true }),
+    ).toBeVisible();
   });
 }
 

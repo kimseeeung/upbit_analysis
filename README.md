@@ -11,6 +11,7 @@
 cp .env.example .env   # DATABASE_URL 등 채우기
 npm install            # prisma generate 자동 실행
 npm run db:migrate     # 로컬 DB에 마이그레이션 적용
+npm run db:seed        # 약관 초안 등록
 npm run dev
 ```
 
@@ -35,3 +36,16 @@ npm run dev
 | `src/proxy.ts`           | 로그인 쿠키 없으면 로그인 화면으로 (1차 관문)          |
 | `src/lib/env.ts`         | 환경 변수 읽기. 비밀값은 여기서만                      |
 | `prisma/schema.prisma`   | DB 스키마. 마이그레이션은 이전 버전과 호환되게         |
+
+## 구조 (M1)
+
+| 경로                            | 내용                                               |
+| ------------------------------- | -------------------------------------------------- |
+| `src/lib/auth/hash.ts`          | PBKDF2-SHA256 60만 회 해시 (비밀번호·PIN·인증번호) |
+| `src/lib/auth/policy.ts`        | 아이디·비밀번호·PIN 정책                           |
+| `src/lib/auth/lockout.ts`       | 연속 실패 잠금 (로그인 10분, PIN 재설정까지)       |
+| `src/lib/auth/session-rules.ts` | 세션 30일 슬라이딩, 토큰                           |
+| `src/lib/auth/sms-rules.ts`     | 인증번호 3분·30초·하루 5회·5회 오류                |
+| `src/server/auth/*`             | 가입·로그인·세션·계정·약관 서비스 (DB)             |
+| `src/server/sms/sender.ts`      | SMS 어댑터 (개발용 콘솔)                           |
+| `src/app/api/**`                | Route Handler. 권한은 매 요청 서버에서 검사        |
