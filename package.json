@@ -18,7 +18,8 @@
     "db:deploy": "prisma migrate deploy",
     "postinstall": "prisma generate",
     "test:db": "vitest run --config vitest.db.config.mts",
-    "db:seed": "prisma db seed"
+    "db:seed": "prisma db seed",
+    "db:demo": "tsx prisma/demo.ts"
   },
   "dependencies": {
     "@fullcalendar/core": "^6.1.22",

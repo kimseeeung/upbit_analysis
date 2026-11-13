@@ -12,6 +12,7 @@ cp .env.example .env   # DATABASE_URL 등 채우기
 npm install            # prisma generate 자동 실행
 npm run db:migrate     # 로컬 DB에 마이그레이션 적용
 npm run db:seed        # 약관 초안 등록
+npm run db:demo        # (선택) 체험 계정 trainer1 / student1, 비밀번호 test1234!
 npm run dev
 ```
 
