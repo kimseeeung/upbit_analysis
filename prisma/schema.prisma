@@ -1,0 +1,39 @@
+// PT 관리앱 Prisma 스키마
+// - 모든 시각은 UTC로 저장하고 화면에서 Asia/Seoul로 변환한다.
+// - 롤백 기능 때문에 마이그레이션은 한 버전 이전 코드와 호환되게 작성한다
+//   (컬럼 삭제는 두 번에 나눠 배포).
+// - 엔티티는 docs/02_데이터모델.md를 기준으로 마일스톤마다 추가한다.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum AuditActorType {
+  USER
+  OPERATOR
+  SYSTEM
+}
+
+/// 예약·승인·차감·이용권·권한 변경 기록 (docs/02 공통)
+model AuditLog {
+  id        String         @id @default(cuid())
+  actorType AuditActorType
+  actorId   String?
+  entity    String
+  entityId  String
+  action    String
+  before    Json?
+  after     Json?
+  at        DateTime       @default(now())
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@index([entity, entityId])
+  @@index([actorType, actorId])
+  @@index([at])
+}
