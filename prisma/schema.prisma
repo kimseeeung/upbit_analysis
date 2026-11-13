@@ -94,11 +94,14 @@ model User {
   trainerProfile   TrainerProfile?
   sessions         Session[]
   termsConsents    TermsConsent[]
-  student          Student?           @relation("StudentUser")
-  centerAdmins     CenterAdmin[]      @relation("CenterAdminUser")
+  student          Student?             @relation("StudentUser")
+  centerAdmins     CenterAdmin[]        @relation("CenterAdminUser")
   memberships      CenterMembership[]
-  linkRequestsFrom LinkRequest[]      @relation("LinkFrom")
-  linkRequestsTo   LinkRequest[]      @relation("LinkTo")
+  linkRequestsFrom LinkRequest[]        @relation("LinkFrom")
+  trainerLinks     TrainerStudentLink[]
+  passesSold       Pass[]               @relation("PassSoldBy")
+  ruleSets         RuleSet[]
+  linkRequestsTo   LinkRequest[]        @relation("LinkTo")
 
   @@index([role, name])
 }
@@ -217,15 +220,19 @@ model TermsConsent {
 
 /// 사람 단위 수강생. 미가입 수강생도 여기 (docs/02)
 model Student {
-  id               String        @id @default(cuid())
-  userId           String?       @unique
-  user             User?         @relation("StudentUser", fields: [userId], references: [id])
+  id               String               @id @default(cuid())
+  userId           String?              @unique
+  user             User?                @relation("StudentUser", fields: [userId], references: [id])
   name             String
   phone            String
   currentTrainerId String?
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
   linkRequests     LinkRequest[]
+  trainerLinks     TrainerStudentLink[]
+  passes           Pass[]
+  ruleConsents     RuleConsent[]
+  bookings         Booking[]
 
   @@index([phone])
   @@index([currentTrainerId])
@@ -235,6 +242,8 @@ enum LinkRequestStatus {
   PENDING
   ACCEPTED
   REJECTED
+  /// 보낸 쪽 취소, 또는 가입 시 기존 기록과 합쳐져 필요 없어짐
+  CANCELED
 }
 
 model LinkRequest {
@@ -312,4 +321,218 @@ model CenterMembership {
 
   @@index([trainerId, status])
   @@index([centerId, status])
+}
+
+// ───────────────────────── M2: 수강생·이용권·규칙 ─────────────────────────
+
+enum TrainerStudentLinkStatus {
+  ACTIVE
+  ENDED
+  /// 수강 종료: 목록에서 숨기고 기록은 보관
+  HIDDEN
+}
+
+/// 담당 이력. 현재 담당은 endedAt null 하나
+model TrainerStudentLink {
+  id              String                   @id @default(cuid())
+  trainerId       String
+  trainer         User                     @relation(fields: [trainerId], references: [id])
+  studentId       String
+  student         Student                  @relation(fields: [studentId], references: [id])
+  startedAt       DateTime                 @default(now())
+  endedAt         DateTime?
+  endReason       String?
+  memo            String                   @default("")
+  memoTransferred Boolean                  @default(false)
+  notifyDayBefore Boolean                  @default(true)
+  notify2h        Boolean                  @default(true)
+  status          TrainerStudentLinkStatus @default(ACTIVE)
+  createdAt       DateTime                 @default(now())
+  updatedAt       DateTime                 @updatedAt
+
+  @@index([trainerId, status])
+  @@index([studentId, endedAt])
+}
+
+enum RuleSetKind {
+  /// 트레이너 기본 규칙
+  TRAINER_DEFAULT
+  /// 센터 기본 규칙 (M7)
+  CENTER_DEFAULT
+  /// 수강생별로 고친 이용권 규칙
+  PASS
+}
+
+/// 수강 규칙. 바뀌면 새 버전(새 행)을 만든다
+model RuleSet {
+  id                         String      @id @default(cuid())
+  kind                       RuleSetKind
+  ownerTrainerId             String?
+  ownerTrainer               User?       @relation(fields: [ownerTrainerId], references: [id])
+  ownerCenterId              String?
+  /// 같은 소유자(트레이너 기본 / 센터 기본 / 이용권) 안에서 1부터 증가
+  version                    Int
+  lateCancelHours            Int         @default(24)
+  lateCancelDeduct           Boolean     @default(true)
+  noShowMinutes              Int         @default(15)
+  noShowDeduct               Boolean     @default(true)
+  lateGraceMinutes           Int         @default(15)
+  unapprovedAutoCompleteDays Int         @default(7)
+  changeDeadlineHours        Int         @default(24)
+  pauseMaxDays               Int         @default(30)
+  pauseMaxCount              Int         @default(2)
+  createdAt                  DateTime    @default(now())
+  updatedAt                  DateTime    @updatedAt
+
+  passesProposed Pass[]        @relation("PassRuleSet")
+  passesAgreed   Pass[]        @relation("PassAgreedRuleSet")
+  consents       RuleConsent[]
+
+  @@index([ownerTrainerId, kind, version])
+}
+
+enum PassStatus {
+  ACTIVE
+  PAUSED
+  EXHAUSTED
+  EXPIRED
+  REFUNDED
+  /// 트레이너 변경 시 넘기기에 동의하지 않아 사용 중지
+  SUSPENDED
+}
+
+model Pass {
+  id                 String     @id @default(cuid())
+  studentId          String
+  student            Student    @relation(fields: [studentId], references: [id])
+  soldByTrainerId    String
+  soldByTrainer      User       @relation("PassSoldBy", fields: [soldByTrainerId], references: [id])
+  name               String
+  count              Int
+  bonusCount         Int        @default(0)
+  /// 한국 날짜 00:00 KST의 UTC 시점
+  startDate          DateTime
+  /// 한국 날짜 00:00 KST의 UTC 시점 (이 날까지 사용 가능)
+  endDate            DateTime
+  sessionMinutes     Int        @default(50)
+  price              Int?
+  paidAt             DateTime?
+  payMethod          String?
+  memo               String?
+  /// 최근에 제안한 규칙 (동의 요청 중일 수 있음)
+  ruleSetVersionId   String
+  ruleSet            RuleSet    @relation("PassRuleSet", fields: [ruleSetVersionId], references: [id])
+  /// 수강생이 동의한 규칙. 새 규칙에 동의하기 전까지는 이 규칙을 적용한다
+  agreedRuleSetId    String?
+  agreedRuleSet      RuleSet?   @relation("PassAgreedRuleSet", fields: [agreedRuleSetId], references: [id])
+  agreedAt           DateTime?
+  status             PassStatus @default(ACTIVE)
+  refundedAt         DateTime?
+  /// 캐시. 정답은 Booking에서 계산 (getAvailableCount)
+  usedCount          Int        @default(0)
+  deductedNoShow     Int        @default(0)
+  deductedLateCancel Int        @default(0)
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
+
+  changeLogs PassChangeLog[]
+  consents   RuleConsent[]
+  bookings   Booking[]
+
+  @@index([studentId, status])
+}
+
+model PassChangeLog {
+  id        String   @id @default(cuid())
+  passId    String
+  pass      Pass     @relation(fields: [passId], references: [id])
+  field     String
+  before    String?
+  after     String?
+  changedBy String
+  changedAt DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([passId, changedAt])
+}
+
+enum RuleConsentStatus {
+  PENDING
+  AGREED
+  INQUIRED
+  /// 더 새 규칙으로 다시 요청해 쓸모없어짐
+  SUPERSEDED
+}
+
+model RuleConsent {
+  id               String            @id @default(cuid())
+  passId           String
+  pass             Pass              @relation(fields: [passId], references: [id])
+  ruleSetVersionId String
+  ruleSet          RuleSet           @relation(fields: [ruleSetVersionId], references: [id])
+  studentId        String
+  student          Student           @relation(fields: [studentId], references: [id])
+  status           RuleConsentStatus @default(PENDING)
+  requestedAt      DateTime          @default(now())
+  agreedAt         DateTime?
+  inquiredAt       DateTime?
+  inquiryText      String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  @@index([studentId, status])
+  @@index([passId, status])
+}
+
+// ───────── 예약 (잔여·예약 가능 횟수 계산에 필요. 화면·상태 머신은 M3) ─────────
+
+enum BookingStatus {
+  /// 신청 대기
+  REQUESTED
+  /// 확정 대기
+  PENDING_CONFIRM
+  CONFIRMED
+  /// 잔여 부족
+  INSUFFICIENT
+  /// 완료 승인 대기
+  PENDING_APPROVAL
+  COMPLETED
+  NO_SHOW
+  CANCELED
+  REJECTED
+  EXPIRED
+}
+
+enum BookingSource {
+  TRAINER
+  STUDENT
+}
+
+enum DeductReason {
+  COMPLETED
+  NO_SHOW
+  LATE_CANCEL
+}
+
+model Booking {
+  id           String        @id @default(cuid())
+  studentId    String
+  student      Student       @relation(fields: [studentId], references: [id])
+  /// 진행 트레이너 (기록용으로 고정)
+  trainerId    String
+  /// 차감된 이용권 (차감될 때 정해짐)
+  passId       String?
+  pass         Pass?         @relation(fields: [passId], references: [id])
+  startAt      DateTime
+  endAt        DateTime
+  source       BookingSource
+  status       BookingStatus
+  deducted     Boolean       @default(false)
+  deductReason DeductReason?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@index([studentId, status])
+  @@index([trainerId, startAt])
 }

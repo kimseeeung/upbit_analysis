@@ -93,5 +93,5 @@ export async function signupViaUi(page: Page, o: SignupOpts) {
   await expect(page.getByRole("button", { name: "가입하기" })).toBeDisabled();
   await page.getByLabel("전체 동의").check();
   await page.getByRole("button", { name: "가입하기" }).click();
-  await expect(page).toHaveURL(/\/onboarding\/notifications/);
+  await expect(page).toHaveURL(/\/onboarding\/(notifications|merge)/);
 }

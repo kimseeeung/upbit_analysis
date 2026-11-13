@@ -1,38 +1,58 @@
+import Link from "next/link";
 import { Suspense, type ReactNode } from "react";
 import type { Area } from "@/lib/auth/access";
 import { requireArea } from "@/lib/auth/guard";
 import { getCurrentSession } from "@/server/auth/current";
 import { AppHeader } from "./AppHeader";
 
+type RoleArea = "trainer" | "student" | "center";
+
 const AREA_META: Record<
-  "trainer" | "student" | "center",
-  { title: string; me: string }
+  RoleArea,
+  { title: string; me: string; tabs: { href: string; label: string }[] }
 > = {
-  trainer: { title: "PT 관리 · 트레이너", me: "/t/me" },
-  student: { title: "PT 관리", me: "/s/me" },
-  center: { title: "PT 관리 · 센터", me: "/c/me" },
+  trainer: {
+    title: "PT 관리 · 트레이너",
+    me: "/t/me",
+    tabs: [
+      { href: "/t", label: "캘린더" },
+      { href: "/t/students", label: "수강생" },
+      { href: "/t/requests", label: "요청함" },
+      { href: "/t/settings", label: "설정" },
+    ],
+  },
+  student: {
+    title: "PT 관리",
+    me: "/s/me",
+    tabs: [
+      { href: "/s", label: "홈" },
+      { href: "/s/requests", label: "요청함" },
+      { href: "/s/passes", label: "이용권" },
+      { href: "/s/me", label: "내 정보" },
+    ],
+  },
+  center: {
+    title: "PT 관리 · 센터",
+    me: "/c/me",
+    tabs: [{ href: "/c", label: "센터 캘린더" }],
+  },
 };
 
 async function Gated({
   area,
   children,
 }: {
-  area: "trainer" | "student" | "center";
+  area: RoleArea;
   children: ReactNode;
 }) {
   const principal = await requireArea(area as Area);
   const session = await getCurrentSession();
   const meta = AREA_META[area];
-  const hasCenter =
-    principal.kind === "user" &&
-    principal.role === "TRAINER" &&
-    principal.hasCenterAdmin;
+  const isTrainer = principal.kind === "user" && principal.role === "TRAINER";
   const switchTo =
-    hasCenter && area === "trainer"
+    isTrainer && area === "trainer" && principal.hasCenterAdmin
       ? { href: "/c", label: "센터 화면" }
-      : principal.kind === "user" &&
-          principal.role === "TRAINER" &&
-          area === "center"
+      : isTrainer && area === "center"
         ? { href: "/t", label: "트레이너 화면" }
         : undefined;
   return (
@@ -43,6 +63,20 @@ async function Gated({
         meHref={meta.me}
         switchTo={switchTo}
       />
+      <nav
+        aria-label="주 메뉴"
+        className="flex gap-1 overflow-x-auto border-b border-zinc-200 px-2 text-sm dark:border-zinc-800"
+      >
+        {meta.tabs.map((t) => (
+          <Link
+            key={t.href}
+            href={t.href}
+            className="px-3 py-2 whitespace-nowrap text-zinc-600 dark:text-zinc-300"
+          >
+            {t.label}
+          </Link>
+        ))}
+      </nav>
       <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-5 px-4 py-6">
         {children}
       </main>
@@ -55,7 +89,7 @@ export function RoleLayout({
   area,
   children,
 }: {
-  area: "trainer" | "student" | "center";
+  area: RoleArea;
   children: ReactNode;
 }) {
   return (

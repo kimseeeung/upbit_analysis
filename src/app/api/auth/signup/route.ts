@@ -3,6 +3,7 @@ import { deviceLabelFromUserAgent } from "@/lib/auth/session-rules";
 import { getDb } from "@/lib/db";
 import { createSession } from "@/server/auth/session-service";
 import { signup, type SignupInput } from "@/server/auth/signup-service";
+import { findMergeCandidates } from "@/server/students/student-service";
 import { readJson, route, setSessionCookies } from "@/server/http";
 import { asRole } from "@/server/validate";
 
@@ -17,12 +18,17 @@ export const POST = route(async (request) => {
     persistent: false,
     deviceLabel: deviceLabelFromUserAgent(request.headers.get("user-agent")),
   });
+  // 트레이너가 먼저 임시 등록해 둔 기록이 있으면 합칠지 먼저 묻는다 (1.4)
+  const candidates =
+    role === "STUDENT" ? await findMergeCandidates(db, userId) : [];
   const res = NextResponse.json({
     ok: true,
     next:
-      role === "TRAINER"
-        ? "/onboarding/notifications?then=availability"
-        : "/onboarding/notifications",
+      candidates.length > 0
+        ? "/onboarding/merge"
+        : role === "TRAINER"
+          ? "/onboarding/notifications?then=availability"
+          : "/onboarding/notifications",
   });
   setSessionCookies(res, session.token, false);
   return res;
