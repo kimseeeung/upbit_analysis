@@ -5,7 +5,9 @@ import { useCallback, useEffect, useState } from "react";
 import { validatePassword, validatePin } from "@/lib/auth/policy";
 import { api } from "./api";
 import { PhoneVerification } from "./PhoneVerification";
+import { LastBackup } from "./OfflineManager";
 import { PushSetup } from "./PushSetup";
+import { clearOffline } from "@/lib/offline/store";
 import { WithdrawCard } from "./WithdrawCard";
 import {
   Button,
@@ -308,6 +310,7 @@ function DevicesCard() {
   async function logoutAll() {
     const r = await api("/api/me/sessions/logout-all", { body: {} });
     if (r.ok) {
+      await clearOffline();
       router.replace("/login");
       router.refresh();
     }
@@ -395,6 +398,9 @@ export function AccountPanel() {
       {profile.marketing && <MarketingCard agreed={profile.marketing.agreed} />}
       <Card title="알림 설정">
         <PushSetup />
+      </Card>
+      <Card title="휴대폰 백업">
+        <LastBackup />
       </Card>
       <DevicesCard />
       <WithdrawCard />

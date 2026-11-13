@@ -1,8 +1,10 @@
 import Link from "next/link";
+import { DisplayToggle } from "@/components/DisplayToggle";
 
 export default function Home() {
   return (
     <main className="flex flex-1 flex-col items-center justify-center gap-6 px-4 py-16 text-center">
+      <DisplayToggle />
       <h1 className="text-2xl font-semibold">PT 관리</h1>
       <p className="text-sm text-zinc-500">
         트레이너와 수강생이 함께 쓰는 PT 일정·이용권 관리

@@ -183,7 +183,7 @@ export async function setupPair(trainer: Page, student: Page) {
     })),
     exceptions: [],
   });
-  return { studentName, studentId };
+  return { studentName, studentId, trainerLoginId: `tr${t.id}` };
 }
 
 /** E2E DB에 직접 쓰기 (지난 수업 같은 시간 의존 상황을 만들 때만) */

@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { api } from "./api";
 import { PhoneVerification } from "./PhoneVerification";
@@ -15,6 +16,7 @@ interface Preview {
 
 /** 회원 탈퇴 (2.4) */
 export function WithdrawCard() {
+  const router = useRouter();
   const [preview, setPreview] = useState<Preview | null>(null);
   const [password, setPassword] = useState("");
   const [useSms, setUseSms] = useState(false);
@@ -102,12 +104,9 @@ export function WithdrawCard() {
         </div>
       )}
       {done && (
-        <Modal
-          title="탈퇴 신청 완료"
-          onClose={() => (window.location.href = "/")}
-        >
+        <Modal title="탈퇴 신청 완료" onClose={() => router.replace("/")}>
           <p className="text-sm">{done}</p>
-          <Button onClick={() => (window.location.href = "/")}>확인</Button>
+          <Button onClick={() => router.replace("/")}>확인</Button>
         </Modal>
       )}
     </Card>

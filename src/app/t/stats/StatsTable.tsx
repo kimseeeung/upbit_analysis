@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { api } from "@/components/api";
+import { useDisplayMode } from "@/lib/display";
 import { Card, TextField } from "@/components/ui";
 import {
   sortRows,
@@ -43,6 +44,7 @@ const COLUMNS: { key: SortKey; label: string }[] = [
 
 /** 수강 현황 (6장): 기간 표, 검색·필터·정렬, 요약 카드, 엑셀 */
 export function StatsTable() {
+  const mode = useDisplayMode();
   const [range, setRange] = useState(monthRange(0));
   const [data, setData] = useState<{
     rows: StatRow[];
@@ -155,86 +157,182 @@ export function StatsTable() {
           엑셀 다운로드
         </a>
       </div>
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[640px] text-sm">
-          <thead>
-            <tr className="border-b border-zinc-200 text-left dark:border-zinc-800">
-              {COLUMNS.map((c) => (
-                <th key={c.key} className="px-2 py-2 font-medium">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setSort((x) => ({
-                        key: c.key,
-                        dir:
-                          x.key === c.key && x.dir === "asc" ? "desc" : "asc",
-                      }))
-                    }
+      {mode === "MOBILE" ? (
+        <div className="flex flex-col gap-2">
+          <label className="flex items-center gap-2 text-sm">
+            정렬
+            <select
+              aria-label="정렬"
+              value={`${sort.key}:${sort.dir}`}
+              onChange={(e) => {
+                const [key, dir] = e.target.value.split(":");
+                setSort({ key: key as SortKey, dir: dir as "asc" | "desc" });
+              }}
+              className="rounded-lg border border-zinc-300 bg-white px-2 py-1.5 dark:border-zinc-700 dark:bg-zinc-900"
+            >
+              {COLUMNS.flatMap((c) => [
+                <option key={`${c.key}:asc`} value={`${c.key}:asc`}>
+                  {c.label} ▲
+                </option>,
+                <option key={`${c.key}:desc`} value={`${c.key}:desc`}>
+                  {c.label} ▼
+                </option>,
+              ])}
+            </select>
+          </label>
+          {rows.map((r) => (
+            <div
+              key={r.studentId}
+              data-stat-row
+              className="rounded-xl border border-zinc-200 p-3 text-sm dark:border-zinc-800"
+            >
+              <p data-col className="font-semibold">
+                <Link
+                  className="underline"
+                  href={`/t/stats/${r.studentId}?from=${range.from}&to=${range.to}`}
+                >
+                  {r.name}
+                </Link>
+                {!r.isCurrent && (
+                  <span className="ml-1 text-xs font-normal text-zinc-500">
+                    이전 담당
+                  </span>
+                )}
+              </p>
+              <dl className="mt-2 grid grid-cols-4 gap-x-2 gap-y-1">
+                {(
+                  [
+                    ["전체 PT", r.totalPt ?? "-"],
+                    ["수강", r.completed],
+                    ["노쇼", r.noShow],
+                    [
+                      "취소",
+                      r.lateCanceled > 0
+                        ? `${r.canceled} (당일 ${r.lateCanceled})`
+                        : r.canceled,
+                    ],
+                    ["승인 대기", r.pendingApproval],
+                    ["잔여", r.remaining ?? "-"],
+                    ["만료일", r.expiry ?? "-"],
+                  ] as const
+                ).map(([label, v], i) => (
+                  <div key={label} className={i === 6 ? "col-span-2" : ""}>
+                    <dt className="text-xs text-zinc-500">{label}</dt>
+                    <dd
+                      data-col
+                      className={
+                        i === 6 && r.expirySoon
+                          ? "font-semibold text-red-600"
+                          : ""
+                      }
+                    >
+                      {v}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+          ))}
+          {rows.length === 0 && (
+            <p className="py-6 text-center text-sm text-zinc-500">
+              조회 기간에 해당하는 수강생이 없습니다.
+            </p>
+          )}
+        </div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[640px] text-sm">
+            <thead>
+              <tr className="border-b border-zinc-200 text-left dark:border-zinc-800">
+                {COLUMNS.map((c) => (
+                  <th key={c.key} className="px-2 py-2 font-medium">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setSort((x) => ({
+                          key: c.key,
+                          dir:
+                            x.key === c.key && x.dir === "asc" ? "desc" : "asc",
+                        }))
+                      }
+                    >
+                      {c.label}
+                      {sort.key === c.key
+                        ? sort.dir === "asc"
+                          ? " ▲"
+                          : " ▼"
+                        : ""}
+                    </button>
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((r) => (
+                <tr
+                  key={r.studentId}
+                  data-stat-row
+                  className="border-b border-zinc-100 dark:border-zinc-800"
+                >
+                  <td data-col className="px-2 py-2">
+                    <Link
+                      className="underline"
+                      href={`/t/stats/${r.studentId}?from=${range.from}&to=${range.to}`}
+                    >
+                      {r.name}
+                    </Link>
+                    {!r.isCurrent && (
+                      <span className="ml-1 text-xs text-zinc-500">
+                        이전 담당
+                      </span>
+                    )}
+                  </td>
+                  <td data-col className="px-2 py-2">
+                    {r.totalPt ?? "-"}
+                  </td>
+                  <td data-col className="px-2 py-2">
+                    {r.completed}
+                  </td>
+                  <td data-col className="px-2 py-2">
+                    {r.noShow}
+                  </td>
+                  <td data-col className="px-2 py-2">
+                    {r.canceled}
+                    {r.lateCanceled > 0 && (
+                      <span className="text-xs text-zinc-500">
+                        {" "}
+                        (당일 {r.lateCanceled})
+                      </span>
+                    )}
+                  </td>
+                  <td data-col className="px-2 py-2">
+                    {r.pendingApproval}
+                  </td>
+                  <td data-col className="px-2 py-2">
+                    {r.remaining ?? "-"}
+                  </td>
+                  <td
+                    data-col
+                    className={`px-2 py-2 ${r.expirySoon ? "font-semibold text-red-600" : ""}`}
                   >
-                    {c.label}
-                    {sort.key === c.key
-                      ? sort.dir === "asc"
-                        ? " ▲"
-                        : " ▼"
-                      : ""}
-                  </button>
-                </th>
+                    {r.expiry ?? "-"}
+                  </td>
+                </tr>
               ))}
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((r) => (
-              <tr
-                key={r.studentId}
-                className="border-b border-zinc-100 dark:border-zinc-800"
-              >
-                <td className="px-2 py-2">
-                  <Link
-                    className="underline"
-                    href={`/t/stats/${r.studentId}?from=${range.from}&to=${range.to}`}
+              {rows.length === 0 && (
+                <tr>
+                  <td
+                    colSpan={COLUMNS.length}
+                    className="px-2 py-6 text-center text-zinc-500"
                   >
-                    {r.name}
-                  </Link>
-                  {!r.isCurrent && (
-                    <span className="ml-1 text-xs text-zinc-500">
-                      이전 담당
-                    </span>
-                  )}
-                </td>
-                <td className="px-2 py-2">{r.totalPt ?? "-"}</td>
-                <td className="px-2 py-2">{r.completed}</td>
-                <td className="px-2 py-2">{r.noShow}</td>
-                <td className="px-2 py-2">
-                  {r.canceled}
-                  {r.lateCanceled > 0 && (
-                    <span className="text-xs text-zinc-500">
-                      {" "}
-                      (당일 {r.lateCanceled})
-                    </span>
-                  )}
-                </td>
-                <td className="px-2 py-2">{r.pendingApproval}</td>
-                <td className="px-2 py-2">{r.remaining ?? "-"}</td>
-                <td
-                  className={`px-2 py-2 ${r.expirySoon ? "font-semibold text-red-600" : ""}`}
-                >
-                  {r.expiry ?? "-"}
-                </td>
-              </tr>
-            ))}
-            {rows.length === 0 && (
-              <tr>
-                <td
-                  colSpan={COLUMNS.length}
-                  className="px-2 py-6 text-center text-zinc-500"
-                >
-                  조회 기간에 해당하는 수강생이 없습니다.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+                    조회 기간에 해당하는 수강생이 없습니다.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
       <p className="text-xs text-zinc-500">
         인계된 수강생의 수강·노쇼·취소는 수업을 진행한 트레이너에게, 전체·잔여는
         조회 종료일 기준 담당 트레이너에게 셉니다.

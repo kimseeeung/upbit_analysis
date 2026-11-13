@@ -11,12 +11,16 @@ import koLocale from "@fullcalendar/core/locales/ko";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import luxonPlugin from "@fullcalendar/luxon3";
+import { useDisplayMode } from "@/lib/display";
+import listPlugin from "@fullcalendar/list";
 import FullCalendar from "@fullcalendar/react";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { api } from "@/components/api";
+import { readSnapshot } from "@/lib/offline/client";
+import { listQueue, type QueueRow } from "@/lib/offline/store";
 import { STATUS_STYLE, fmtRange, kstDateKey } from "@/components/fmt";
 import { Notice, TextField } from "@/components/ui";
 import { NOTICE_ICON } from "./BookingNoticeControls";
@@ -42,6 +46,7 @@ interface CalendarData {
 const HIDDEN_BY_DEFAULT = ["REJECTED", "EXPIRED"];
 
 export function TrainerCalendar() {
+  const displayMode = useDisplayMode();
   const initialDate = useSearchParams().get("date") ?? undefined;
   const [data, setData] = useState<CalendarData | null>(null);
   const [range, setRange] = useState<{ from: string; to: string } | null>(null);
@@ -53,15 +58,52 @@ export function TrainerCalendar() {
     text: string;
   } | null>(null);
   const calRef = useRef<FullCalendar>(null);
+  const [queued, setQueued] = useState<QueueRow[]>([]);
+  useEffect(() => {
+    const on = () => void listQueue().then(setQueued);
+    on();
+    window.addEventListener("pt:queue", on);
+    return () => window.removeEventListener("pt:queue", on);
+  }, []);
 
   const load = useCallback(async (r: { from: string; to: string }) => {
     const res = await api<CalendarData>(
       `/api/t/calendar?from=${r.from}&to=${r.to}`,
     );
-    if (res.ok) setData(res.data);
-    else setMsg({ tone: "error", text: res.message });
+    if (res.ok) {
+      setData(res.data);
+      return;
+    }
+    if (res.code === "NETWORK") {
+      // 오프라인: 휴대폰 백업으로 표시 (11.2)
+      const snap = await readSnapshot<{ calendar: CalendarData }>();
+      if (snap) {
+        const start = new Date(`${r.from}T00:00:00+09:00`).getTime();
+        const end = new Date(`${r.to}T00:00:00+09:00`).getTime() + 86400_000;
+        setData({
+          ...snap.calendar,
+          bookings: snap.calendar.bookings.filter(
+            (b) =>
+              new Date(b.startAt).getTime() < end &&
+              new Date(b.endAt).getTime() > start,
+          ),
+          working: snap.calendar.working.filter(
+            (w) =>
+              new Date(w.start).getTime() < end &&
+              new Date(w.end).getTime() > start,
+          ),
+        });
+        return;
+      }
+    }
+    setMsg({ tone: "error", text: res.message });
   }, []);
   const reload = useCallback(() => range && load(range), [range, load]);
+  useEffect(() => {
+    const on = () => void reload();
+    window.addEventListener("pt:backup", on);
+    return () => window.removeEventListener("pt:backup", on);
+  }, [reload]);
 
   const onDatesSet = useCallback(
     (arg: DatesSetArg) => {
@@ -134,6 +176,35 @@ export function TrainerCalendar() {
         }
       }
     }
+    // 휴대폰에 임시 저장한 예약 (동기화 대기)
+    for (const q of queued) {
+      if (q.op.kind !== "CREATE_BOOKING") continue;
+      const p = q.op.payload as {
+        startAt: string;
+        durationMinutes?: number;
+        studentName?: string;
+      };
+      list.push({
+        id: `queued-${q.id}`,
+        title: `${p.studentName ?? ""} · 동기화 대기`,
+        start: p.startAt,
+        end: new Date(
+          new Date(p.startAt).getTime() + (p.durationMinutes ?? 50) * 60_000,
+        ).toISOString(),
+        backgroundColor: "#a1a1aa",
+        borderColor: "#71717a",
+        editable: false,
+        classNames: ["border-dashed"],
+      });
+    }
+    const queuedIds = new Set(
+      queued
+        .map((q) => (q.op.payload as { bookingId?: string }).bookingId)
+        .filter(Boolean),
+    );
+    for (const e of list)
+      if (typeof e.id === "string" && queuedIds.has(e.id))
+        e.title = `${e.title} · 동기화 대기`;
     // 일시정지 기간은 빗금 (4.2)
     for (const pz of data.pauses ?? []) {
       const end = new Date(`${pz.endDate}T00:00:00+09:00`);
@@ -148,7 +219,7 @@ export function TrainerCalendar() {
       });
     }
     return list;
-  }, [data, nameFilter]);
+  }, [data, nameFilter, queued]);
 
   async function onDrop(arg: EventDropArg) {
     const b = data?.bookings.find((x) => x.id === arg.event.id);
@@ -234,23 +305,36 @@ export function TrainerCalendar() {
       {msg && <Notice tone={msg.tone}>{msg.text}</Notice>}
       <div className="text-sm [&_.fc-toolbar-title]:text-base">
         <FullCalendar
+          key={displayMode}
           ref={calRef}
           plugins={[
             dayGridPlugin,
             timeGridPlugin,
             interactionPlugin,
             luxonPlugin,
+            listPlugin,
           ]}
           timeZone="Asia/Seoul"
           locale={koLocale}
-          initialView="timeGridWeek"
+          initialView={
+            displayMode === "MOBILE" ? "timeGridDay" : "timeGridWeek"
+          }
           initialDate={initialDate}
           headerToolbar={{
             left: "prev,next today",
             center: "title",
-            right: "dayGridMonth,timeGridWeek,timeGridDay",
+            right:
+              displayMode === "MOBILE"
+                ? "timeGridDay,listWeek,dayGridMonth"
+                : "dayGridMonth,timeGridWeek,timeGridDay",
           }}
-          buttonText={{ today: "오늘", month: "월", week: "주", day: "일" }}
+          buttonText={{
+            today: "오늘",
+            month: "월",
+            week: "주",
+            day: "일",
+            list: "목록",
+          }}
           height="auto"
           slotMinTime="00:00:00"
           scrollTime="07:00:00"

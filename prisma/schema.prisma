@@ -595,6 +595,8 @@ model Booking {
   disputeTrainerDecision DisputeDecision?
   disputeTrainerReason   String?
   disputeResolvedAt      DateTime?
+  /// 오프라인에서 만든 변경의 기기·시각 (11.3)
+  offlineOrigin          Json?
   notifyDayBeforeOff     Boolean          @default(false)
   notify2hOff            Boolean          @default(false)
   /// 하위 호환: 이전 버전 코드가 넣는 행도 들어가도록 기본값을 둔다
@@ -957,4 +959,31 @@ model DeletionTombstone {
   updatedAt DateTime @updatedAt
 
   @@index([deletedAt])
+}
+
+// ───────────────────────── M9: 오프라인 동기화 ─────────────────────────
+
+/**
+ * 오프라인 변경과 서버 기록이 부딪힌 것 (11.3): 서버 기록을 유지하고 트레이너가 고른다
+ */
+model SyncConflict {
+  id          String    @id @default(cuid())
+  trainerId   String
+  /// 오프라인 작업 종류 (예: CREATE_BOOKING)
+  kind        String
+  entity      String
+  entityId    String?
+  localChange Json
+  serverState Json?
+  reason      String
+  deviceLabel String
+  /// 휴대폰에서 변경을 만든 시각
+  localAt     DateTime
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  resolvedAt  DateTime?
+  /// KEEP_SERVER | APPLY_LOCAL
+  resolution  String?
+
+  @@index([trainerId, resolvedAt])
 }

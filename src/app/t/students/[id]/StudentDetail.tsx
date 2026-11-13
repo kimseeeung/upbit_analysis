@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { api } from "@/components/api";
+import { readSnapshot } from "@/lib/offline/client";
+import { enqueue } from "@/lib/offline/store";
 import { KakaoShareButton } from "@/components/KakaoShareButton";
 import { PassSummary, type PassView } from "@/components/PassCards";
 import { StudentNotify } from "./StudentNotify";
@@ -35,7 +37,20 @@ export function StudentDetail({ id }: { id: string }) {
     if (r.ok) {
       setD(r.data);
       setMemo(r.data.memo);
-    } else setMsg({ tone: "error", text: r.message });
+      return;
+    }
+    if (r.code === "NETWORK") {
+      const snap = await readSnapshot<{
+        details: (Detail & { studentId: string })[];
+      }>();
+      const found = snap?.details.find((x) => x.studentId === id);
+      if (found) {
+        setD(found);
+        setMemo(found.memo);
+        return;
+      }
+    }
+    setMsg({ tone: "error", text: r.message });
   }, [id]);
   useEffect(() => {
     // 처음 열 때 상세를 불러온다
@@ -45,6 +60,17 @@ export function StudentDetail({ id }: { id: string }) {
 
   async function patch(body: Record<string, unknown>, ok: string) {
     const r = await api(`/api/t/students/${id}`, { method: "PATCH", body });
+    if (!r.ok && r.code === "NETWORK" && typeof body.memo === "string") {
+      // 오프라인 메모: 휴대폰에 임시 저장 (11.2)
+      await enqueue(
+        { kind: "MEMO", payload: { studentId: id, memo: body.memo } },
+        "메모",
+      );
+      return setMsg({
+        tone: "success",
+        text: "오프라인이라 메모를 휴대폰에 임시 저장했습니다 (동기화 대기)",
+      });
+    }
     setMsg(
       r.ok ? { tone: "success", text: ok } : { tone: "error", text: r.message },
     );

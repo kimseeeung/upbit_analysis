@@ -1,9 +1,8 @@
-import Link from "next/link";
 import { Suspense, type ReactNode } from "react";
 import type { Area } from "@/lib/auth/access";
 import { requireArea } from "@/lib/auth/guard";
 import { getCurrentSession } from "@/server/auth/current";
-import { AppHeader } from "./AppHeader";
+import { AppShell } from "./AppShell";
 
 type RoleArea = "trainer" | "student" | "center";
 
@@ -65,31 +64,15 @@ async function Gated({
         ? { href: "/t", label: "트레이너 화면" }
         : undefined;
   return (
-    <>
-      <AppHeader
-        title={meta.title}
-        name={session?.userName ?? ""}
-        meHref={meta.me}
-        switchTo={switchTo}
-      />
-      <nav
-        aria-label="주 메뉴"
-        className="flex gap-1 overflow-x-auto border-b border-zinc-200 px-2 text-sm dark:border-zinc-800"
-      >
-        {meta.tabs.map((t) => (
-          <Link
-            key={t.href}
-            href={t.href}
-            className="px-3 py-2 whitespace-nowrap text-zinc-600 dark:text-zinc-300"
-          >
-            {t.label}
-          </Link>
-        ))}
-      </nav>
-      <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-5 px-4 py-6">
-        {children}
-      </main>
-    </>
+    <AppShell
+      title={meta.title}
+      name={session?.userName ?? ""}
+      meHref={meta.me}
+      switchTo={switchTo}
+      tabs={meta.tabs}
+    >
+      {children}
+    </AppShell>
   );
 }
 

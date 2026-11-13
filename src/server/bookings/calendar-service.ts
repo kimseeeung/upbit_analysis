@@ -10,7 +10,7 @@ import { getAvailability } from "./availability-settings";
 import { describeRules } from "@/lib/rules/rule-set";
 import { bookingPassContext, sessionMinutesFor } from "./core";
 
-function range(from: string, to: string) {
+function range(from: string, to: string, maxDays = 62) {
   let start: Date;
   let end: Date;
   try {
@@ -19,7 +19,10 @@ function range(from: string, to: string) {
   } catch {
     throw new AppError("INVALID", "기간을 확인해 주세요");
   }
-  if (end <= start || end.getTime() - start.getTime() > 62 * 24 * 3600_000) {
+  if (
+    end <= start ||
+    end.getTime() - start.getTime() > maxDays * 24 * 3600_000
+  ) {
     throw new AppError("INVALID", "한 번에 62일까지 볼 수 있습니다");
   }
   return { start, end };
@@ -38,8 +41,10 @@ export async function getTrainerCalendar(
   from: string,
   to: string,
   now = new Date(),
+  /** 오프라인 백업은 지난 3개월~앞으로 3개월 */
+  maxDays = 62,
 ) {
-  const r = range(from, to);
+  const r = range(from, to, maxDays);
   const bookings = await db.booking.findMany({
     where: { trainerId, startAt: { lt: r.end }, endAt: { gt: r.start } },
     include: {
@@ -99,6 +104,7 @@ export async function getTrainerCalendar(
         studentName: b.student.name,
         studentRegistered: !!b.student.userId,
         ruleUnagreed: b.student.passes.some((p) => !p.agreedRuleSetId),
+        updatedAt: b.updatedAt.toISOString(),
         startAt: b.startAt.toISOString(),
         endAt: b.endAt.toISOString(),
         status: b.status,
@@ -144,8 +150,10 @@ export async function getStudentCalendar(
   from: string,
   to: string,
   now = new Date(),
+  /** 오프라인 백업은 지난 3개월~앞으로 3개월 */
+  maxDays = 62,
 ) {
-  const r = range(from, to);
+  const r = range(from, to, maxDays);
   const student = await getStudentOfUser(db, userId);
   const bookings = await db.booking.findMany({
     where: {

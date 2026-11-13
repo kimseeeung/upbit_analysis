@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { api } from "@/components/api";
+import { OFFLINE_DISABLED, useOffline } from "@/lib/offline/network";
 import { PassSummary, type PassView } from "@/components/PassCards";
 import { PausePanel } from "@/components/PausePanel";
 import { RulesEditor } from "@/components/RulesEditor";
@@ -238,6 +239,7 @@ function PassForm({
 }
 
 export function PassManager({ studentId }: { studentId: string }) {
+  const offline = useOffline();
   const [d, setD] = useState<Detail | null>(null);
   const [defaultRules, setDefaultRules] = useState<RuleValues | null>(null);
   const [mode, setMode] = useState<
@@ -288,9 +290,20 @@ export function PassManager({ studentId }: { studentId: string }) {
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-semibold">이용권 관리</h1>
         {mode.kind === "none" && (
-          <Button onClick={() => setMode({ kind: "new" })}>이용권 추가</Button>
+          <Button
+            disabled={offline}
+            title={offline ? OFFLINE_DISABLED : undefined}
+            onClick={() => setMode({ kind: "new" })}
+          >
+            이용권 추가
+          </Button>
         )}
       </div>
+      {offline && (
+        <Notice tone="warning">
+          {OFFLINE_DISABLED} (이용권·결제 기록 등록)
+        </Notice>
+      )}
       {msg && <Notice tone={msg.tone}>{msg.text}</Notice>}
 
       {mode.kind === "new" && (

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { api } from "@/components/api";
+import { readSnapshot } from "@/lib/offline/client";
 import { PassSummary, type PassView } from "@/components/PassCards";
 import { PausePanel } from "@/components/PausePanel";
 import { Notice } from "@/components/ui";
@@ -15,8 +16,16 @@ export function MyPasses() {
   useEffect(() => {
     api<{ availableToday: number; passes: PassView[] }>("/api/s/passes").then(
       (r) => {
-        if (r.ok) setData(r.data);
-        else setError(r.message);
+        if (r.ok) return setData(r.data);
+        if (r.code === "NETWORK") {
+          void readSnapshot<{
+            passes: { availableToday: number; passes: PassView[] };
+          }>().then((snap) =>
+            snap ? setData(snap.passes) : setError(r.message),
+          );
+          return;
+        }
+        setError(r.message);
       },
     );
   }, []);

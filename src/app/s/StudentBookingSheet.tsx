@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { api } from "@/components/api";
+import { OFFLINE_DISABLED } from "@/lib/offline/network";
 import type { ApprovalFields } from "@/components/approval-types";
 import { StudentApprovalActions } from "./StudentApprovalActions";
 import { STATUS_STYLE, fmtDateTime, fmtRange } from "@/components/fmt";
@@ -72,7 +73,9 @@ export function StudentBookingSheet({
   async function call(url: string, body: unknown, ok: string) {
     setError(null);
     const r = await api(url, { body });
-    if (!r.ok) return setError(r.message);
+    // 오프라인: 수강생의 응답·신청·취소 요청은 할 수 없음 (11.2)
+    if (!r.ok)
+      return setError(r.code === "NETWORK" ? OFFLINE_DISABLED : r.message);
     onChanged(ok);
   }
 

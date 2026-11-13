@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { api } from "@/components/api";
+import { enqueue } from "@/lib/offline/store";
 import {
   APPROVAL_METHOD_LABEL,
   type ApprovalFields,
@@ -18,7 +19,7 @@ function OnsitePin({
 }: {
   bookingId: string;
   studentName: string;
-  onDone: () => void;
+  onDone: (queued?: boolean) => void;
   onClose: () => void;
 }) {
   const [pin, setPin] = useState("");
@@ -28,7 +29,14 @@ function OnsitePin({
       body: { pin },
     });
     if (r.ok) onDone();
-    else {
+    else if (r.code === "NETWORK") {
+      // 오프라인: 임시 저장, 서버 복구 후 PIN 검증. 그 전까지 "승인 확인 중" (11.2)
+      await enqueue(
+        { kind: "ONSITE_APPROVE", payload: { bookingId, pin } },
+        "현장 완료 승인",
+      );
+      onDone(true);
+    } else {
       setError(r.message);
       setPin("");
     }
@@ -220,9 +228,13 @@ export function TrainerApprovalActions({
           bookingId={b.id}
           studentName={b.studentName}
           onClose={() => setOnsite(false)}
-          onDone={() => {
+          onDone={(queued) => {
             setOnsite(false);
-            onChanged("수업 완료를 승인했습니다 (1회 차감)");
+            onChanged(
+              queued
+                ? "승인 확인 중 (오프라인) · 연결되면 PIN을 확인해 반영합니다"
+                : "수업 완료를 승인했습니다 (1회 차감)",
+            );
           }}
         />
       )}

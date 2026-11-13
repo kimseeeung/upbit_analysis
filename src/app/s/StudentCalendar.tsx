@@ -9,11 +9,15 @@ import koLocale from "@fullcalendar/core/locales/ko";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import luxonPlugin from "@fullcalendar/luxon3";
+import { useDisplayMode } from "@/lib/display";
+import listPlugin from "@fullcalendar/list";
 import FullCalendar from "@fullcalendar/react";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import { api } from "@/components/api";
+import { readSnapshot } from "@/lib/offline/client";
+import { OFFLINE_DISABLED, isOffline } from "@/lib/offline/network";
 import {
   STATUS_STYLE,
   fmtDateTime,
@@ -47,6 +51,7 @@ interface Data {
 }
 
 export function StudentCalendar() {
+  const displayMode = useDisplayMode();
   const initialDate = useSearchParams().get("date") ?? undefined;
   const [data, setData] = useState<Data | null>(null);
   const [range, setRange] = useState<{ from: string; to: string } | null>(null);
@@ -59,8 +64,15 @@ export function StudentCalendar() {
 
   const load = useCallback(async (r: { from: string; to: string }) => {
     const res = await api<Data>(`/api/s/calendar?from=${r.from}&to=${r.to}`);
-    if (res.ok) setData(res.data);
-    else setMsg({ tone: "error", text: res.message });
+    if (res.ok) return setData(res.data);
+    if (res.code === "NETWORK") {
+      const snap = await readSnapshot<{ calendar: Data }>();
+      if (snap) {
+        // 오프라인: 마지막 백업 기준, 예약 신청은 할 수 없음 (11.2)
+        return setData({ ...snap.calendar, slots: [], hasAvailability: false });
+      }
+    }
+    setMsg({ tone: "error", text: res.message });
   }, []);
   const reload = useCallback(() => range && load(range), [range, load]);
 
@@ -131,6 +143,10 @@ export function StudentCalendar() {
 
   async function requestSlot() {
     if (!slot) return;
+    if (isOffline()) {
+      setSlot(null);
+      return setMsg({ tone: "error", text: OFFLINE_DISABLED });
+    }
     const r = await api("/api/s/bookings", { body: { startAt: slot.start } });
     setSlot(null);
     setMsg(
@@ -187,22 +203,35 @@ export function StudentCalendar() {
       {msg && <Notice tone={msg.tone}>{msg.text}</Notice>}
       <div className="text-sm [&_.fc-toolbar-title]:text-base">
         <FullCalendar
+          key={displayMode}
           plugins={[
             dayGridPlugin,
             timeGridPlugin,
             interactionPlugin,
             luxonPlugin,
+            listPlugin,
           ]}
           timeZone="Asia/Seoul"
           locale={koLocale}
-          initialView="timeGridWeek"
+          initialView={
+            displayMode === "MOBILE" ? "timeGridDay" : "timeGridWeek"
+          }
           initialDate={initialDate}
           headerToolbar={{
             left: "prev,next today",
             center: "title",
-            right: "dayGridMonth,timeGridWeek",
+            right:
+              displayMode === "MOBILE"
+                ? "timeGridDay,listWeek,dayGridMonth"
+                : "dayGridMonth,timeGridWeek,timeGridDay",
           }}
-          buttonText={{ today: "오늘", month: "월", week: "주" }}
+          buttonText={{
+            today: "오늘",
+            month: "월",
+            week: "주",
+            day: "일",
+            list: "목록",
+          }}
           height="auto"
           slotMinTime="00:00:00"
           scrollTime="07:00:00"

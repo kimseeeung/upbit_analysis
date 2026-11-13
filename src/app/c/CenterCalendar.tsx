@@ -4,6 +4,8 @@ import type { DatesSetArg, EventInput } from "@fullcalendar/core";
 import koLocale from "@fullcalendar/core/locales/ko";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import luxonPlugin from "@fullcalendar/luxon3";
+import { useDisplayMode } from "@/lib/display";
+import listPlugin from "@fullcalendar/list";
 import FullCalendar from "@fullcalendar/react";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import { useCallback, useMemo, useState } from "react";
@@ -42,6 +44,7 @@ interface Data {
 
 /** 센터 캘린더 (9.3): 소속 트레이너 전체 일정, 트레이너별 색상·필터, 일 보기는 트레이너별 열 */
 export function CenterCalendar() {
+  const displayMode = useDisplayMode();
   const [data, setData] = useState<Data | null>(null);
   const [hidden, setHidden] = useState<string[]>([]);
   const [day, setDay] = useState(kstDateKey(new Date()));
@@ -121,16 +124,28 @@ export function CenterCalendar() {
       </div>
       <div className="text-sm [&_.fc-toolbar-title]:text-base">
         <FullCalendar
-          plugins={[dayGridPlugin, timeGridPlugin, luxonPlugin]}
+          key={displayMode}
+          plugins={[dayGridPlugin, timeGridPlugin, luxonPlugin, listPlugin]}
           timeZone="Asia/Seoul"
           locale={koLocale}
-          initialView="timeGridWeek"
+          initialView={
+            displayMode === "MOBILE" ? "timeGridDay" : "timeGridWeek"
+          }
           headerToolbar={{
             left: "prev,next today",
             center: "title",
-            right: "dayGridMonth,timeGridWeek",
+            right:
+              displayMode === "MOBILE"
+                ? "timeGridDay,listWeek,dayGridMonth"
+                : "dayGridMonth,timeGridWeek,timeGridDay",
           }}
-          buttonText={{ today: "오늘", month: "월", week: "주" }}
+          buttonText={{
+            today: "오늘",
+            month: "월",
+            week: "주",
+            day: "일",
+            list: "목록",
+          }}
           height="auto"
           slotMinTime="00:00:00"
           scrollTime="07:00:00"

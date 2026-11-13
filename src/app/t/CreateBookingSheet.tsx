@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { api } from "@/components/api";
+import { readSnapshot } from "@/lib/offline/client";
+import { enqueue } from "@/lib/offline/store";
 import { isoToKstLocal, kstLocalToIso } from "@/components/fmt";
 import { Button, Checkbox, Modal, Notice, TextField } from "@/components/ui";
 
@@ -51,7 +53,11 @@ export function CreateBookingSheet({
 
   useEffect(() => {
     api<{ students: StudentRow[] }>("/api/t/students?filter=ALL").then(
-      (r) => r.ok && setStudents(r.data.students),
+      async (r) => {
+        if (r.ok) return setStudents(r.data.students);
+        const snap = await readSnapshot<{ students: StudentRow[] }>();
+        if (snap) setStudents(snap.students);
+      },
     );
   }, []);
 
@@ -69,6 +75,27 @@ export function CreateBookingSheet({
       },
     });
     setBusy(false);
+    if (!r.ok && r.code === "NETWORK") {
+      // 오프라인: 휴대폰에 임시 저장 → 연결되면 동기화 (11.2). 반복 예약은 연결된 뒤에
+      if (repeat)
+        return setError("오프라인에서는 반복 예약을 만들 수 없습니다");
+      await enqueue(
+        {
+          kind: "CREATE_BOOKING",
+          payload: {
+            studentId,
+            startAt: kstLocalToIso(start),
+            durationMinutes: duration ? Number(duration) : undefined,
+            memo: memo || null,
+            studentName: students.find((x) => x.studentId === studentId)?.name,
+          },
+        },
+        "예약 등록",
+      );
+      return onCreated(
+        "오프라인이라 휴대폰에 임시 저장했습니다 (동기화 대기). 연결되면 등록됩니다",
+      );
+    }
     if (!r.ok) return setError(r.message);
     if (r.data.needsConfirmation) return setWarnings(r.data.warnings);
     const parts = [

@@ -3,6 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { api } from "@/components/api";
+import { useOffline } from "@/lib/offline/network";
 import { PhoneVerification } from "@/components/PhoneVerification";
 import {
   Button,
@@ -60,6 +61,7 @@ function useDebounced<T>(value: T, ms = 300) {
 }
 
 export function SignupWizard() {
+  const offline = useOffline();
   const router = useRouter();
   const params = useSearchParams();
   // 카톡 링크의 "가입하고 승인하기": 유형·이름·전화번호를 미리 채우고 가입 뒤 원래 화면으로
@@ -305,6 +307,11 @@ export function SignupWizard() {
 
   return (
     <div className="flex flex-col gap-5">
+      {offline && (
+        <Notice tone="warning">
+          오프라인에서는 회원가입할 수 없습니다. 연결되면 다시 시도해 주세요
+        </Notice>
+      )}
       <ol className="flex gap-1" aria-label="가입 단계">
         {steps.map((s, i) => (
           <li
@@ -667,7 +674,7 @@ export function SignupWizard() {
         {step === "terms" ? (
           <Button
             className="flex-1"
-            disabled={busy || !allRequiredAgreed}
+            disabled={busy || !allRequiredAgreed || offline}
             onClick={submit}
           >
             가입하기

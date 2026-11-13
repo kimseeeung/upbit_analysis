@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { api } from "@/components/api";
+import { enqueue } from "@/lib/offline/store";
 import type { ApprovalFields } from "@/components/approval-types";
 import {
   BookingNoticeControls,
@@ -13,6 +14,7 @@ import { SlotInputs, type Slot } from "@/components/SlotInputs";
 import { Button, Modal, Notice, TextField } from "@/components/ui";
 
 export interface TrainerBooking extends ApprovalFields {
+  updatedAt: string;
   notice: BookingNotice | null;
   id: string;
   studentId: string;
@@ -67,6 +69,19 @@ export function TrainerBookingSheet({
       url,
       { body },
     );
+    if (!r.ok && r.code === "NETWORK") {
+      // 오프라인: 휴대폰에 임시 저장 (11.2)
+      const op = offlineOpFor(url, body, b);
+      if (op) {
+        await enqueue(op, op.kind);
+        return onChanged(
+          "오프라인이라 휴대폰에 임시 저장했습니다 (동기화 대기). 연결되면 반영됩니다",
+        );
+      }
+      return setError(
+        "오프라인에서는 할 수 없습니다. 연결되면 다시 시도해 주세요",
+      );
+    }
     if (!r.ok) return setError(r.message);
     let text = ok;
     if (r.data.deducted) text += " (당일 취소 1회 차감)";
@@ -356,4 +371,31 @@ export function TrainerBookingSheet({
       />
     </Modal>
   );
+}
+
+/** 오프라인에서 임시 저장할 수 있는 작업 (예약 취소·노쇼·시간 변경) */
+function offlineOpFor(url: string, body: unknown, b: TrainerBooking) {
+  const base = { bookingId: b.id, baseUpdatedAt: b.updatedAt };
+  if (url.endsWith("/cancel"))
+    return {
+      kind: "CANCEL_BOOKING",
+      payload: { ...base, reason: (body as { reason?: string })?.reason },
+    };
+  if (url.endsWith("/no-show")) return { kind: "NO_SHOW", payload: base };
+  if (url.endsWith("/reschedule")) {
+    const x = body as { startAt: string; endAt: string };
+    return {
+      kind: "RESCHEDULE",
+      payload: { ...base, startAt: x.startAt, endAt: x.endAt },
+    };
+  }
+  if (url.endsWith("/change-request")) {
+    const x = (body as { slots: { startAt: string; endAt: string }[] })
+      .slots[0];
+    return {
+      kind: "RESCHEDULE",
+      payload: { ...base, startAt: x.startAt, endAt: x.endAt },
+    };
+  }
+  return null;
 }

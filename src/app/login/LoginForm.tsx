@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { api } from "@/components/api";
+import { useOffline } from "@/lib/offline/network";
 import {
   Button,
   Checkbox,
@@ -40,6 +41,7 @@ function safeNext(next: string | null): string | null {
 }
 
 export function LoginForm() {
+  const offline = useOffline();
   const router = useRouter();
   const params = useSearchParams();
   const [role, setRole] = useState<RoleKey | null>(null);
@@ -90,6 +92,11 @@ export function LoginForm() {
 
   return (
     <form onSubmit={submit} className="flex flex-col gap-4">
+      {offline && (
+        <Notice tone="warning">
+          오프라인에서는 로그인할 수 없습니다. 연결되면 다시 시도해 주세요
+        </Notice>
+      )}
       <RoleTabs value={role} onChange={setRole} />
       <TextField
         label="아이디"
@@ -118,7 +125,7 @@ export function LoginForm() {
         )}
       </div>
       {error && <Notice tone="error">{error}</Notice>}
-      <Button type="submit" disabled={busy || !loginId || !password}>
+      <Button type="submit" disabled={busy || !loginId || !password || offline}>
         로그인
       </Button>
       <div className="flex justify-center gap-4 text-sm text-zinc-500">

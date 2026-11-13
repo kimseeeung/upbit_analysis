@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { api } from "@/components/api";
+import { readSnapshot } from "@/lib/offline/client";
 import { Button, Card, Notice, TextField } from "@/components/ui";
 
 interface Row {
@@ -185,7 +186,19 @@ export function StudentsList() {
     const r = await api<{ students: Row[] }>(
       `/api/t/students?filter=${filter}&q=${encodeURIComponent(q)}`,
     );
-    if (r.ok) setRows(r.data.students);
+    if (r.ok) return setRows(r.data.students);
+    if (r.code === "NETWORK") {
+      const snap = await readSnapshot<{ students: Row[] }>();
+      if (snap) {
+        setRows(
+          snap.students.filter(
+            (s) =>
+              s.name.includes(q.trim()) &&
+              (filter === "ALL" ? s.status !== "STOPPED" : s.status === filter),
+          ),
+        );
+      }
+    }
   }, [filter, q]);
   /** 수강생별 알림 설정 (3.6): 한 명 또는 여러 명 */
   async function bulk(

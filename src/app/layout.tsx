@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { OfflineManager } from "@/components/OfflineManager";
 import { SwRegister } from "@/components/SwRegister";
 import "./globals.css";
 
@@ -22,6 +23,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="ko" className="h-full antialiased">
       <body className="flex min-h-full flex-col">
         <SwRegister />
+        <OfflineManager />
         {children}
       </body>
     </html>

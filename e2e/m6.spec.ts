@@ -66,10 +66,12 @@ test("수강 현황: 기간 표, 상세, 엑셀 다운로드", async ({ browser 
 
   await trainer.goto("/t/stats");
   await trainer.getByRole("button", { name: "올해" }).click();
-  const row = trainer.locator("tr", { hasText: studentName });
+  const row = trainer.locator("[data-stat-row]", {
+    hasText: studentName,
+  });
   await expect(row).toBeVisible();
   // 전체 10, 수강 1, 노쇼 0, 취소 0, 승인 대기 0, 잔여 9
-  await expect(row.locator("td")).toHaveText([
+  await expect(row.locator("[data-col]")).toHaveText([
     new RegExp(studentName),
     "10",
     "1",

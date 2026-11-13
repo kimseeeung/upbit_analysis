@@ -62,7 +62,9 @@ test("수강생 탈퇴 신청 → 다시 로그인해 취소 → 다시 탈퇴 �
 
   await trainer.goto("/t/stats");
   await trainer.getByRole("button", { name: "올해" }).click();
-  await expect(trainer.locator("tr", { hasText: "탈퇴 회원" })).toBeVisible();
+  await expect(
+    trainer.locator("[data-stat-row]", { hasText: "탈퇴 회원" }),
+  ).toBeVisible();
   await expect(trainer.getByText(studentName)).toHaveCount(0);
   for (const c of [tc, sc]) await c.close();
 });
