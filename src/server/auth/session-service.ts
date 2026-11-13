@@ -62,12 +62,18 @@ export async function resolveSession(
           role: true,
           name: true,
           status: true,
+          suspendedAt: true,
           trainerProfile: { select: { hasCenterAdmin: true } },
         },
       },
     },
   });
-  if (!s || !isSessionActive(s, now) || s.user.status === "DELETED") {
+  if (
+    !s ||
+    !isSessionActive(s, now) ||
+    s.user.status === "DELETED" ||
+    s.user.suspendedAt
+  ) {
     return null;
   }
   const slide = slideSession(s, now);

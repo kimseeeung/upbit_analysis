@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { validatePassword, validatePin } from "@/lib/auth/policy";
@@ -401,6 +402,16 @@ export function AccountPanel() {
       </Card>
       <Card title="휴대폰 백업">
         <LastBackup />
+      </Card>
+      <Card title="공지사항·문의">
+        <div className="flex gap-4 text-sm">
+          <Link className="underline" href="/me/notices">
+            공지사항
+          </Link>
+          <Link className="underline" href="/me/inquiries">
+            문의하기
+          </Link>
+        </div>
       </Card>
       <DevicesCard />
       <WithdrawCard />

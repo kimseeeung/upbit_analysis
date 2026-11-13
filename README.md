@@ -49,3 +49,15 @@ npm run dev
 | `src/server/auth/*`             | 가입·로그인·세션·계정·약관 서비스 (DB)             |
 | `src/server/sms/sender.ts`      | SMS 어댑터 (개발용 콘솔)                           |
 | `src/app/api/**`                | Route Handler. 권한은 매 요청 서버에서 검사        |
+
+## 운영 관리자 (M10)
+
+- 첫 관리자: 배포 환경에 `OPERATOR_INIT_LOGIN_ID`·`OPERATOR_INIT_PASSWORD`·`OPERATOR_INIT_ROLLBACK_PIN`(6자리)·`OPERATOR_INIT_NAME`·`OPERATOR_INIT_PHONE`을 넣고 서버를 띄우면 한 번만 만들어집니다. 값은 코드·문서에 적지 않습니다.
+- `/admin/login`: 비밀번호 + 휴대폰 인증. `ADMIN_ALLOWED_IPS`로 접속 IP 제한
+- 배포할 때 `APP_VERSION`(필수), `DEPLOYED_BY`, `DEPLOY_SUMMARY`를 넣으면 버전 목록에 기록됩니다.
+- 롤백은 `DEPLOY_PROVIDER` 어댑터(`src/server/admin/deploy-adapter.ts`)로 재배포를 요청합니다. DB 마이그레이션은 이전 버전과 호환되게 작성합니다.
+
+| 경로                     | 내용                                                                          |
+| ------------------------ | ----------------------------------------------------------------------------- |
+| `src/lib/admin/rules.ts` | 롤백 PIN 형식, 최소 1명, 30분 세션, IP 제한, 롤백 대상 (순수 함수)            |
+| `src/server/admin/*`     | 2단계 로그인, 관리자 초대·비활성화, 버전·롤백·점검, 회원 조회·정지, 공지·문의 |

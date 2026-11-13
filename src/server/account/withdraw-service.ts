@@ -280,6 +280,7 @@ async function scrubUser(tx: Db, userId: string, name: string, now: Date) {
   await tx.pushSubscription.deleteMany({ where: { userId } });
   await tx.notification.deleteMany({ where: { userId } });
   await tx.termsConsent.deleteMany({ where: { userId } });
+  await tx.inquiry.deleteMany({ where: { userId } });
   await tx.smsVerification.deleteMany({ where: { phone: user.phone } });
   await tx.linkRequest.deleteMany({
     where: { OR: [{ fromUserId: userId }, { toUserId: userId }] },

@@ -35,6 +35,7 @@ export default defineConfig({
       SMS_DEV_OUTBOX: "1",
       COOKIE_INSECURE: "1",
       CRON_SECRET: "e2e-cron-secret",
+      APP_BASE_URL: `http://localhost:${PORT}`,
     },
   },
 });

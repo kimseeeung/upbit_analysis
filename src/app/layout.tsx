@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { MaintenanceBanner } from "@/components/MaintenanceBanner";
 import { OfflineManager } from "@/components/OfflineManager";
 import { SwRegister } from "@/components/SwRegister";
 import "./globals.css";
@@ -24,6 +25,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="flex min-h-full flex-col">
         <SwRegister />
         <OfflineManager />
+        <MaintenanceBanner />
         {children}
       </body>
     </html>

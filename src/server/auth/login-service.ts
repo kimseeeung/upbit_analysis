@@ -81,6 +81,14 @@ export async function login(
     throw new AppError("LOGIN_FAILED", LOGIN_FAILED_MESSAGE, 401);
   }
 
+  if (user.suspendedAt) {
+    throw new AppError(
+      "SUSPENDED",
+      "운영 정책에 따라 이용이 정지된 계정입니다. 문의: 고객센터",
+      403,
+    );
+  }
+
   const reset = registerSuccess();
   const session = await db.$transaction(async (tx) => {
     await tx.user.update({

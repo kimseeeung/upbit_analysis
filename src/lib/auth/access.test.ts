@@ -45,6 +45,7 @@ describe("경로 영역", () => {
     ["/admin", "admin"],
     ["/admin/versions", "admin"],
     ["/admin/login", "adminLogin"],
+    ["/admin/invite/abc", "adminLogin"],
   ])("%s → %s", (path, area) => {
     expect(areaForPath(path)).toBe(area);
   });

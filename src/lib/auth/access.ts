@@ -25,14 +25,16 @@ export type Area =
   | "student" // /s
   | "center" // /c
   | "admin" // /admin (로그인 화면 제외)
-  | "adminLogin"; // /admin/login
+  | "adminLogin"; // /admin/login, /admin/invite/[token]
 
 function underPrefix(pathname: string, prefix: string): boolean {
   return pathname === prefix || pathname.startsWith(`${prefix}/`);
 }
 
 export function areaForPath(pathname: string): Area {
+  // 로그인·초대 수락 화면은 관리자 세션 없이 연다
   if (underPrefix(pathname, "/admin/login")) return "adminLogin";
+  if (underPrefix(pathname, "/admin/invite")) return "adminLogin";
   if (underPrefix(pathname, "/admin")) return "admin";
   if (underPrefix(pathname, "/t")) return "trainer";
   if (underPrefix(pathname, "/s")) return "student";

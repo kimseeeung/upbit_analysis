@@ -84,6 +84,9 @@ model User {
   status              UserStatus  @default(ACTIVE)
   withdrawRequestedAt DateTime?
   withdrawReason      String?
+  /// 운영 관리자가 정지한 시각 (12.4). 정지 중에는 로그인·이용 불가
+  suspendedAt         DateTime?
+  suspendReason       String?
   deleteScheduledAt   DateTime?
   loginFailCount      Int         @default(0)
   lockedUntil         DateTime?
@@ -94,6 +97,7 @@ model User {
   studentProfile         StudentProfile?
   trainerProfile         TrainerProfile?
   sessions               Session[]
+  inquiries              Inquiry[]
   termsConsents          TermsConsent[]
   student                Student?                @relation("StudentUser")
   centerAdmins           CenterAdmin[]           @relation("CenterAdminUser")
@@ -986,4 +990,164 @@ model SyncConflict {
   resolution  String?
 
   @@index([trainerId, resolvedAt])
+}
+
+// ── 운영 관리자 (M10, 명세 12) ─────────────────────────────
+
+enum OperatorStatus {
+  INVITED
+  ACTIVE
+  DISABLED
+}
+
+model OperatorAccount {
+  id                   String            @id @default(cuid())
+  /// 초대받은 사람이 직접 정하므로 활성화 전에는 비어 있음
+  loginId              String?           @unique
+  passwordHash         String?
+  passwordSalt         String?
+  /// 롤백 PIN 6자리 (PBKDF2)
+  rollbackPinHash      String?
+  rollbackPinSalt      String?
+  name                 String
+  /// 숫자만 저장
+  phone                String
+  status               OperatorStatus    @default(INVITED)
+  invitedById          String?
+  invitedBy            OperatorAccount?  @relation("OperatorInvite", fields: [invitedById], references: [id])
+  invited              OperatorAccount[] @relation("OperatorInvite")
+  /// 초대 링크 토큰의 SHA-256
+  inviteTokenHash      String?           @unique
+  inviteExpiresAt      DateTime?
+  activatedAt          DateTime?
+  disabledAt           DateTime?
+  disabledById         String?
+  lastLoginAt          DateTime?
+  failCount            Int               @default(0)
+  lockedUntil          DateTime?
+  rollbackPinFailCount Int               @default(0)
+  rollbackLockedUntil  DateTime?
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+
+  sessions   OperatorSession[]
+  challenges OperatorLoginChallenge[]
+  rollbacks  RollbackLog[]
+  accessLogs OperatorAccessLog[]
+  alerts     OperatorAlert[]
+}
+
+/// 운영 관리자 세션: 자동 로그인 없음, 30분 미사용 시 끝 (12.1)
+model OperatorSession {
+  id         String          @id @default(cuid())
+  tokenHash  String          @unique
+  operatorId String
+  operator   OperatorAccount @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+  lastSeenAt DateTime        @default(now())
+  expiresAt  DateTime
+  revokedAt  DateTime?
+  ip         String?
+  createdAt  DateTime        @default(now())
+
+  @@index([operatorId, revokedAt])
+}
+
+/// 2단계 로그인: 비밀번호 확인 뒤 휴대폰 인증 대기
+model OperatorLoginChallenge {
+  id                String          @id @default(cuid())
+  tokenHash         String          @unique
+  operatorId        String
+  operator          OperatorAccount @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+  smsVerificationId String
+  expiresAt         DateTime
+  consumedAt        DateTime?
+  createdAt         DateTime        @default(now())
+}
+
+/// 다른 관리자에게 보내는 운영 알림 (관리자 추가·비활성화, 롤백)
+model OperatorAlert {
+  id         String          @id @default(cuid())
+  operatorId String
+  operator   OperatorAccount @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+  message    String
+  readAt     DateTime?
+  createdAt  DateTime        @default(now())
+
+  @@index([operatorId, readAt])
+}
+
+model DeployVersion {
+  id         String   @id @default(cuid())
+  version    String   @unique
+  deployedAt DateTime @default(now())
+  deployedBy String
+  summary    String   @default("")
+  isCurrent  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+}
+
+enum RollbackResult {
+  RUNNING
+  SUCCEEDED
+  FAILED
+}
+
+model RollbackLog {
+  id          String          @id @default(cuid())
+  operatorId  String
+  operator    OperatorAccount @relation(fields: [operatorId], references: [id])
+  fromVersion String
+  toVersion   String
+  reason      String
+  startedAt   DateTime        @default(now())
+  finishedAt  DateTime?
+  /// 점검 결과 [{ name, ok, detail }]
+  healthCheck Json?
+  result      RollbackResult  @default(RUNNING)
+  error       String?
+}
+
+/// 회원 정보 조회 기록: 누가, 언제, 누구를 (12.4)
+model OperatorAccessLog {
+  id           String          @id @default(cuid())
+  operatorId   String
+  operator     OperatorAccount @relation(fields: [operatorId], references: [id])
+  targetUserId String
+  action       String
+  at           DateTime        @default(now())
+
+  @@index([targetUserId, at])
+  @@index([operatorId, at])
+}
+
+model Notice {
+  id          String    @id @default(cuid())
+  title       String
+  body        String
+  publishedAt DateTime  @default(now())
+  createdById String
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+}
+
+model Inquiry {
+  id           String    @id @default(cuid())
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title        String
+  body         String
+  answer       String?
+  answeredById String?
+  answeredAt   DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([userId, createdAt])
+}
+
+/// 서비스 전역 상태 (점검 중 표시 등)
+model SystemFlag {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
 }

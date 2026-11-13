@@ -57,6 +57,16 @@ export async function sendVerificationCode(
     );
   }
 
+  return issueCode(db, phone, input.purpose, now);
+}
+
+/** 인증번호 발급·발송 (발송 횟수 제한 포함). 대상 검사는 호출하는 쪽에서 한다. */
+export async function issueCode(
+  db: Db,
+  phone: string,
+  purpose: SmsPurpose,
+  now = new Date(),
+): Promise<SendCodeResult> {
   // 하루 5회는 한국 날짜 기준이므로 전날 00:00 KST부터 넉넉히 읽는다
   const recent = await db.smsVerification.findMany({
     where: {
@@ -84,7 +94,7 @@ export async function sendVerificationCode(
   const row = await db.smsVerification.create({
     data: {
       phone,
-      purpose: input.purpose,
+      purpose,
       codeHash: hashed.hash,
       codeSalt: hashed.salt,
       expiresAt,
