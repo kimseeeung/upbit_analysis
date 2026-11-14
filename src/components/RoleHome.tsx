@@ -1,3 +1,4 @@
+import { Loading } from "./ui";
 import { Suspense, type ReactNode } from "react";
 import type { Area } from "@/lib/auth/access";
 import { requireArea } from "@/lib/auth/guard";
@@ -11,7 +12,7 @@ const AREA_META: Record<
   { title: string; me: string; tabs: { href: string; label: string }[] }
 > = {
   trainer: {
-    title: "PT 관리 · 트레이너",
+    title: "머슬매니아 · 트레이너",
     me: "/t/me",
     tabs: [
       { href: "/t", label: "캘린더" },
@@ -23,7 +24,7 @@ const AREA_META: Record<
     ],
   },
   student: {
-    title: "PT 관리",
+    title: "머슬매니아",
     me: "/s/me",
     tabs: [
       { href: "/s", label: "홈" },
@@ -33,7 +34,7 @@ const AREA_META: Record<
     ],
   },
   center: {
-    title: "PT 관리 · 센터",
+    title: "머슬매니아 · 센터",
     me: "/c/me",
     tabs: [
       { href: "/c", label: "센터 캘린더" },
@@ -85,7 +86,7 @@ export function RoleLayout({
   children: ReactNode;
 }) {
   return (
-    <Suspense fallback={<p className="text-muted p-6 text-sm">불러오는 중…</p>}>
+    <Suspense fallback={<Loading />}>
       <Gated area={area}>{children}</Gated>
     </Suspense>
   );

@@ -3,7 +3,7 @@
 import { DateSelect, TimeSelect } from "@/components/pickers";
 import { useEffect, useState } from "react";
 import { api } from "./api";
-import { Button, Card, Notice } from "./ui";
+import { Button, Card, Loading, Notice } from "./ui";
 
 interface Rule {
   weekday: number;
@@ -53,7 +53,7 @@ export function AvailabilityEditor({ onSaved }: { onSaved?: () => void }) {
     if (r.ok) onSaved?.();
   }
 
-  if (!rules) return <p className="text-muted text-sm">불러오는 중…</p>;
+  if (!rules) return <Loading />;
   const update = (i: number, patch: Partial<Rule>) =>
     setRules(rules.map((r, j) => (j === i ? { ...r, ...patch } : r)));
 

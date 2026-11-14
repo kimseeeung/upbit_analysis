@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 
 test("시작 화면이 열린다", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { name: "PT 관리" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "머슬매니아" })).toBeVisible();
   await expect(page.getByRole("link", { name: "로그인" })).toBeVisible();
 });
 

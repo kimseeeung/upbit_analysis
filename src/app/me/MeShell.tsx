@@ -1,7 +1,7 @@
 import { Suspense, type ReactNode } from "react";
 import { homePathFor } from "@/lib/auth/access";
 import { requireUser } from "@/lib/auth/guard";
-import { PageShell } from "@/components/ui";
+import { Loading, PageShell } from "@/components/ui";
 
 async function Gate({
   title,
@@ -31,7 +31,7 @@ export function MeShell({
   children: ReactNode;
 }) {
   return (
-    <Suspense fallback={<p className="text-muted p-6 text-sm">불러오는 중…</p>}>
+    <Suspense fallback={<Loading />}>
       <Gate title={title}>{children}</Gate>
     </Suspense>
   );

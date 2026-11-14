@@ -3,7 +3,14 @@
 import { useCallback, useEffect, useState } from "react";
 import { api } from "@/components/api";
 import { fmtDateTime } from "@/components/fmt";
-import { Button, Card, Notice, PageHeader, TextField } from "@/components/ui";
+import {
+  Button,
+  Card,
+  Loading,
+  Notice,
+  PageHeader,
+  TextField,
+} from "@/components/ui";
 
 interface Op {
   id: string;
@@ -78,7 +85,7 @@ export function Operators() {
     void load();
   }
 
-  if (!data) return <p className="text-muted text-sm">불러오는 중…</p>;
+  if (!data) return <Loading />;
   return (
     <div className="flex flex-col gap-4">
       <PageHeader title="관리자" />

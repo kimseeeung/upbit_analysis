@@ -7,6 +7,7 @@ import {
   Card,
   EmptyState,
   FilterBar,
+  Loading,
   Notice,
   PageHeader,
   SectionTitle,
@@ -66,11 +67,7 @@ export function CenterStudents() {
     if (r.ok) void load();
   }
   if (!d)
-    return msg ? (
-      <Notice tone={msg.tone}>{msg.text}</Notice>
-    ) : (
-      <p className="text-muted text-sm">불러오는 중…</p>
-    );
+    return msg ? <Notice tone={msg.tone}>{msg.text}</Notice> : <Loading />;
   const list = d.students.filter((s) => s.name.includes(q.trim()));
   return (
     <div className="flex flex-col gap-4">

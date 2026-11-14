@@ -1,5 +1,7 @@
 "use client";
 
+import { AtSign, CalendarHeart, Phone } from "lucide-react";
+
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
@@ -14,6 +16,7 @@ import {
   Button,
   Card,
   Checkbox,
+  Loading,
   Notice,
   PasswordField,
   ROLE_LABEL,
@@ -84,15 +87,34 @@ function ProfileCard({
 
   return (
     <Card title="기본 정보">
-      <dl className="grid grid-cols-[6rem_1fr] gap-y-1 text-sm">
-        <dt className="text-muted">회원 유형</dt>
-        <dd>{ROLE_LABEL[profile.role]}</dd>
-        <dt className="text-muted">아이디</dt>
-        <dd>{profile.loginId}</dd>
-        <dt className="text-muted">전화번호</dt>
-        <dd>{profile.phoneMasked}</dd>
-        <dt className="text-muted">가입일</dt>
-        <dd>{profile.joinedAt}</dd>
+      {/* 프로필 카드 */}
+      <div className="from-brand-500 shadow-brand-500/25 flex items-center gap-3 rounded-2xl bg-gradient-to-br to-pink-400 p-4 text-white shadow-md">
+        <span className="inline-flex size-14 shrink-0 items-center justify-center rounded-full bg-white/25 text-2xl font-black ring-2 ring-white/60">
+          {profile.name.slice(0, 1)}
+        </span>
+        <div className="min-w-0">
+          <p className="truncate text-lg font-extrabold">{profile.name}님</p>
+          <span className="mt-0.5 inline-flex items-center gap-1 rounded-full bg-white/25 px-2 py-0.5 text-xs font-bold">
+            {ROLE_LABEL[profile.role]}
+          </span>
+        </div>
+      </div>
+      <dl className="grid grid-cols-[auto_1fr] items-center gap-x-3 gap-y-2 text-sm">
+        <dt className="text-muted inline-flex items-center gap-1.5">
+          <AtSign className="size-4" aria-hidden />
+          아이디
+        </dt>
+        <dd className="font-semibold">{profile.loginId}</dd>
+        <dt className="text-muted inline-flex items-center gap-1.5">
+          <Phone className="size-4" aria-hidden />
+          전화번호
+        </dt>
+        <dd className="font-semibold">{profile.phoneMasked}</dd>
+        <dt className="text-muted inline-flex items-center gap-1.5">
+          <CalendarHeart className="size-4" aria-hidden />
+          가입일
+        </dt>
+        <dd className="font-semibold">{profile.joinedAt}</dd>
       </dl>
       <TextField
         label="이름"
@@ -385,11 +407,7 @@ export function AccountPanel() {
   }, [load]);
 
   if (!profile)
-    return error ? (
-      <Notice tone="error">{error}</Notice>
-    ) : (
-      <p className="text-muted text-sm">불러오는 중…</p>
-    );
+    return error ? <Notice tone="error">{error}</Notice> : <Loading />;
   return (
     <div className="flex flex-col gap-4">
       <ProfileCard profile={profile} reload={load} />

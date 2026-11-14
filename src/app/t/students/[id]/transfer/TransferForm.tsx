@@ -1,10 +1,16 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
 import { api } from "@/components/api";
 import { TrainerSearch, type TrainerHit } from "@/components/TrainerSearch";
-import { Button, Card, Checkbox, Notice, PageHeader } from "@/components/ui";
+import {
+  BackLink,
+  Button,
+  Card,
+  Checkbox,
+  Notice,
+  PageHeader,
+} from "@/components/ui";
 
 /** 이전 트레이너의 인계 (7.2): 새 트레이너 수락 → 수강생 동의 → 완료 */
 export function TransferForm({ studentId }: { studentId: string }) {
@@ -17,9 +23,7 @@ export function TransferForm({ studentId }: { studentId: string }) {
   } | null>(null);
   return (
     <div className="flex flex-col gap-4">
-      <Link href={`/t/students/${studentId}`} className="text-muted text-sm">
-        ← 수강생 상세
-      </Link>
+      <BackLink href={`/t/students/${studentId}`}>수강생 상세</BackLink>
       <PageHeader title="담당 트레이너 인계" />
       <Card title="새 트레이너">
         {pick ? (

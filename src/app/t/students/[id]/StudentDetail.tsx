@@ -8,7 +8,15 @@ import { enqueue } from "@/lib/offline/store";
 import { KakaoShareButton } from "@/components/KakaoShareButton";
 import { PassSummary, type PassView } from "@/components/PassCards";
 import { StudentNotify } from "./StudentNotify";
-import { Button, Card, EmptyState, Notice, PageHeader } from "@/components/ui";
+import {
+  BackLink,
+  Button,
+  Card,
+  EmptyState,
+  Loading,
+  Notice,
+  PageHeader,
+} from "@/components/ui";
 
 interface Detail {
   studentId: string;
@@ -78,16 +86,10 @@ export function StudentDetail({ id }: { id: string }) {
   }
 
   if (!d)
-    return msg ? (
-      <Notice tone={msg.tone}>{msg.text}</Notice>
-    ) : (
-      <p className="text-muted text-sm">불러오는 중…</p>
-    );
+    return msg ? <Notice tone={msg.tone}>{msg.text}</Notice> : <Loading />;
   return (
     <div className="flex flex-col gap-4">
-      <Link href="/t/students" className="text-muted text-sm">
-        ← 수강생 목록
-      </Link>
+      <BackLink href="/t/students">수강생 목록</BackLink>
       <PageHeader
         title={
           <>

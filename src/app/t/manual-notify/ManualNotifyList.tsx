@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { api } from "@/components/api";
 import { fmtRange } from "@/components/fmt";
 import { KakaoShareButton } from "@/components/KakaoShareButton";
-import { Card, EmptyState, Notice } from "@/components/ui";
+import { Card, EmptyState, Loading, Notice } from "@/components/ui";
 
 interface Row {
   studentId: string;
@@ -29,7 +29,7 @@ export function ManualNotifyList() {
       (r) => r.ok && setRows(r.data.students),
     );
   }, []);
-  if (!rows) return <p className="text-muted text-sm">불러오는 중…</p>;
+  if (!rows) return <Loading />;
   if (rows.length === 0)
     return (
       <Notice tone="success">모든 수강생이 알림을 받을 수 있습니다.</Notice>

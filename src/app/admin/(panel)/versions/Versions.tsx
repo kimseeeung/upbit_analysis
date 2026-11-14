@@ -6,6 +6,7 @@ import { fmtDateTime } from "@/components/fmt";
 import {
   Button,
   Card,
+  Loading,
   Modal,
   Notice,
   PageHeader,
@@ -91,7 +92,7 @@ export function Versions() {
     void load();
   }
 
-  if (!data) return <p className="text-muted text-sm">불러오는 중…</p>;
+  if (!data) return <Loading />;
   const current = data.versions.find((v) => v.isCurrent);
   const byVersion = (v: string | null) =>
     data.versions.find((x) => x.version === v);

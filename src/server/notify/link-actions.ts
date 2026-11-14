@@ -65,12 +65,12 @@ export async function createShareForTrainer(
       if (b.status !== "PENDING_CONFIRM")
         throw new AppError("INVALID", "확정 대기 중인 예약이 아닙니다");
       expiresAt = b.startAt;
-      text = `[PT 관리] ${b.trainer.name} 트레이너가 ${when} 수업을 등록했습니다. 아래 링크에서 수락해 주세요.`;
+      text = `[머슬매니아] ${b.trainer.name} 트레이너가 ${when} 수업을 등록했습니다. 아래 링크에서 수락해 주세요.`;
     } else {
       if (b.status !== "PENDING_APPROVAL")
         throw new AppError("INVALID", "완료 승인 대기 중인 수업이 아닙니다");
       expiresAt = new Date(now.getTime() + 48 * HOUR);
-      text = `[PT 관리] ${when} 수업이 끝났습니다. 아래 링크에서 수업 완료를 승인해 주세요.`;
+      text = `[머슬매니아] ${when} 수업이 끝났습니다. 아래 링크에서 수업 완료를 승인해 주세요.`;
     }
   } else if (input.purpose === "RULE_CONSENT") {
     const c = await db.ruleConsent.findUnique({
@@ -81,7 +81,7 @@ export async function createShareForTrainer(
       throw new AppError("NOT_FOUND", "요청을 찾을 수 없습니다", 404);
     await assertTrainerStudent(db, input.trainerId, c.studentId);
     expiresAt = new Date(now.getTime() + 7 * DAY);
-    text = `[PT 관리] ${c.pass.name} 수강 규칙을 확인하고 동의해 주세요.`;
+    text = `[머슬매니아] ${c.pass.name} 수강 규칙을 확인하고 동의해 주세요.`;
   } else if (input.purpose === "LINK_REQUEST") {
     const r = await db.linkRequest.findUnique({
       where: { id: input.refId },
@@ -90,7 +90,7 @@ export async function createShareForTrainer(
     if (!r || r.fromUserId !== input.trainerId || r.status !== "PENDING")
       throw new AppError("NOT_FOUND", "요청을 찾을 수 없습니다", 404);
     expiresAt = new Date(now.getTime() + 7 * DAY);
-    text = `[PT 관리] ${r.fromUser.name} 트레이너가 연결을 요청했습니다.`;
+    text = `[머슬매니아] ${r.fromUser.name} 트레이너가 연결을 요청했습니다.`;
   } else {
     throw new AppError("UNSUPPORTED", "준비 중인 기능입니다");
   }

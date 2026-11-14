@@ -77,7 +77,7 @@ export async function sendFullLoginIdBySms(
   );
   await getSmsSender().send(
     user.phone,
-    `[PT 관리] 가입하신 아이디는 ${user.loginId} 입니다. (가입일 ${toKstDateKey(user.createdAt)})`,
+    `[머슬매니아] 가입하신 아이디는 ${user.loginId} 입니다. (가입일 ${toKstDateKey(user.createdAt)})`,
   );
 }
 

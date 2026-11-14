@@ -296,10 +296,19 @@ export function TrainerCalendar() {
                 ).toISOString(),
               })
             }
-            className="bg-brand-500 shadow-brand-500/30 hover:bg-brand-600 inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-sm font-semibold text-white shadow-sm"
+            aria-label="예약 등록"
+            className={
+              displayMode === "MOBILE"
+                ? // 모바일: 엄지가 닿는 오른쪽 아래 떠 있는 버튼
+                  "bg-brand-500 shadow-brand-500/40 hover:bg-brand-600 fixed right-5 bottom-24 z-40 inline-flex size-14 items-center justify-center rounded-full text-white shadow-lg transition active:scale-95"
+                : "bg-brand-500 shadow-brand-500/30 hover:bg-brand-600 inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-sm font-semibold text-white shadow-sm"
+            }
           >
-            <CalendarPlus className="size-4" aria-hidden />
-            예약 등록
+            <CalendarPlus
+              className={displayMode === "MOBILE" ? "size-6" : "size-4"}
+              aria-hidden
+            />
+            {displayMode !== "MOBILE" && "예약 등록"}
           </button>
         </div>
       </PageHeader>

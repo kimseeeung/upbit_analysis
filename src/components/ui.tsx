@@ -2,6 +2,8 @@
 
 import {
   AlertTriangle,
+  ChevronLeft,
+  UserPlus,
   ArrowRight,
   BadgeCheck,
   Bell,
@@ -52,6 +54,7 @@ import {
   XCircle,
   type LucideIcon,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useId, useRef, useState, type ReactNode } from "react";
 import {
@@ -92,6 +95,9 @@ export const ICONS = {
   sparkles: Sparkles,
   ticket: Ticket,
   user: UserRound,
+  userPlus: UserPlus,
+  search: Search,
+  login: LogIn,
   users: Users,
 } satisfies Record<string, LucideIcon>;
 export type IconName = keyof typeof ICONS;
@@ -159,20 +165,108 @@ export function IconBubble({
   );
 }
 
-/** 로고: 덤벨 아이콘 + 이름 */
-export function Logo({ sub }: { sub?: string }) {
+/** 로고: 앱 아이콘 + 이름(머슬매니아) */
+export function Logo({
+  sub,
+  size = "md",
+}: {
+  sub?: string;
+  size?: "md" | "lg";
+}) {
+  const px = size === "lg" ? 40 : 32;
   return (
-    <span className="inline-flex items-center gap-2 font-bold whitespace-nowrap">
-      <span className="bg-brand-500 shadow-brand-500/30 inline-flex size-8 items-center justify-center rounded-xl text-white shadow-sm">
-        <Dumbbell className="size-5" strokeWidth={2.4} aria-hidden />
-      </span>
-      <span>
-        PT 관리
+    <span className="inline-flex items-center gap-2 font-extrabold whitespace-nowrap">
+      <Image
+        src="/icons/icon.svg"
+        alt=""
+        width={px}
+        height={px}
+        unoptimized
+        className="shadow-brand-500/30 rounded-[10px] shadow-sm"
+      />
+      <span className={size === "lg" ? "text-xl" : ""}>
+        머슬매니아
         {sub && (
           <span className="text-muted ml-1 text-sm font-medium">· {sub}</span>
         )}
       </span>
     </span>
+  );
+}
+
+/** 뒤로 가기: 화살표 아이콘이 있는 알약 버튼 */
+export function BackLink({
+  href,
+  children,
+}: {
+  href: string;
+  children: ReactNode;
+}) {
+  return (
+    <Link
+      href={href}
+      className="border-line bg-surface text-muted hover:border-brand-300 hover:text-foreground inline-flex items-center gap-1 self-start rounded-full border py-1.5 pr-3 pl-2 text-sm font-semibold transition"
+    >
+      <ChevronLeft className="size-4" aria-hidden />
+      {children}
+    </Link>
+  );
+}
+
+/** 버튼 모양 링크 (아이콘 + 글자). 글자에 맞는 아이콘을 자동으로 붙인다 */
+export function LinkButton({
+  href,
+  icon,
+  variant = "secondary",
+  stack = false,
+  className = "",
+  children,
+}: {
+  href: string;
+  icon?: IconName;
+  variant?: "primary" | "secondary" | "soft";
+  /** 아이콘 위, 글자 아래 (작은 타일 버튼) */
+  stack?: boolean;
+  className?: string;
+  children: string;
+}) {
+  const Icon = icon ? ICONS[icon] : null;
+  const auto = Icon ? (
+    <Icon className="size-4 shrink-0" aria-hidden />
+  ) : (
+    buttonIconElement(children)
+  );
+  const style = {
+    primary:
+      "bg-brand-500 text-white shadow-sm shadow-brand-500/25 hover:bg-brand-600",
+    secondary:
+      "border border-line bg-surface hover:border-brand-300 hover:bg-brand-50 dark:hover:bg-brand-700/20",
+    soft: "bg-brand-50 text-brand-700 hover:bg-brand-100 dark:bg-brand-700/20 dark:text-brand-100",
+  }[variant];
+  return (
+    <Link
+      href={href}
+      className={`inline-flex items-center justify-center rounded-xl font-semibold transition active:scale-[0.98] ${stack ? "flex-col gap-1 px-2 py-3 text-xs" : "gap-1.5 px-4 py-2.5 text-sm"} ${style} ${className}`}
+    >
+      {auto}
+      {children}
+    </Link>
+  );
+}
+
+/** 불러오는 중: 반짝이는 빈 상자 (스켈레톤) */
+export function Loading({ lines = 3 }: { lines?: number }) {
+  return (
+    <div role="status" className="flex flex-col gap-3" aria-live="polite">
+      <span className="sr-only">불러오는 중…</span>
+      {Array.from({ length: lines }, (_, i) => (
+        <div
+          key={i}
+          className="from-brand-50 via-brand-100/70 to-brand-50 dark:from-brand-700/10 dark:via-brand-700/25 dark:to-brand-700/10 h-16 animate-pulse rounded-2xl bg-gradient-to-r"
+          style={{ opacity: 1 - i * 0.2 }}
+        />
+      ))}
+    </div>
   );
 }
 
@@ -207,6 +301,8 @@ export function PageShell({
 const BUTTON_ICONS: [RegExp, LucideIcon][] = [
   [/카톡/, MessageCircle],
   [/^로그인$/, LogIn],
+  [/회원가입|가입/, UserPlus],
+  [/비밀번호/, KeyRound],
   [/수락|확인|승인|동의/, BadgeCheck],
   [/거절|취소|닫기/, X],
   [/되돌|복구|재개/, Undo2],

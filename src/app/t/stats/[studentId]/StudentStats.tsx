@@ -1,12 +1,18 @@
 "use client";
 
-import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { api } from "@/components/api";
 import { APPROVAL_METHOD_LABEL } from "@/components/approval-types";
 import { STATUS_STYLE, fmtDateTime, fmtRange } from "@/components/fmt";
-import { Card, EmptyState, Notice, PageHeader } from "@/components/ui";
+import {
+  BackLink,
+  Card,
+  EmptyState,
+  Loading,
+  Notice,
+  PageHeader,
+} from "@/components/ui";
 
 interface Item {
   id: string;
@@ -40,12 +46,10 @@ export function StudentStats({ studentId }: { studentId: string }) {
     );
   }, [studentId, from, to]);
   if (error) return <Notice tone="error">{error}</Notice>;
-  if (!data) return <p className="text-muted text-sm">불러오는 중…</p>;
+  if (!data) return <Loading />;
   return (
     <div className="flex flex-col gap-4">
-      <Link href="/t/stats" className="text-muted text-sm">
-        ← 수강 현황
-      </Link>
+      <BackLink href="/t/stats">수강 현황</BackLink>
       <PageHeader
         title={
           <>

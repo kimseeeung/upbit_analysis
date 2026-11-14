@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { api } from "@/components/api";
 import { fmtDateTime } from "@/components/fmt";
-import { Button, Card, EmptyState, Notice } from "@/components/ui";
+import { Button, Card, EmptyState, Loading, Notice } from "@/components/ui";
 
 interface Conflict {
   id: string;
@@ -57,7 +57,7 @@ export function SyncConflicts() {
     );
     void load();
   }
-  if (!list) return <p className="text-muted text-sm">불러오는 중…</p>;
+  if (!list) return <Loading />;
   return (
     <div className="flex flex-col gap-3">
       {msg && <Notice tone={msg.tone}>{msg.text}</Notice>}

@@ -1,7 +1,6 @@
 "use client";
 
 import { DateSelect } from "@/components/pickers";
-import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { api } from "@/components/api";
 import { OFFLINE_DISABLED, useOffline } from "@/lib/offline/network";
@@ -9,10 +8,12 @@ import { PassSummary, type PassView } from "@/components/PassCards";
 import { PausePanel } from "@/components/PausePanel";
 import { RulesEditor } from "@/components/RulesEditor";
 import {
+  BackLink,
   Button,
   Card,
   Checkbox,
   EmptyState,
+  Loading,
   Notice,
   PageHeader,
   TextField,
@@ -284,16 +285,10 @@ export function PassManager({ studentId }: { studentId: string }) {
   }
 
   if (!d)
-    return msg ? (
-      <Notice tone={msg.tone}>{msg.text}</Notice>
-    ) : (
-      <p className="text-muted text-sm">불러오는 중…</p>
-    );
+    return msg ? <Notice tone={msg.tone}>{msg.text}</Notice> : <Loading />;
   return (
     <div className="flex flex-col gap-4">
-      <Link href={`/t/students/${studentId}`} className="text-muted text-sm">
-        ← {d.name}
-      </Link>
+      <BackLink href={`/t/students/${studentId}`}>{d.name}</BackLink>
       <PageHeader title="이용권 관리">
         {mode.kind === "none" && (
           <Button

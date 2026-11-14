@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { api } from "@/components/api";
 import { fmtDateTime } from "@/components/fmt";
-import { Button, Card, Notice, PageHeader } from "@/components/ui";
+import { Button, Card, Loading, Notice, PageHeader } from "@/components/ui";
 
 interface Data {
   center: {
@@ -66,11 +66,7 @@ export function CenterTrainers() {
     if (r.ok) void load();
   }
   if (!d)
-    return msg ? (
-      <Notice tone={msg.tone}>{msg.text}</Notice>
-    ) : (
-      <p className="text-muted text-sm">불러오는 중…</p>
-    );
+    return msg ? <Notice tone={msg.tone}>{msg.text}</Notice> : <Loading />;
   const pending = d.members.filter((m) => m.status === "PENDING");
   const active = d.members.filter((m) => m.status === "ACTIVE");
   const left = d.members.filter((m) => m.status === "LEFT" && m.joinedAt);

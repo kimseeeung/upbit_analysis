@@ -45,7 +45,7 @@ export function NotificationGuide() {
             <li>
               &quot;홈 화면에 추가&quot; 또는 &quot;앱 설치&quot;를 누릅니다
             </li>
-            <li>홈 화면의 PT 관리 아이콘으로 엽니다</li>
+            <li>홈 화면의 머슬매니아 아이콘으로 엽니다</li>
             <li>
               아래 &quot;알림 허용&quot;을 누르고 &quot;허용&quot;을 고릅니다
             </li>
@@ -57,8 +57,8 @@ export function NotificationGuide() {
             <li>Safari 아래쪽 공유 버튼(□↑)을 누릅니다</li>
             <li>&quot;홈 화면에 추가&quot;를 누릅니다</li>
             <li>
-              홈 화면의 PT 관리 아이콘으로 엽니다 (Safari에서는 알림을 받을 수
-              없습니다)
+              홈 화면의 머슬매니아 아이콘으로 엽니다 (Safari에서는 알림을 받을
+              수 없습니다)
             </li>
             <li>
               아래 &quot;알림 허용&quot;을 누르고 &quot;허용&quot;을 고릅니다

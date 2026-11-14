@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { api } from "@/components/api";
@@ -8,6 +7,7 @@ import { useOffline } from "@/lib/offline/network";
 import {
   Button,
   Checkbox,
+  LinkButton,
   Notice,
   PasswordField,
   RoleTabs,
@@ -128,10 +128,16 @@ export function LoginForm() {
       <Button type="submit" disabled={busy || !loginId || !password || offline}>
         로그인
       </Button>
-      <div className="text-muted flex justify-center gap-4 text-sm">
-        <Link href="/find-id">아이디 찾기</Link>
-        <Link href="/reset-password">비밀번호 재설정</Link>
-        <Link href="/signup">회원가입</Link>
+      <div className="grid grid-cols-3 gap-2">
+        <LinkButton href="/find-id" icon="search" variant="soft" stack>
+          아이디 찾기
+        </LinkButton>
+        <LinkButton href="/reset-password" icon="key" variant="soft" stack>
+          비밀번호 재설정
+        </LinkButton>
+        <LinkButton href="/signup" icon="userPlus" variant="soft" stack>
+          회원가입
+        </LinkButton>
       </div>
     </form>
   );

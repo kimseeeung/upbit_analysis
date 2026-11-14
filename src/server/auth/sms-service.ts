@@ -111,7 +111,7 @@ export async function issueCode(
   });
   await getSmsSender().send(
     phone,
-    `[PT 관리] 인증번호 [${code}]를 3분 안에 입력해 주세요.`,
+    `[머슬매니아] 인증번호 [${code}]를 3분 안에 입력해 주세요.`,
   );
   return {
     verificationId: row.id,

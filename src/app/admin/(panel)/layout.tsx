@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Suspense } from "react";
-import { Logo } from "@/components/ui";
+import { Loading, Logo } from "@/components/ui";
 import { requireOperatorPage } from "@/server/admin/http";
 import { AdminLogout } from "./AdminLogout";
 
@@ -50,7 +50,7 @@ async function Gate({ children }: { children: React.ReactNode }) {
 /** 운영 관리자 화면 틀. 세션·IP는 서버에서 매 요청 검사 */
 export default function AdminPanelLayout({ children }: LayoutProps<"/admin">) {
   return (
-    <Suspense fallback={<p className="text-muted p-6 text-sm">불러오는 중…</p>}>
+    <Suspense fallback={<Loading />}>
       <Gate>{children}</Gate>
     </Suspense>
   );

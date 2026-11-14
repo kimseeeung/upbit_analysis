@@ -3,7 +3,13 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { api } from "@/components/api";
-import { Button, Notice, PasswordField, TextField } from "@/components/ui";
+import {
+  Button,
+  Loading,
+  Notice,
+  PasswordField,
+  TextField,
+} from "@/components/ui";
 
 /** 아이디·비밀번호·롤백 PIN(6자리) 직접 설정 → 초대받은 휴대폰 인증 → 활성화 (12.2) */
 export function InviteAccept({ token }: { token: string }) {
@@ -29,11 +35,7 @@ export function InviteAccept({ token }: { token: string }) {
   }, [token]);
 
   if (!invite)
-    return error ? (
-      <Notice tone="error">{error}</Notice>
-    ) : (
-      <p className="text-sm">불러오는 중…</p>
-    );
+    return error ? <Notice tone="error">{error}</Notice> : <Loading />;
 
   async function sendCode() {
     setError(null);

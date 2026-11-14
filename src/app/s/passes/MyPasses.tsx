@@ -5,7 +5,7 @@ import { api } from "@/components/api";
 import { readSnapshot } from "@/lib/offline/client";
 import { PassSummary, type PassView } from "@/components/PassCards";
 import { PausePanel } from "@/components/PausePanel";
-import { EmptyState, Notice, SectionTitle } from "@/components/ui";
+import { EmptyState, Loading, Notice, SectionTitle } from "@/components/ui";
 
 export function MyPasses() {
   const [data, setData] = useState<{
@@ -29,12 +29,7 @@ export function MyPasses() {
       },
     );
   }, []);
-  if (!data)
-    return error ? (
-      <Notice tone="error">{error}</Notice>
-    ) : (
-      <p className="text-muted text-sm">불러오는 중…</p>
-    );
+  if (!data) return error ? <Notice tone="error">{error}</Notice> : <Loading />;
   const current = data.passes.filter(
     (p) => p.status === "ACTIVE" || p.status === "PAUSED",
   );

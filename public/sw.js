@@ -1,13 +1,13 @@
-/* PT 관리 서비스 워커: 화면 파일 캐시(오프라인 열기), 웹 푸시 수신과 알림 클릭 (명세 8, 11) */
+/* 머슬매니아 서비스 워커: 화면 파일 캐시(오프라인 열기), 웹 푸시 수신과 알림 클릭 (명세 8, 11) */
 
-const CACHE = "pt-shell-v1";
+const CACHE = "pt-shell-v2";
 const OFFLINE_URL = "/offline.html";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches
       .open(CACHE)
-      .then((c) => c.addAll([OFFLINE_URL, "/manifest.webmanifest", "/icon.svg"]))
+      .then((c) => c.addAll([OFFLINE_URL, "/manifest.webmanifest", "/icons/icon-192.png", "/icons/icon.svg"]))
       .then(() => self.skipWaiting()),
   );
 });
@@ -88,12 +88,14 @@ self.addEventListener("push", (event) => {
   try {
     data = event.data ? event.data.json() : {};
   } catch {
-    data = { title: "PT 관리", body: event.data ? event.data.text() : "" };
+    data = { title: "머슬매니아", body: event.data ? event.data.text() : "" };
   }
-  const title = data.title || "PT 관리";
+  const title = data.title || "머슬매니아";
   event.waitUntil(
     self.registration.showNotification(title, {
       body: data.body || "",
+      icon: "/icons/icon-192.png",
+      badge: "/icons/favicon-48.png",
       tag: data.id,
       data: { id: data.id, url: data.url || "/" },
       actions: Array.isArray(data.actions) ? data.actions : [],

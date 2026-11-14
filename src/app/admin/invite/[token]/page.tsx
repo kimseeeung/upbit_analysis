@@ -1,3 +1,4 @@
+import { Loading } from "@/components/ui";
 import { Suspense } from "react";
 import { InviteAccept } from "./InviteAccept";
 
@@ -12,7 +13,7 @@ export default function AdminInvitePage({
   return (
     <main className="mx-auto flex w-full max-w-sm flex-1 flex-col gap-4 px-4 py-12">
       <h1 className="text-xl font-semibold">운영 관리자 초대</h1>
-      <Suspense fallback={<p className="text-sm">불러오는 중…</p>}>
+      <Suspense fallback={<Loading />}>
         <Body params={params} />
       </Suspense>
     </main>

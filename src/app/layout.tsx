@@ -5,18 +5,24 @@ import { SwRegister } from "@/components/SwRegister";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "PT 관리",
+  title: "머슬매니아",
   description: "트레이너와 수강생이 함께 쓰는 PT 일정·이용권 관리",
-  applicationName: "PT 관리",
+  applicationName: "머슬매니아",
   manifest: "/manifest.webmanifest",
-  icons: { icon: "/icon.svg", apple: "/icon.svg" },
-  appleWebApp: { capable: true, title: "PT 관리" },
+  icons: {
+    icon: [
+      { url: "/icons/icon.svg", type: "image/svg+xml" },
+      { url: "/icons/favicon-48.png", sizes: "48x48", type: "image/png" },
+    ],
+    apple: "/icons/apple-touch-icon.png",
+  },
+  appleWebApp: { capable: true, title: "머슬매니아" },
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#ffffff",
+  themeColor: "#7c5cff",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

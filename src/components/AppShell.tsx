@@ -98,7 +98,7 @@ export function AppShell({
             {switchLink}
           </div>
           <div className="text-sm whitespace-nowrap">
-            <LogoutButton />
+            <LogoutButton compact />
           </div>
         </div>
         <div className="flex items-center justify-between gap-2 text-sm">

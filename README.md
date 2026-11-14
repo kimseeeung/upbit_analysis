@@ -1,4 +1,6 @@
-# PT 관리앱
+# 머슬매니아 (PT 관리앱)
+
+<img src="public/icons/icon-192.png" width="96" alt="머슬매니아 아이콘">
 
 트레이너와 수강생이 PT 일정·이용권·수업 완료 승인을 함께 관리하는 모바일 웹(PWA) 서비스.
 명세는 [`docs/`](docs), 개발 규칙은 [`CLAUDE.md`](CLAUDE.md)를 봅니다.

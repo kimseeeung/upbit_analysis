@@ -10,6 +10,7 @@ import {
   Button,
   Card,
   EmptyState,
+  Loading,
   Notice,
   SectionTitle,
   TextField,
@@ -160,12 +161,7 @@ export function RequestsInbox() {
     else setError(r.message);
   }
 
-  if (!data)
-    return error ? (
-      <Notice tone="error">{error}</Notice>
-    ) : (
-      <p className="text-muted text-sm">불러오는 중…</p>
-    );
+  if (!data) return error ? <Notice tone="error">{error}</Notice> : <Loading />;
   async function post(url: string, body: unknown) {
     setError(null);
     const r = await api(url, { body });
