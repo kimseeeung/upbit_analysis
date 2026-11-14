@@ -1,4 +1,4 @@
-import { afterAll, beforeEach, describe, expect, it } from "vitest";
+import { afterAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { verifySecret } from "@/lib/auth/hash";
 import { hashSessionToken } from "@/lib/auth/session-rules";
 import { kstDateTime } from "@/lib/time";
@@ -257,7 +257,7 @@ describe("회원가입", () => {
 });
 
 describe("SMS 본인인증", () => {
-  it("30초 뒤부터 재발송, 하루 5회까지", async () => {
+  it("30초 뒤부터 재발송, 하루 횟수 제한 없음", async () => {
     captureSms();
     const phone = "01055554444";
     await sendVerificationCode(db, { phone, purpose: "SIGNUP" }, T0);
@@ -265,19 +265,36 @@ describe("SMS 본인인증", () => {
       sendVerificationCode(db, { phone, purpose: "SIGNUP" }, at(10_000)),
       "COOLDOWN",
     );
-    for (let i = 1; i <= 4; i++) {
+    // 하루 5회 제한은 없앴다 (2026-11-14): 여러 번 받아도 된다
+    for (let i = 1; i <= 7; i++) {
       await sendVerificationCode(db, { phone, purpose: "SIGNUP" }, at(i * MIN));
     }
-    await expectAppError(
-      sendVerificationCode(db, { phone, purpose: "SIGNUP" }, at(10 * MIN)),
-      "DAILY_LIMIT",
-    );
-    // 다음 날(한국 날짜)에는 다시 가능
-    await sendVerificationCode(
-      db,
-      { phone, purpose: "SIGNUP" },
-      kstDateTime(2026, 11, 14, 0, 1),
-    );
+  });
+
+  it("테스트 모드(문자 업체 연결 전): 000000이면 만료·틀린 횟수와 관계없이 통과", async () => {
+    vi.stubEnv("SMS_FIXED_CODE", "");
+    vi.stubEnv("SMS_PROVIDER", "console");
+    try {
+      captureSms();
+      const phone = "01055551111";
+      const { verificationId, testCode } = await sendVerificationCode(
+        db,
+        { phone, purpose: "SIGNUP" },
+        T0,
+      );
+      expect(testCode).toBe("000000");
+      for (let i = 0; i < 6; i++)
+        await expectAppError(
+          verifyCode(db, { verificationId, code: "123456" }, at(i * 1000)),
+          i < 4 ? "WRONG_CODE" : "TOO_MANY",
+        );
+      // 3분이 지나고 5회 넘게 틀렸어도 000000은 통과
+      await expect(
+        verifyCode(db, { verificationId, code: "000000" }, at(10 * MIN)),
+      ).resolves.toMatchObject({ phone });
+    } finally {
+      vi.unstubAllEnvs();
+    }
   });
 
   it("3분이 지나면 만료, 5회 틀리면 새 번호를 받아야 한다", async () => {

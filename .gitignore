@@ -52,3 +52,6 @@ next-env.d.ts
 
 # 배포 묶음 (npm run deploy 가 만듦)
 /release/
+
+# 계정 목록 (npm run accounts:list 가 만듦)
+accounts-list.txt

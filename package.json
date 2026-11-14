@@ -23,6 +23,8 @@
     "deploy:init": "bash scripts/deploy-init.sh",
     "deploy:https": "bash scripts/deploy-https.sh",
     "accounts:test": "bash scripts/accounts-test.sh",
+    "accounts:list": "bash scripts/with-server-db.sh scripts/list-accounts.ts",
+    "accounts:unlock": "bash scripts/with-server-db.sh scripts/accounts-unlock.ts",
     "db:seed": "prisma db seed",
     "db:demo": "tsx prisma/demo.ts"
   },

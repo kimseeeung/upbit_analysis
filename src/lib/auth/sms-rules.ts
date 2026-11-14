@@ -1,17 +1,15 @@
 /**
  * SMS 본인인증 규칙 (명세 1.2, 순수 함수).
  * - 6자리, 3분 유효
- * - 재발송은 30초 뒤부터, 하루(한국 날짜) 5회까지 — 전화번호 기준, 용도 합산
+ * - 재발송은 30초 뒤부터 — 전화번호 기준, 용도 합산 (하루 5회 제한은 2026-11-14 사용자 요청으로 없앰)
  * - 5회 틀리면 그 번호는 못 쓰고 새 번호를 받아야 함
  * - 인증 완료 후 30분 안에 가입·재설정을 끝내야 함
  */
 
 import { randomInt } from "node:crypto";
-import { toKstDateKey } from "@/lib/time";
 
 export const CODE_TTL_MS = 3 * 60 * 1000;
 export const RESEND_COOLDOWN_MS = 30 * 1000;
-export const DAILY_SEND_LIMIT = 5;
 export const MAX_ATTEMPTS = 5;
 export const VERIFIED_USE_WINDOW_MS = 30 * 60 * 1000;
 
@@ -37,21 +35,10 @@ export function generateSmsCode(): string {
 
 export type SendCheck =
   | { ok: true }
-  | { ok: false; reason: "COOLDOWN"; retryAfterSec: number; message: string }
-  | { ok: false; reason: "DAILY_LIMIT"; message: string };
+  | { ok: false; reason: "COOLDOWN"; retryAfterSec: number; message: string };
 
 /** 같은 번호로 보낸 기록(createdAt)으로 지금 보낼 수 있는지 판단 */
 export function checkCanSend(sentAt: Date[], now: Date): SendCheck {
-  const today = toKstDateKey(now);
-  const todayCount = sentAt.filter((d) => toKstDateKey(d) === today).length;
-  if (todayCount >= DAILY_SEND_LIMIT) {
-    return {
-      ok: false,
-      reason: "DAILY_LIMIT",
-      message:
-        "인증번호는 하루 5회까지 받을 수 있습니다. 내일 다시 시도해 주세요",
-    };
-  }
   const last = sentAt.reduce<Date | null>(
     (acc, d) => (!acc || d > acc ? d : acc),
     null,

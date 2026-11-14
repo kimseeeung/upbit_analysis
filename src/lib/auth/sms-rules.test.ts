@@ -25,19 +25,11 @@ describe("인증번호 발송 제한", () => {
     expect(checkCanSend([sec(-30)], now).ok).toBe(true);
   });
 
-  it("한국 날짜 기준 하루 5회", () => {
-    const sent = [1, 2, 3, 4, 5].map((h) => kstDateTime(2026, 11, 13, h, 0));
-    expect(checkCanSend(sent, now)).toMatchObject({
-      ok: false,
-      reason: "DAILY_LIMIT",
-    });
-    // 다음 날 00:00 KST부터 다시 가능
-    expect(checkCanSend(sent, kstDateTime(2026, 11, 14, 0, 0)).ok).toBe(true);
-    // 전날 기록은 세지 않는다 (UTC로는 같은 날이어도)
-    const yesterday = [1, 2, 3, 4, 5].map((h) =>
-      kstDateTime(2026, 11, 12, 18 + h - 1, 0),
+  it("하루 횟수 제한 없음 (30초 간격만 지키면 계속 받을 수 있음)", () => {
+    const sent = [1, 2, 3, 4, 5, 6, 7].map((h) =>
+      kstDateTime(2026, 11, 13, h, 0),
     );
-    expect(checkCanSend(yesterday, now).ok).toBe(true);
+    expect(checkCanSend(sent, now).ok).toBe(true);
   });
 });
 

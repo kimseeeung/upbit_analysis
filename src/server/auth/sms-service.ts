@@ -11,7 +11,6 @@ import {
   smsTestMode,
 } from "@/lib/auth/sms-rules";
 import { isValidMobilePhone, normalizePhone } from "@/lib/phone";
-import { startOfKstDay } from "@/lib/time";
 import type { Db } from "@/server/db-types";
 import { AppError } from "@/server/errors";
 import { getSmsSender } from "@/server/sms/sender";
@@ -74,12 +73,9 @@ export async function issueCode(
   // 문자 업체 연결 전: 회원·운영 관리자 모두 000000 (2026-11-14 사용자 요청)
   const test = smsTestMode();
   if (!test) {
-    // 하루 5회는 한국 날짜 기준이므로 전날 00:00 KST부터 넉넉히 읽는다
+    // 재발송 간격(30초) 확인용으로 최근 기록만 읽는다
     const recent = await db.smsVerification.findMany({
-      where: {
-        phone,
-        createdAt: { gte: new Date(startOfKstDay(now).getTime() - 1) },
-      },
+      where: { phone, createdAt: { gte: new Date(now.getTime() - 60_000) } },
       select: { createdAt: true },
     });
     const check = checkCanSend(
@@ -131,14 +127,21 @@ export async function verifyCode(
     where: { id: input.verificationId },
   });
   if (!v) throw new AppError("NOT_FOUND", "인증번호를 다시 받아 주세요");
+  // 문자 업체 연결 전(테스트 모드): 000000이면 시간·틀린 횟수와 관계없이 통과
+  if (smsTestMode() && input.code.trim() === TEST_SMS_CODE) {
+    if (!v.verifiedAt)
+      await db.smsVerification.update({
+        where: { id: v.id },
+        data: { verifiedAt: now },
+      });
+    return { phone: v.phone, purpose: v.purpose };
+  }
   const pre = precheckAttempt(v, now);
   if (!pre.ok) throw new AppError(pre.reason, pre.message);
 
-  // 문자 업체 연결 전(테스트 모드)에는 어떤 인증이든 000000이면 통과 (이미 보낸 다른 번호여도)
   const match =
-    (smsTestMode() && input.code === TEST_SMS_CODE) ||
-    (/^\d{6}$/.test(input.code) &&
-      (await verifySecret(input.code, { hash: v.codeHash, salt: v.codeSalt })));
+    /^\d{6}$/.test(input.code) &&
+    (await verifySecret(input.code, { hash: v.codeHash, salt: v.codeSalt }));
   if (!match) {
     const attempts = v.attempts + 1;
     await db.smsVerification.update({
