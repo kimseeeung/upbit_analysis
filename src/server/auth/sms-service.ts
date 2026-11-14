@@ -134,9 +134,11 @@ export async function verifyCode(
   const pre = precheckAttempt(v, now);
   if (!pre.ok) throw new AppError(pre.reason, pre.message);
 
+  // 문자 업체 연결 전(테스트 모드)에는 어떤 인증이든 000000이면 통과 (이미 보낸 다른 번호여도)
   const match =
-    /^\d{6}$/.test(input.code) &&
-    (await verifySecret(input.code, { hash: v.codeHash, salt: v.codeSalt }));
+    (smsTestMode() && input.code === TEST_SMS_CODE) ||
+    (/^\d{6}$/.test(input.code) &&
+      (await verifySecret(input.code, { hash: v.codeHash, salt: v.codeSalt })));
   if (!match) {
     const attempts = v.attempts + 1;
     await db.smsVerification.update({
