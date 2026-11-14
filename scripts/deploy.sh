@@ -19,6 +19,9 @@ SUMMARY="$(git log -1 --pretty=%s 2>/dev/null | tr -d '"$`' || true)"
 
 bash scripts/build-release.sh
 
+echo "▶ 서버 공간 정리"
+ssh "$DEPLOY_HOST" "bash -s -- $DEPLOY_DIR" < scripts/server-clean.sh
+
 echo "▶ 서버($DEPLOY_HOST:$DEPLOY_DIR)로 보내는 중"
 TAR_FLAGS=""
 if tar --version 2>/dev/null | grep -qi bsdtar; then TAR_FLAGS="--no-xattrs --no-mac-metadata"; fi
@@ -33,8 +36,7 @@ COPYFILE_DISABLE=1 tar czf - $TAR_FLAGS release docker-compose.yml deploy script
     rm -rf deploy scripts && mv .incoming/deploy deploy && mv .incoming/scripts scripts
     mv -f .incoming/docker-compose.yml docker-compose.yml
     rm -rf .incoming
-    # 예전 방식(서버 빌드)에서 남은 파일 정리
-    rm -rf src node_modules .next e2e docs prisma public Dockerfile package.json package-lock.json"
+    true"
 
 # 처음 배포: 운영 설정 파일도 보냄 (서버에 이미 있으면 그대로 둠)
 if [ -f .env.production ] && ! ssh "$DEPLOY_HOST" "test -f $DEPLOY_DIR/.env.production"; then
