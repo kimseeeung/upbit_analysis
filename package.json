@@ -19,6 +19,7 @@
     "postinstall": "prisma generate",
     "test:db": "vitest run --config vitest.db.config.mts",
     "test:sim": "vitest run --config vitest.sim.config.mts",
+    "deploy": "bash scripts/deploy.sh",
     "db:seed": "prisma db seed",
     "db:demo": "tsx prisma/demo.ts"
   },

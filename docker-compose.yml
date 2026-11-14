@@ -1,0 +1,58 @@
+# 머슬매니아 서버 구성: 앱 + PostgreSQL (+ 선택: HTTPS 자동 발급 Caddy)
+# 값은 .env.production에서 읽는다 (docker compose --env-file .env.production ...)
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ptapp
+      POSTGRES_USER: ptapp
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD를 .env.production에 넣어 주세요}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ptapp -d ptapp"]
+      interval: 5s
+      retries: 20
+
+  app:
+    build:
+      context: .
+      args:
+        NEXT_PUBLIC_NOTIFY_QUIET_HOURS: ${NEXT_PUBLIC_NOTIFY_QUIET_HOURS:-}
+    restart: unless-stopped
+    env_file: .env.production
+    environment:
+      DATABASE_URL: postgresql://ptapp:${POSTGRES_PASSWORD}@db:5432/ptapp?schema=public
+      JOBS_ENABLED: "1"
+      APP_VERSION: ${APP_VERSION:-dev}
+      DEPLOYED_BY: ${DEPLOYED_BY:-배포 스크립트}
+      DEPLOY_SUMMARY: ${DEPLOY_SUMMARY:-}
+    depends_on:
+      db:
+        condition: service_healthy
+    # 같은 서버의 nginx 등이 넘겨받을 수 있게 서버 안에서만 연다
+    ports:
+      - "127.0.0.1:${APP_PORT:-3100}:3000"
+
+  # 서버에 웹 서버(nginx 등)가 없을 때: COMPOSE_PROFILES=https 로 켜면 80/443에서 HTTPS 자동 발급
+  caddy:
+    image: caddy:2-alpine
+    profiles: ["https"]
+    restart: unless-stopped
+    environment:
+      DOMAIN: ${DOMAIN:?DOMAIN을 .env.production에 넣어 주세요}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - app
+
+volumes:
+  pgdata:
+  caddy_data:
+  caddy_config:
