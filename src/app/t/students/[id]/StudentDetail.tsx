@@ -8,7 +8,7 @@ import { enqueue } from "@/lib/offline/store";
 import { KakaoShareButton } from "@/components/KakaoShareButton";
 import { PassSummary, type PassView } from "@/components/PassCards";
 import { StudentNotify } from "./StudentNotify";
-import { Button, Card, Notice } from "@/components/ui";
+import { Button, Card, EmptyState, Notice } from "@/components/ui";
 
 interface Detail {
   studentId: string;
@@ -81,30 +81,30 @@ export function StudentDetail({ id }: { id: string }) {
     return msg ? (
       <Notice tone={msg.tone}>{msg.text}</Notice>
     ) : (
-      <p className="text-sm text-zinc-500">불러오는 중…</p>
+      <p className="text-muted text-sm">불러오는 중…</p>
     );
   return (
     <div className="flex flex-col gap-4">
-      <Link href="/t/students" className="text-sm text-zinc-500">
+      <Link href="/t/students" className="text-muted text-sm">
         ← 수강생 목록
       </Link>
       <h1 className="text-lg font-semibold">
         {d.name}{" "}
-        {!d.registered && <span className="text-xs text-zinc-500">미가입</span>}
+        {!d.registered && <span className="text-muted text-xs">미가입</span>}
       </h1>
       <Card title="기본 정보">
         <dl className="grid grid-cols-[6rem_1fr] gap-y-1 text-sm">
-          <dt className="text-zinc-500">전화번호</dt>
+          <dt className="text-muted">전화번호</dt>
           <dd>{d.phone}</dd>
           {d.birthDate && (
             <>
-              <dt className="text-zinc-500">생년월일</dt>
+              <dt className="text-muted">생년월일</dt>
               <dd>{d.birthDate}</dd>
             </>
           )}
-          <dt className="text-zinc-500">담당 시작</dt>
+          <dt className="text-muted">담당 시작</dt>
           <dd>{d.linkedSince}</dd>
-          <dt className="text-zinc-500">예약 가능</dt>
+          <dt className="text-muted">예약 가능</dt>
           <dd>{d.availableToday}회 (오늘 기준)</dd>
         </dl>
       </Card>
@@ -112,13 +112,13 @@ export function StudentDetail({ id }: { id: string }) {
         <h2 className="font-semibold">이용권</h2>
         <Link
           href={`/t/students/${id}/passes`}
-          className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm dark:border-zinc-700"
+          className="border-line rounded-lg border px-3 py-1.5 text-sm"
         >
           이용권 관리
         </Link>
       </div>
       {d.passes.length === 0 && (
-        <p className="text-sm text-zinc-500">등록한 이용권이 없습니다.</p>
+        <EmptyState icon="ticket">등록한 이용권이 없습니다.</EmptyState>
       )}
       {d.passes.map((p) => (
         <PassSummary key={p.id} p={p} />
@@ -126,7 +126,7 @@ export function StudentDetail({ id }: { id: string }) {
       <Card title="트레이너 메모">
         <textarea
           aria-label="트레이너 메모"
-          className="min-h-24 rounded-lg border border-zinc-300 bg-white p-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+          className="border-line bg-surface min-h-24 rounded-lg border p-2 text-sm"
           value={memo}
           onChange={(e) => setMemo(e.target.value)}
         />
@@ -159,7 +159,7 @@ export function StudentDetail({ id }: { id: string }) {
             />
           </Card>
         ))}
-      <p className="text-sm text-zinc-500">
+      <p className="text-muted text-sm">
         수업 이력은 수강 현황에서 볼 수 있습니다.
       </p>
       <Link href={`/t/students/${id}/transfer`} className="text-sm underline">

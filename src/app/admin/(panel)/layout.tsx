@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Suspense } from "react";
+import { Logo } from "@/components/ui";
 import { requireOperatorPage } from "@/server/admin/http";
 import { AdminLogout } from "./AdminLogout";
 
@@ -16,8 +17,8 @@ async function Gate({ children }: { children: React.ReactNode }) {
   const op = await requireOperatorPage();
   return (
     <>
-      <header className="flex items-center justify-between border-b border-zinc-200 px-4 py-3 dark:border-zinc-800">
-        <span className="font-semibold">PT 관리 · 운영</span>
+      <header className="border-line flex items-center justify-between border-b px-4 py-3">
+        <Logo sub="운영" />
         <div className="flex items-center gap-3 text-sm">
           <span>{op.name}님</span>
           <AdminLogout />
@@ -26,13 +27,13 @@ async function Gate({ children }: { children: React.ReactNode }) {
       <div className="flex flex-1 flex-col md:flex-row">
         <nav
           aria-label="운영 메뉴"
-          className="flex shrink-0 gap-1 overflow-x-auto border-b border-zinc-200 p-2 text-sm md:w-44 md:flex-col md:border-r md:border-b-0 dark:border-zinc-800"
+          className="border-line flex shrink-0 gap-1 overflow-x-auto border-b p-2 text-sm md:w-44 md:flex-col md:border-r md:border-b-0"
         >
           {MENU.map((m) => (
             <Link
               key={m.href}
               href={m.href}
-              className="rounded px-3 py-2 whitespace-nowrap hover:bg-zinc-100 dark:hover:bg-zinc-800"
+              className="hover:bg-brand-50 dark:hover:bg-brand-700/20 rounded px-3 py-2 whitespace-nowrap"
             >
               {m.label}
             </Link>
@@ -49,9 +50,7 @@ async function Gate({ children }: { children: React.ReactNode }) {
 /** 운영 관리자 화면 틀. 세션·IP는 서버에서 매 요청 검사 */
 export default function AdminPanelLayout({ children }: LayoutProps<"/admin">) {
   return (
-    <Suspense
-      fallback={<p className="p-6 text-sm text-zinc-500">불러오는 중…</p>}
-    >
+    <Suspense fallback={<p className="text-muted p-6 text-sm">불러오는 중…</p>}>
       <Gate>{children}</Gate>
     </Suspense>
   );

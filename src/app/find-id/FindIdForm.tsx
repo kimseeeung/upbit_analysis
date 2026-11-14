@@ -72,7 +72,7 @@ export function FindIdForm() {
         {error && <Notice tone="error">{error}</Notice>}
         <Link
           href="/login"
-          className="text-center text-sm text-zinc-500 underline"
+          className="text-muted text-center text-sm underline"
         >
           로그인하러 가기
         </Link>

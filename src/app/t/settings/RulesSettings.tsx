@@ -40,7 +40,7 @@ export function RulesSettings() {
 
   return (
     <Card title={`수강 규칙 (기본) · v${version}`}>
-      <p className="text-xs text-zinc-500">
+      <p className="text-muted text-xs">
         이용권을 등록할 때 이 규칙을 불러오고, 수강생별로 고칠 수 있습니다.
         수강생이 동의해야 노쇼·당일 취소를 차감합니다.
       </p>

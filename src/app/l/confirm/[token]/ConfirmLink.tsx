@@ -32,7 +32,7 @@ export function ConfirmLink({ token }: { token: string }) {
             {fmtRange(data.startAt, data.endAt)}
           </p>
           {data.status !== "PENDING_CONFIRM" ? (
-            <p className="text-sm text-zinc-500">
+            <p className="text-muted text-sm">
               이미 응답했거나 바뀐 예약입니다.
             </p>
           ) : rejecting ? (
@@ -68,7 +68,7 @@ export function ConfirmLink({ token }: { token: string }) {
               </Button>
             </div>
           )}
-          <p className="text-xs text-zinc-500">
+          <p className="text-muted text-xs">
             응답하지 않으면 수업 시작 시각에 자동 확정됩니다. 다른 시간을 원하면
             트레이너에게 알려 주세요.
           </p>

@@ -1,5 +1,6 @@
 "use client";
 
+import { DateSelect } from "@/components/pickers";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { api } from "@/components/api";
@@ -316,7 +317,7 @@ export function SignupWizard() {
         {steps.map((s, i) => (
           <li
             key={s}
-            className={`h-1 flex-1 rounded ${i <= stepIndex ? "bg-zinc-900 dark:bg-zinc-100" : "bg-zinc-200 dark:bg-zinc-800"}`}
+            className={`h-1.5 flex-1 rounded-full ${i <= stepIndex ? "dark:bg-brand-50 bg-zinc-900" : "dark:bg-brand-700/20 bg-zinc-200"}`}
           />
         ))}
       </ol>
@@ -327,7 +328,7 @@ export function SignupWizard() {
       {step === "role" && (
         <div className="flex flex-col gap-3">
           <RoleTabs value={role} onChange={setRole} />
-          <p className="text-xs text-zinc-500">
+          <p className="text-muted text-xs">
             회원 유형은 가입 후 바꿀 수 없습니다.
           </p>
         </div>
@@ -335,9 +336,7 @@ export function SignupWizard() {
 
       {step === "info" && role && (
         <div className="flex flex-col gap-4">
-          <p className="text-sm text-zinc-500">
-            {ROLE_LABEL[role]}로 가입합니다.
-          </p>
+          <p className="text-muted text-sm">{ROLE_LABEL[role]}로 가입합니다.</p>
           <div className="flex items-end gap-2">
             <TextField
               className="flex-1"
@@ -406,18 +405,20 @@ export function SignupWizard() {
                   id="gender"
                   value={gender}
                   onChange={(e) => setGender(e.target.value as typeof gender)}
-                  className="rounded-lg border border-zinc-300 bg-white px-3 py-2.5 dark:border-zinc-700 dark:bg-zinc-900"
+                  className="border-line bg-surface rounded-xl border px-3 py-2.5"
                 >
                   <option value="">선택 안 함</option>
                   <option value="MALE">남</option>
                   <option value="FEMALE">여</option>
                 </select>
               </div>
-              <TextField
+              <DateSelect
                 label="생년월일 (선택)"
-                type="date"
+                allowEmpty
+                fromYear={1930}
+                toYear={new Date().getFullYear()}
                 value={birthDate}
-                onChange={(e) => setBirthDate(e.target.value)}
+                onChange={(v) => setBirthDate(v)}
               />
             </div>
           )}
@@ -428,7 +429,7 @@ export function SignupWizard() {
                 <div className="flex items-center justify-between text-sm">
                   <span>
                     {center.name}{" "}
-                    <span className="text-zinc-500">· {center.address}</span>
+                    <span className="text-muted">· {center.address}</span>
                   </span>
                   <Button variant="ghost" onClick={() => setCenter(null)}>
                     바꾸기
@@ -462,7 +463,7 @@ export function SignupWizard() {
                     onChange={(e) => setCenterQuery(e.target.value)}
                     hint="가입한 센터를 고르면 소속 요청을 보냅니다"
                   />
-                  <ul className="flex flex-col divide-y divide-zinc-200 dark:divide-zinc-800">
+                  <ul className="divide-line flex flex-col divide-y">
                     {centerQuery.trim() &&
                       centerHits.map((c) => (
                         <li key={c.id}>
@@ -477,7 +478,7 @@ export function SignupWizard() {
                                 인증 센터
                               </span>
                             )}
-                            <span className="block text-xs text-zinc-500">
+                            <span className="text-muted block text-xs">
                               {c.address}
                             </span>
                           </button>
@@ -501,7 +502,7 @@ export function SignupWizard() {
                 <div className="flex items-center justify-between text-sm">
                   <span>
                     {trainer.name}{" "}
-                    <span className="text-zinc-500">· {trainer.workplace}</span>
+                    <span className="text-muted">· {trainer.workplace}</span>
                   </span>
                   <Button variant="ghost" onClick={() => setTrainer(null)}>
                     바꾸기
@@ -519,7 +520,7 @@ export function SignupWizard() {
                     hint="고르면 트레이너에게 연결 요청을 보냅니다"
                   />
                   {!unregisteredTrainer && (
-                    <ul className="flex flex-col divide-y divide-zinc-200 dark:divide-zinc-800">
+                    <ul className="divide-line flex flex-col divide-y">
                       {trainerQuery.trim() &&
                         trainerHits.map((t) => (
                           <li key={t.id}>
@@ -529,7 +530,7 @@ export function SignupWizard() {
                               onClick={() => setTrainer(t)}
                             >
                               {t.name}
-                              <span className="block text-xs text-zinc-500">
+                              <span className="text-muted block text-xs">
                                 {t.workplace}
                               </span>
                             </button>
@@ -589,7 +590,7 @@ export function SignupWizard() {
 
       {step === "pin" && (
         <div className="flex flex-col gap-4">
-          <p className="text-sm text-zinc-500">
+          <p className="text-muted text-sm">
             수업이 끝나면 이 PIN으로 수업 완료를 승인합니다. 로그인 비밀번호와
             다르게 정해 주세요.
           </p>
@@ -626,7 +627,7 @@ export function SignupWizard() {
               setConsents(Object.fromEntries(terms.map((t) => [t.kind, v])))
             }
           />
-          <hr className="border-zinc-200 dark:border-zinc-800" />
+          <hr className="border-line" />
           {terms.map((t) => (
             <div key={t.kind} className="flex flex-col gap-1">
               <Checkbox
@@ -636,7 +637,7 @@ export function SignupWizard() {
               >
                 <button
                   type="button"
-                  className="text-xs text-zinc-500 underline"
+                  className="text-muted text-xs underline"
                   onClick={() =>
                     setOpenTerm(openTerm === t.kind ? null : t.kind)
                   }
@@ -645,13 +646,13 @@ export function SignupWizard() {
                 </button>
               </Checkbox>
               {openTerm === t.kind && (
-                <p className="rounded-lg bg-zinc-100 p-3 text-xs whitespace-pre-line text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+                <p className="bg-brand-50 text-muted dark:bg-brand-700/20 rounded-lg p-3 text-xs whitespace-pre-line">
                   {t.body}
                 </p>
               )}
             </div>
           ))}
-          <div className="rounded-lg bg-zinc-100 p-3 text-xs text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+          <div className="bg-brand-50 text-muted dark:bg-brand-700/20 rounded-lg p-3 text-xs">
             <p className="font-medium">개인정보 처리 위탁 (고지)</p>
             <p>SMS 인증번호 발송 대행사, 서버 운영사에 처리를 맡깁니다.</p>
             <p className="mt-2 font-medium">웹 푸시 알림 허용 (안내)</p>

@@ -90,7 +90,7 @@ export function Versions() {
     void load();
   }
 
-  if (!data) return <p className="text-sm text-zinc-500">불러오는 중…</p>;
+  if (!data) return <p className="text-muted text-sm">불러오는 중…</p>;
   const current = data.versions.find((v) => v.isCurrent);
   const byVersion = (v: string | null) =>
     data.versions.find((x) => x.version === v);
@@ -116,7 +116,7 @@ export function Versions() {
       <div className="overflow-x-auto">
         <table className="w-full min-w-[560px] text-sm">
           <thead>
-            <tr className="border-b border-zinc-200 text-left dark:border-zinc-800">
+            <tr className="border-line border-b text-left">
               <th className="px-2 py-2">버전</th>
               <th className="px-2 py-2">배포 일시</th>
               <th className="px-2 py-2">배포한 사람</th>
@@ -128,7 +128,7 @@ export function Versions() {
             {data.versions.map((v) => (
               <tr
                 key={v.version}
-                className={`border-b border-zinc-100 dark:border-zinc-800 ${v.isCurrent ? "bg-emerald-50 font-semibold dark:bg-emerald-950" : ""}`}
+                className={`border-line border-b ${v.isCurrent ? "bg-emerald-50 font-semibold dark:bg-emerald-950" : ""}`}
               >
                 <td className="px-2 py-2">
                   {v.version}
@@ -156,7 +156,7 @@ export function Versions() {
             ))}
             {data.versions.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-2 py-6 text-center text-zinc-500">
+                <td colSpan={5} className="text-muted px-2 py-6 text-center">
                   배포 기록이 없습니다 (APP_VERSION 환경 변수로 기록)
                 </td>
               </tr>
@@ -168,18 +168,15 @@ export function Versions() {
       <Card title="롤백 기록">
         <ul className="flex flex-col gap-2 text-sm">
           {data.rollbacks.map((l) => (
-            <li
-              key={l.id}
-              className="border-b border-zinc-100 pb-2 dark:border-zinc-800"
-            >
+            <li key={l.id} className="border-line border-b pb-2">
               <p>
                 {fmtDateTime(l.startedAt)} · {l.operator.name} · {l.fromVersion}{" "}
                 → {l.toVersion} ·{" "}
-                <span className={l.result === "FAILED" ? "text-red-600" : ""}>
+                <span className={l.result === "FAILED" ? "text-rose-600" : ""}>
                   {RESULT[l.result]}
                 </span>
               </p>
-              <p className="text-xs text-zinc-500">
+              <p className="text-muted text-xs">
                 사유: {l.reason}
                 {l.healthCheck &&
                   ` · 점검: ${l.healthCheck.map((c) => `${c.name} ${c.ok ? "정상" : "실패"}`).join(", ")}`}
@@ -188,7 +185,7 @@ export function Versions() {
             </li>
           ))}
           {data.rollbacks.length === 0 && (
-            <li className="text-zinc-500">롤백 기록이 없습니다</li>
+            <li className="text-muted">롤백 기록이 없습니다</li>
           )}
         </ul>
       </Card>
@@ -212,7 +209,7 @@ export function Versions() {
                 ))}
               </ul>
               {result.error && (
-                <p className="text-red-600">오류: {result.error}</p>
+                <p className="text-rose-600">오류: {result.error}</p>
               )}
               <Button onClick={() => setTarget(null)}>닫기</Button>
             </div>
@@ -221,10 +218,8 @@ export function Versions() {
               <p>
                 {current?.version ?? "-"} → <strong>{target.version}</strong>
               </p>
-              <p className="text-zinc-600 dark:text-zinc-300">
-                변경 내용: {target.summary || "-"}
-              </p>
-              <p className="text-xs text-zinc-500">
+              <p className="text-muted">변경 내용: {target.summary || "-"}</p>
+              <p className="text-muted text-xs">
                 프로그램만 되돌리고 데이터는 그대로입니다. 진행하는 동안
                 사용자에게 &quot;잠시 점검 중&quot;이 보입니다.
               </p>

@@ -22,7 +22,7 @@ export function NotificationGuide() {
 
   return (
     <div className="flex flex-col gap-4">
-      <p className="text-sm text-zinc-600 dark:text-zinc-300">
+      <p className="text-muted text-sm">
         예약 확정 요청, 수업 안내, 완료 승인 요청을 받으려면 홈 화면에 추가하고
         알림을 허용해 주세요.
       </p>
@@ -64,7 +64,7 @@ export function NotificationGuide() {
               아래 &quot;알림 허용&quot;을 누르고 &quot;허용&quot;을 고릅니다
             </li>
           </ol>
-          <p className="text-xs text-zinc-500">
+          <p className="text-muted text-xs">
             iPhone은 오래 접속하지 않으면 저장된 데이터가 지워질 수 있어 홈 화면
             추가를 권장합니다.
           </p>

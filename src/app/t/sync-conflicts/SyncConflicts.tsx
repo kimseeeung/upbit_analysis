@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { api } from "@/components/api";
 import { fmtDateTime } from "@/components/fmt";
-import { Button, Card, Notice } from "@/components/ui";
+import { Button, Card, EmptyState, Notice } from "@/components/ui";
 
 interface Conflict {
   id: string;
@@ -57,21 +57,21 @@ export function SyncConflicts() {
     );
     void load();
   }
-  if (!list) return <p className="text-sm text-zinc-500">불러오는 중…</p>;
+  if (!list) return <p className="text-muted text-sm">불러오는 중…</p>;
   return (
     <div className="flex flex-col gap-3">
       {msg && <Notice tone={msg.tone}>{msg.text}</Notice>}
       {list.length === 0 && (
-        <p className="text-sm text-zinc-500">동기화 충돌이 없습니다.</p>
+        <EmptyState icon="check">동기화 충돌이 없습니다. 🎉</EmptyState>
       )}
       {list.map((c) => (
         <Card key={c.id} title={`${c.label} · ${c.deviceLabel}`}>
           <p className="text-sm">{c.reason}</p>
-          <p className="text-xs text-zinc-500">
+          <p className="text-muted text-xs">
             휴대폰에서 {fmtDateTime(c.localAt)}에 만든 변경:{" "}
             {describe(c.localChange)}
           </p>
-          <p className="text-xs text-zinc-500">
+          <p className="text-muted text-xs">
             서버 기록: {describe(c.serverState)}
           </p>
           <div className="flex gap-2">

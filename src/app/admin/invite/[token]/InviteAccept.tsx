@@ -92,7 +92,7 @@ export function InviteAccept({ token }: { token: string }) {
         value={pin}
         onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))}
       />
-      <div className="flex flex-col gap-2 rounded-lg border border-zinc-200 p-3 dark:border-zinc-800">
+      <div className="border-line flex flex-col gap-2 rounded-lg border p-3">
         <p className="text-sm">휴대폰 인증 ({invite.phoneHint})</p>
         {verified ? (
           <Notice tone="success">인증되었습니다</Notice>

@@ -99,7 +99,7 @@ export function TrainerBookingSheet({
       <p className="text-sm">{fmtRange(b.startAt, b.endAt)}</p>
       <div className="flex flex-wrap gap-1 text-xs">
         {!b.studentRegistered && (
-          <span className="rounded bg-zinc-100 px-1.5 dark:bg-zinc-800">
+          <span className="bg-brand-50 dark:bg-brand-700/20 rounded px-1.5">
             미가입
           </span>
         )}
@@ -109,22 +109,22 @@ export function TrainerBookingSheet({
           </span>
         )}
         {b.autoConfirmed && (
-          <span className="rounded bg-zinc-100 px-1.5 dark:bg-zinc-800">
+          <span className="bg-brand-50 dark:bg-brand-700/20 rounded px-1.5">
             자동 확정
           </span>
         )}
         {b.recurringGroupId && (
-          <span className="rounded bg-zinc-100 px-1.5 dark:bg-zinc-800">
+          <span className="bg-brand-50 dark:bg-brand-700/20 rounded px-1.5">
             반복 예약
           </span>
         )}
         {b.source === "STUDENT" && (
-          <span className="rounded bg-zinc-100 px-1.5 dark:bg-zinc-800">
+          <span className="bg-brand-50 dark:bg-brand-700/20 rounded px-1.5">
             수강생 신청
           </span>
         )}
       </div>
-      {b.memo && <p className="text-sm text-zinc-500">메모: {b.memo}</p>}
+      {b.memo && <p className="text-muted text-sm">메모: {b.memo}</p>}
       {b.status === "INSUFFICIENT" && (
         <Notice tone="warning">
           잔여 횟수가 부족해 진행할 수 없습니다. 이용권을 추가하면 다시
@@ -132,7 +132,7 @@ export function TrainerBookingSheet({
         </Notice>
       )}
       {b.status === "CANCELED" && (
-        <p className="text-sm text-zinc-500">
+        <p className="text-muted text-sm">
           {b.deducted
             ? "당일 취소 1회 차감"
             : b.deductSkippedReason === "NO_CONSENT"
@@ -141,7 +141,7 @@ export function TrainerBookingSheet({
         </p>
       )}
       {b.rejectReason && (
-        <p className="text-sm text-zinc-500">거절 사유: {b.rejectReason}</p>
+        <p className="text-muted text-sm">거절 사유: {b.rejectReason}</p>
       )}
       {error && <Notice tone="error">{error}</Notice>}
 
@@ -225,7 +225,7 @@ export function TrainerBookingSheet({
       )}
 
       {proposal && (
-        <div className="flex flex-col gap-2 rounded-lg border border-zinc-300 p-3 dark:border-zinc-700">
+        <div className="border-line flex flex-col gap-2 rounded-lg border p-3">
           <p className="text-sm font-medium">
             수강생이 다른 시간을 제안했습니다
           </p>
@@ -248,7 +248,7 @@ export function TrainerBookingSheet({
       )}
 
       {incomingChange && (
-        <div className="flex flex-col gap-2 rounded-lg border border-zinc-300 p-3 dark:border-zinc-700">
+        <div className="border-line flex flex-col gap-2 rounded-lg border p-3">
           <p className="text-sm font-medium">
             수강생의 시간 변경 요청 (수락할 때까지 원래 시간 유지)
           </p>

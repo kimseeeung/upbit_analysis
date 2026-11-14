@@ -1,20 +1,38 @@
 @import "tailwindcss";
 
+/* ── 디자인 토큰: 보라 브랜드색 + 부드러운 배경 (밝은/어두운 화면) ── */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f7f6fb;
+  --foreground: #1f1d2b;
+  --surface: #ffffff;
+  --line: #e9e6f2;
+  --muted: #6f6a83;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #111018;
+    --foreground: #ecebf3;
+    --surface: #1b1a24;
+    --line: #2d2b3a;
+    --muted: #a19db3;
+  }
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-surface: var(--surface);
+  --color-line: var(--line);
+  --color-muted: var(--muted);
+  --color-brand-50: #f4f1ff;
+  --color-brand-100: #e9e3ff;
+  --color-brand-200: #d4c8ff;
+  --color-brand-300: #b5a2ff;
+  --color-brand-400: #957aff;
+  --color-brand-500: #7c5cff;
+  --color-brand-600: #6845f0;
+  --color-brand-700: #5434cc;
 }
 
 body {
@@ -22,6 +40,7 @@ body {
   color: var(--foreground);
   font-family:
     "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* 일시정지 기간 빗금 (4.2) */
@@ -31,4 +50,77 @@ body {
     rgb(161 161 170 / 0.35) 0 6px,
     transparent 6px 12px
   ) !important;
+}
+
+/* ── 캘린더(FullCalendar) 꾸미기 ── */
+.fc {
+  --fc-border-color: var(--line);
+  --fc-page-bg-color: var(--surface);
+  --fc-neutral-bg-color: color-mix(in srgb, var(--line) 40%, transparent);
+  --fc-today-bg-color: color-mix(in srgb, #7c5cff 8%, transparent);
+  --fc-now-indicator-color: #ff6b8b;
+  --fc-button-bg-color: var(--surface);
+  --fc-button-border-color: var(--line);
+  --fc-button-text-color: var(--foreground);
+  --fc-button-hover-bg-color: #f4f1ff;
+  --fc-button-hover-border-color: #d4c8ff;
+  --fc-button-active-bg-color: #7c5cff;
+  --fc-button-active-border-color: #7c5cff;
+  --fc-list-event-hover-bg-color: color-mix(in srgb, #7c5cff 8%, transparent);
+  background: var(--surface);
+  border-radius: 1rem;
+  padding: 0.75rem;
+  box-shadow: 0 1px 2px rgb(31 29 43 / 0.06);
+}
+.fc .fc-button {
+  border-radius: 0.75rem !important;
+  font-size: 0.85rem;
+  padding: 0.35rem 0.7rem;
+  box-shadow: none !important;
+}
+.fc .fc-button-primary:not(:disabled).fc-button-active,
+.fc .fc-button-primary:not(:disabled):active {
+  color: #fff;
+}
+.fc .fc-button-group {
+  gap: 0.25rem;
+}
+.fc .fc-button-group > .fc-button {
+  border-radius: 0.75rem !important;
+}
+.fc .fc-toolbar-title {
+  font-weight: 700;
+}
+.fc .fc-event {
+  border-radius: 0.6rem;
+  border-width: 0;
+  padding: 1px 3px;
+  box-shadow: 0 1px 2px rgb(31 29 43 / 0.12);
+}
+.fc .fc-col-header-cell-cushion,
+.fc .fc-daygrid-day-number,
+.fc .fc-list-day-cushion a {
+  color: var(--foreground);
+  text-decoration: none;
+}
+.fc .fc-timegrid-slot-label-cushion {
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+.fc a.fc-col-header-cell-cushion:hover,
+.fc a.fc-daygrid-day-number:hover {
+  color: #7c5cff;
+}
+
+@media (prefers-color-scheme: dark) {
+  .fc {
+    --fc-button-hover-bg-color: #2a2540;
+    --fc-button-hover-border-color: #5434cc;
+  }
+}
+
+@media (max-width: 640px) {
+  .fc .fc-toolbar-title {
+    font-size: 1.15rem !important;
+  }
 }

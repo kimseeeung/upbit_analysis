@@ -35,7 +35,7 @@ export function StudentNotify({
         checked={notify2h}
         onChange={(v) => set({ notify2h: v })}
       />
-      <p className="text-xs text-zinc-500">{NIGHT_NOTICE}</p>
+      <p className="text-muted text-xs">{NIGHT_NOTICE}</p>
     </Card>
   );
 }

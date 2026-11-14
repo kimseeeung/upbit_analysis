@@ -46,12 +46,12 @@ function OnsitePin({
       role="dialog"
       aria-modal="true"
       aria-label="현장 완료 승인"
-      className="fixed inset-0 z-[60] flex flex-col items-center justify-center gap-4 bg-white p-6 dark:bg-zinc-950"
+      className="bg-surface fixed inset-0 z-[60] flex flex-col items-center justify-center gap-4 p-6"
     >
       <p className="text-lg font-semibold">
         {studentName}님, 수업 완료를 승인해 주세요
       </p>
-      <p className="text-sm text-zinc-500">
+      <p className="text-muted text-sm">
         수업 완료 승인 PIN 4자리를 입력하면 1회 차감됩니다.
       </p>
       <div className="w-full max-w-xs">
@@ -102,7 +102,7 @@ export function TrainerApprovalActions({
   return (
     <div className="flex flex-col gap-2">
       {b.status === "COMPLETED" && b.approvalMethod && (
-        <p className="text-sm text-zinc-500">
+        <p className="text-muted text-sm">
           완료 · {b.approvedAt ? fmtDateTime(b.approvedAt) : ""} ·{" "}
           {APPROVAL_METHOD_LABEL[b.approvalMethod]}
         </p>
@@ -117,7 +117,7 @@ export function TrainerApprovalActions({
           </p>
           <p className="text-sm">수강생 사유: {b.disputeStudentReason}</p>
           {b.disputeResolvedAt ? (
-            <p className="text-sm text-zinc-500">
+            <p className="text-muted text-sm">
               처리:{" "}
               {b.disputeTrainerDecision === "KEEP"
                 ? "기존 처리 유지"
@@ -131,7 +131,7 @@ export function TrainerApprovalActions({
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
               />
-              <p className="text-xs text-zinc-500">
+              <p className="text-muted text-xs">
                 선택하면 종결되고 다시 요청할 수 없습니다. 7일 안에 고르지
                 않으면 수강생 의견 수락으로 처리됩니다.
               </p>
@@ -168,7 +168,7 @@ export function TrainerApprovalActions({
       )}
       {b.status === "PENDING_APPROVAL" && !b.disputed && (
         <>
-          <p className="text-sm text-zinc-500">
+          <p className="text-muted text-sm">
             {b.approvalRequestedAt
               ? `${fmtDateTime(b.approvalRequestedAt)}에 승인 요청을 보냈습니다.`
               : ""}
@@ -199,7 +199,7 @@ export function TrainerApprovalActions({
             )
           )}
           {!b.studentRegistered && (
-            <p className="text-xs text-zinc-500">
+            <p className="text-muted text-xs">
               미가입 수강생은 카톡 링크에서 가입한 뒤 승인할 수 있습니다.
             </p>
           )}

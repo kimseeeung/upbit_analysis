@@ -69,7 +69,7 @@ function TransferAccept({
       ) : (
         <>
           {detail.bookings.length > 0 && (
-            <p className="text-xs text-zinc-500">
+            <p className="text-muted text-xs">
               이전 트레이너와 잡힌 예정 예약을 유지할지 정해 주세요 (취소는 차감
               없음).
             </p>
@@ -89,7 +89,7 @@ function TransferAccept({
                     [b.id]: e.target.value as "KEEP" | "CANCEL",
                   }))
                 }
-                className="rounded border border-zinc-300 px-2 py-1 dark:border-zinc-700 dark:bg-zinc-900"
+                className="border-line rounded border px-2 py-1"
               >
                 <option value="KEEP">유지</option>
                 <option value="CANCEL">취소(차감 없음)</option>
@@ -141,7 +141,7 @@ export function TransferInboxItems({
           <p className="text-sm">
             {t.studentName}님의 담당이 {t.toTrainerName} 트레이너로 바뀝니다.
             남은 이용권을 넘길까요?
-            <span className="block text-xs text-zinc-500">
+            <span className="text-muted block text-xs">
               넘기지 않으면 이용권은 사용 중지로 남고, 정산은 앱 밖에서 합니다.
             </span>
           </p>
@@ -202,7 +202,7 @@ export function TransferInboxItems({
             {c.trainerName} 트레이너가{" "}
             {c.type === "MOVE" ? "센터를 옮깁니다" : "탈퇴합니다"}.{" "}
             {fmtDateTime(c.deadlineAt)}까지 골라 주세요.
-            <span className="block text-xs text-zinc-500">
+            <span className="text-muted block text-xs">
               고르지 않으면 &quot;
               {c.options.find((o) => o.value === c.defaultChoice)?.label}
               &quot;로 처리됩니다.

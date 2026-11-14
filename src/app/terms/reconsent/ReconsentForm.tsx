@@ -41,12 +41,12 @@ export function ReconsentForm() {
   }
   return (
     <div className="flex flex-col gap-4">
-      <p className="text-sm text-zinc-600 dark:text-zinc-300">
+      <p className="text-muted text-sm">
         약관이 바뀌었습니다. 내용을 확인하고 동의해 주세요.
       </p>
       {terms.map((t) => (
         <div key={t.kind} className="flex flex-col gap-2">
-          <p className="max-h-40 overflow-y-auto rounded-lg bg-zinc-100 p-3 text-xs whitespace-pre-line dark:bg-zinc-800">
+          <p className="bg-brand-50 dark:bg-brand-700/20 max-h-40 overflow-y-auto rounded-lg p-3 text-xs whitespace-pre-line">
             {t.body}
           </p>
           <Checkbox

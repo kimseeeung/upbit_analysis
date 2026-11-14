@@ -1,5 +1,6 @@
 "use client";
 
+import { DateSelect } from "@/components/pickers";
 import { useCallback, useEffect, useState } from "react";
 import { api } from "./api";
 import { Button, Notice, TextField } from "./ui";
@@ -72,7 +73,7 @@ export function PausePanel({
 
   const today = todayKst();
   return (
-    <div className="flex flex-col gap-2 border-t border-zinc-200 pt-3 dark:border-zinc-800">
+    <div className="border-line flex flex-col gap-2 border-t pt-3">
       <p className="text-xs font-medium">일시정지</p>
       {pauses.map((p) => (
         <div
@@ -146,18 +147,16 @@ export function PausePanel({
       ))}
       {open ? (
         <div className="flex flex-col gap-2">
-          <div className="grid grid-cols-2 gap-2">
-            <TextField
+          <div className="flex flex-col gap-3">
+            <DateSelect
               label="정지 시작일"
-              type="date"
               value={start}
-              onChange={(e) => setStart(e.target.value)}
+              onChange={(v) => setStart(v)}
             />
-            <TextField
+            <DateSelect
               label="정지 종료일"
-              type="date"
               value={end}
-              onChange={(e) => setEnd(e.target.value)}
+              onChange={(v) => setEnd(v)}
             />
           </div>
           <TextField
@@ -166,7 +165,7 @@ export function PausePanel({
             value={reason}
             onChange={(e) => setReason(e.target.value)}
           />
-          <p className="text-xs text-zinc-500">
+          <p className="text-muted text-xs">
             상대방이 승인하면 적용됩니다. 정지한 일수만큼 만료일이 늘어나고,
             기간 안의 예약은 차감 없이 취소됩니다.
           </p>

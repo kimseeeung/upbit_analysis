@@ -5,7 +5,16 @@ import { api } from "@/components/api";
 import { readSnapshot } from "@/lib/offline/client";
 import { enqueue } from "@/lib/offline/store";
 import { isoToKstLocal, kstLocalToIso } from "@/components/fmt";
-import { Button, Checkbox, Modal, Notice, TextField } from "@/components/ui";
+import { DateTimeSelect, DurationSelect } from "@/components/pickers";
+import {
+  Button,
+  Checkbox,
+  Modal,
+  Notice,
+  SELECT,
+  TextField,
+} from "@/components/ui";
+import { DEFAULT_DURATION } from "@/lib/input/datetime";
 
 interface StudentRow {
   studentId: string;
@@ -38,7 +47,7 @@ export function CreateBookingSheet({
   const [students, setStudents] = useState<StudentRow[]>([]);
   const [studentId, setStudentId] = useState("");
   const [start, setStart] = useState(isoToKstLocal(initialStart));
-  const [duration, setDuration] = useState("");
+  const [duration, setDuration] = useState(DEFAULT_DURATION);
   const [memo, setMemo] = useState("");
   const [repeat, setRepeat] = useState(false);
   const [weekdays, setWeekdays] = useState<number[]>(() => [
@@ -68,7 +77,7 @@ export function CreateBookingSheet({
       body: {
         studentId,
         startAt: kstLocalToIso(start),
-        durationMinutes: duration ? Number(duration) : undefined,
+        durationMinutes: duration,
         memo: memo || null,
         recurrence: repeat ? { weekdays, count: Number(count) } : null,
         acknowledgeWarnings,
@@ -85,7 +94,7 @@ export function CreateBookingSheet({
           payload: {
             studentId,
             startAt: kstLocalToIso(start),
-            durationMinutes: duration ? Number(duration) : undefined,
+            durationMinutes: duration,
             memo: memo || null,
             studentName: students.find((x) => x.studentId === studentId)?.name,
           },
@@ -117,7 +126,7 @@ export function CreateBookingSheet({
   return (
     <Modal title="예약 등록" onClose={onClose}>
       <label className="flex flex-col gap-1 text-sm">
-        <span className="font-medium">수강생</span>
+        <span className="font-semibold">수강생</span>
         <select
           aria-label="수강생"
           value={studentId}
@@ -125,7 +134,7 @@ export function CreateBookingSheet({
             setStudentId(e.target.value);
             setWarnings(null);
           }}
-          className="rounded-lg border border-zinc-300 bg-white px-3 py-2.5 dark:border-zinc-700 dark:bg-zinc-900"
+          className={SELECT}
         >
           <option value="">선택해 주세요</option>
           {students.map((s) => (
@@ -141,23 +150,15 @@ export function CreateBookingSheet({
           예약 가능 횟수가 없습니다. 이용권을 추가해 주세요.
         </Notice>
       )}
-      <TextField
+      <DateTimeSelect
         label="시작 시각"
-        type="datetime-local"
-        step={1800}
         value={start}
-        onChange={(e) => {
-          setStart(e.target.value);
+        onChange={(v) => {
+          setStart(v);
           setWarnings(null);
         }}
       />
-      <TextField
-        label="수업 시간 (분)"
-        type="number"
-        placeholder="이용권 기본값"
-        value={duration}
-        onChange={(e) => setDuration(e.target.value)}
-      />
+      <DurationSelect value={duration} onChange={setDuration} />
       <TextField
         label="메모"
         value={memo}
@@ -177,7 +178,7 @@ export function CreateBookingSheet({
                     w.includes(i) ? w.filter((x) => x !== i) : [...w, i],
                   )
                 }
-                className={`size-9 rounded-full text-sm ${weekdays.includes(i) ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900" : "bg-zinc-100 dark:bg-zinc-800"}`}
+                className={`size-9 rounded-full text-sm font-semibold transition ${weekdays.includes(i) ? "bg-brand-500 text-white" : "bg-brand-50 text-brand-700 dark:bg-brand-700/20 dark:text-brand-100"}`}
               >
                 {d}
               </button>

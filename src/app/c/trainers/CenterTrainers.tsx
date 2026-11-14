@@ -69,7 +69,7 @@ export function CenterTrainers() {
     return msg ? (
       <Notice tone={msg.tone}>{msg.text}</Notice>
     ) : (
-      <p className="text-sm text-zinc-500">불러오는 중…</p>
+      <p className="text-muted text-sm">불러오는 중…</p>
     );
   const pending = d.members.filter((m) => m.status === "PENDING");
   const active = d.members.filter((m) => m.status === "ACTIVE");
@@ -118,9 +118,9 @@ export function CenterTrainers() {
               className="flex items-center justify-between text-sm"
             >
               <span>
-                {m.name} <span className="text-zinc-500">{m.phoneMasked}</span>
+                {m.name} <span className="text-muted">{m.phoneMasked}</span>
                 {m.waitingConsent && (
-                  <span className="ml-1 text-xs text-zinc-500">
+                  <span className="text-muted ml-1 text-xs">
                     (트레이너 동의 대기)
                   </span>
                 )}
@@ -164,7 +164,7 @@ export function CenterTrainers() {
             className="flex items-center justify-between text-sm"
           >
             <span>
-              {m.name} <span className="text-zinc-500">{m.phoneMasked}</span>
+              {m.name} <span className="text-muted">{m.phoneMasked}</span>
             </span>
             <Button
               variant="ghost"
@@ -196,7 +196,7 @@ export function CenterTrainers() {
       {left.length > 0 && (
         <Card title="이전 소속">
           {left.map((m) => (
-            <p key={m.membershipId} className="text-sm text-zinc-500">
+            <p key={m.membershipId} className="text-muted text-sm">
               {m.name} · {m.joinedAt?.slice(0, 10)} ~ {m.leftAt?.slice(0, 10)}{" "}
               (이 기간의 기록만 볼 수 있습니다)
             </p>
@@ -208,7 +208,7 @@ export function CenterTrainers() {
           <p key={a.userId} className="text-sm">
             {a.name}{" "}
             {a.isTrainer && (
-              <span className="text-xs text-zinc-500">트레이너</span>
+              <span className="text-muted text-xs">트레이너</span>
             )}{" "}
             {a.me && <span className="text-xs text-blue-600">나</span>}
           </p>

@@ -31,9 +31,7 @@ export function MeShell({
   children: ReactNode;
 }) {
   return (
-    <Suspense
-      fallback={<p className="p-6 text-sm text-zinc-500">불러오는 중…</p>}
-    >
+    <Suspense fallback={<p className="text-muted p-6 text-sm">불러오는 중…</p>}>
       <Gate title={title}>{children}</Gate>
     </Suspense>
   );

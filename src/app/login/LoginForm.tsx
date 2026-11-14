@@ -128,7 +128,7 @@ export function LoginForm() {
       <Button type="submit" disabled={busy || !loginId || !password || offline}>
         로그인
       </Button>
-      <div className="flex justify-center gap-4 text-sm text-zinc-500">
+      <div className="text-muted flex justify-center gap-4 text-sm">
         <Link href="/find-id">아이디 찾기</Link>
         <Link href="/reset-password">비밀번호 재설정</Link>
         <Link href="/signup">회원가입</Link>

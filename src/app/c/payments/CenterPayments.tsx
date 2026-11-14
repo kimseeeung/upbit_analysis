@@ -52,14 +52,14 @@ export function CenterPayments() {
           </Card>
           <a
             href={`/api/c/payments/csv?from=${range.from}&to=${range.to}`}
-            className="self-start rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700"
+            className="border-line self-start rounded-lg border px-3 py-2 text-sm"
           >
             엑셀 다운로드
           </a>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[560px] text-sm">
               <thead>
-                <tr className="border-b border-zinc-200 text-left dark:border-zinc-800">
+                <tr className="border-line border-b text-left">
                   <th className="px-2 py-2">결제일</th>
                   <th className="px-2 py-2">수강생</th>
                   <th className="px-2 py-2">판매 트레이너</th>
@@ -70,17 +70,14 @@ export function CenterPayments() {
               </thead>
               <tbody>
                 {d.items.map((i) => (
-                  <tr
-                    key={i.passId}
-                    className="border-b border-zinc-100 dark:border-zinc-800"
-                  >
+                  <tr key={i.passId} className="border-line border-b">
                     <td className="px-2 py-2">{i.paidAt}</td>
                     <td className="px-2 py-2">{i.studentName}</td>
                     <td className="px-2 py-2">{i.trainerName}</td>
                     <td className="px-2 py-2">
                       {i.passName}
                       {i.status === "REFUNDED" && (
-                        <span className="text-xs text-red-600"> 환불</span>
+                        <span className="text-xs text-rose-600"> 환불</span>
                       )}
                     </td>
                     <td className="px-2 py-2">
@@ -92,7 +89,7 @@ export function CenterPayments() {
               </tbody>
             </table>
           </div>
-          <p className="text-xs text-zinc-500">
+          <p className="text-muted text-xs">
             앱은 결제 기록만 보관합니다. 판매 트레이너가 소속이던 기간의 결제만
             보입니다.
           </p>

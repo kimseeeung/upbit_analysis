@@ -93,7 +93,7 @@ export function PushSetup({ showNotice = true }: { showNotice?: boolean }) {
         </Notice>
       )}
       {error && <Notice tone="error">{error}</Notice>}
-      {showNotice && <p className="text-xs text-zinc-500">{NIGHT_NOTICE}</p>}
+      {showNotice && <p className="text-muted text-xs">{NIGHT_NOTICE}</p>}
     </div>
   );
 }

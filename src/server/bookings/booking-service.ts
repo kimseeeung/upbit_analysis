@@ -134,6 +134,15 @@ export async function createBookingsByTrainer(
   return db.$transaction(async (tx) => {
     await assertTrainerStudent(tx, input.trainerId, input.studentId);
     await lockTrainer(tx, input.trainerId);
+    // 트레이너가 고르는 수업 시간: 10분 단위 10~120분 (4.4)
+    if (
+      input.durationMinutes !== undefined &&
+      (!Number.isInteger(input.durationMinutes) ||
+        input.durationMinutes % 10 !== 0 ||
+        input.durationMinutes < 10 ||
+        input.durationMinutes > 120)
+    )
+      throw new AppError("INVALID", "수업 시간은 10분 단위로 10~120분입니다");
     const duration =
       input.durationMinutes ??
       (await sessionMinutesFor(tx, input.studentId, toKstDateKey(input.start)));

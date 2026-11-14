@@ -36,17 +36,17 @@ export function CenterStats() {
         <>
           <div className="grid grid-cols-3 gap-2">
             <Card>
-              <p className="text-xs text-zinc-500">센터 총 수업</p>
+              <p className="text-muted text-xs">센터 총 수업</p>
               <p className="text-lg font-semibold">{d.total.totalClasses}회</p>
             </Card>
             <Card>
-              <p className="text-xs text-zinc-500">센터 노쇼율</p>
+              <p className="text-muted text-xs">센터 노쇼율</p>
               <p className="text-lg font-semibold">
                 {(d.total.noShowRate * 100).toFixed(1)}%
               </p>
             </Card>
             <Card>
-              <p className="text-xs text-zinc-500">결제 합계</p>
+              <p className="text-muted text-xs">결제 합계</p>
               <p className="text-lg font-semibold">
                 {d.total.paymentSum.toLocaleString("ko-KR")}원
               </p>
@@ -55,7 +55,7 @@ export function CenterStats() {
           <div className="overflow-x-auto">
             <table className="w-full min-w-[480px] text-sm">
               <thead>
-                <tr className="border-b border-zinc-200 text-left dark:border-zinc-800">
+                <tr className="border-line border-b text-left">
                   <th className="px-2 py-2">트레이너</th>
                   <th className="px-2 py-2">수업 수</th>
                   <th className="px-2 py-2">노쇼율</th>
@@ -65,10 +65,7 @@ export function CenterStats() {
               </thead>
               <tbody>
                 {d.byTrainer.map((t) => (
-                  <tr
-                    key={t.trainerId}
-                    className="border-b border-zinc-100 dark:border-zinc-800"
-                  >
+                  <tr key={t.trainerId} className="border-line border-b">
                     <td className="px-2 py-2">
                       <button
                         type="button"
@@ -106,7 +103,7 @@ export function CenterStats() {
                   ))}
                 </Card>
               ))}
-          <p className="text-xs text-zinc-500">
+          <p className="text-muted text-xs">
             소속 기간 안의 기록만 셉니다. 이동한 트레이너는 이동 전 기간만
             보입니다.
           </p>

@@ -85,13 +85,13 @@ function ProfileCard({
   return (
     <Card title="기본 정보">
       <dl className="grid grid-cols-[6rem_1fr] gap-y-1 text-sm">
-        <dt className="text-zinc-500">회원 유형</dt>
+        <dt className="text-muted">회원 유형</dt>
         <dd>{ROLE_LABEL[profile.role]}</dd>
-        <dt className="text-zinc-500">아이디</dt>
+        <dt className="text-muted">아이디</dt>
         <dd>{profile.loginId}</dd>
-        <dt className="text-zinc-500">전화번호</dt>
+        <dt className="text-muted">전화번호</dt>
         <dd>{profile.phoneMasked}</dd>
-        <dt className="text-zinc-500">가입일</dt>
+        <dt className="text-muted">가입일</dt>
         <dd>{profile.joinedAt}</dd>
       </dl>
       <TextField
@@ -319,7 +319,7 @@ function DevicesCard() {
 
   return (
     <Card title="로그인된 기기">
-      <ul className="flex flex-col divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
+      <ul className="divide-line flex flex-col divide-y text-sm">
         {sessions?.map((s) => (
           <li key={s.id} className="flex items-center justify-between py-2">
             <span>
@@ -327,7 +327,7 @@ function DevicesCard() {
               {s.current && (
                 <span className="ml-1 text-xs text-blue-600">이 기기</span>
               )}
-              <span className="block text-xs text-zinc-500">
+              <span className="text-muted block text-xs">
                 마지막 접속 {fmt(s.lastSeenAt)}{" "}
                 {s.persistent ? "· 자동 로그인" : ""}
               </span>
@@ -388,7 +388,7 @@ export function AccountPanel() {
     return error ? (
       <Notice tone="error">{error}</Notice>
     ) : (
-      <p className="text-sm text-zinc-500">불러오는 중…</p>
+      <p className="text-muted text-sm">불러오는 중…</p>
     );
   return (
     <div className="flex flex-col gap-4">

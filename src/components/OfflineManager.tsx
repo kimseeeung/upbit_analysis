@@ -177,7 +177,7 @@ export function OfflineManager() {
     return (
       <div
         role="status"
-        className="sticky top-0 z-40 bg-zinc-800 px-4 py-1.5 text-center text-sm text-white"
+        className="bg-brand-600 sticky top-0 z-40 px-4 py-1.5 text-center text-sm text-white"
       >
         동기화 완료 · 반영 {result.applied}건
         {result.conflicts > 0 && (
@@ -212,7 +212,7 @@ export function LastBackup() {
     return () => window.removeEventListener("pt:backup", on);
   }, []);
   return (
-    <p className="text-sm text-zinc-500">
+    <p className="text-muted text-sm">
       마지막 백업: {at ? fmtDateTime(at) : "없음"}
       <span className="block text-xs">
         자동 로그인한 기기에서만 백업합니다. 앱이 열려 있을 때만 백업되며,

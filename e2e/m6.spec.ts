@@ -1,5 +1,11 @@
 import { expect, test } from "@playwright/test";
-import { api, cronTick, insertPastBooking, setupPair } from "./helpers";
+import {
+  api,
+  cronTick,
+  insertPastBooking,
+  pickDate,
+  setupPair,
+} from "./helpers";
 
 function kstPlus(days: number) {
   return new Date(Date.now() + 9 * 3600_000 + days * 86400_000)
@@ -21,8 +27,8 @@ test("수강생 일시정지 신청 → 트레이너 승인 → 만료일 연장
   const end = kstPlus(7); // 5일
   await student.goto("/s/passes");
   await student.getByRole("button", { name: "일시정지 신청" }).click();
-  await student.getByLabel("정지 시작일").fill(start);
-  await student.getByLabel("정지 종료일").fill(end);
+  await pickDate(student, "정지 시작일", start);
+  await pickDate(student, "정지 종료일", end);
   await student.getByLabel("사유").fill("여행");
   await student.getByRole("button", { name: "일시정지 신청" }).click();
   await expect(student.getByText("일시정지를 요청했습니다")).toBeVisible();

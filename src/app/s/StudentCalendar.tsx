@@ -168,19 +168,19 @@ export function StudentCalendar() {
         <Card>
           <div className="grid grid-cols-3 gap-2 text-center text-sm">
             <div>
-              <p className="text-xs text-zinc-500">다음 수업</p>
+              <p className="text-muted text-xs">다음 수업</p>
               <p className="font-medium">
                 {s.nextBooking ? fmtDateTime(s.nextBooking.startAt) : "없음"}
               </p>
             </div>
             <div>
-              <p className="text-xs text-zinc-500">잔여 / 전체</p>
+              <p className="text-muted text-xs">잔여 / 전체</p>
               <p className="font-medium">
                 {s.remaining} / {s.total}회
               </p>
             </div>
             <div>
-              <p className="text-xs text-zinc-500">만료일</p>
+              <p className="text-muted text-xs">만료일</p>
               <p className="font-medium">{s.expiry ?? "-"}</p>
             </div>
           </div>
@@ -195,7 +195,7 @@ export function StudentCalendar() {
         <Notice>트레이너가 예약 가능 시간을 아직 열지 않았습니다.</Notice>
       )}
       {data && data.hasAvailability && (
-        <p className="text-xs text-zinc-500">
+        <p className="text-muted text-xs">
           초록색 &quot;예약 가능&quot; 칸을 눌러 신청합니다. 수업 12시간 전까지
           신청할 수 있습니다.
         </p>
@@ -220,10 +220,7 @@ export function StudentCalendar() {
           headerToolbar={{
             left: "prev,next today",
             center: "title",
-            right:
-              displayMode === "MOBILE"
-                ? "timeGridDay,listWeek,dayGridMonth"
-                : "dayGridMonth,timeGridWeek,timeGridDay",
+            right: "timeGridDay,timeGridWeek,dayGridMonth,listWeek",
           }}
           buttonText={{
             today: "오늘",
@@ -238,6 +235,7 @@ export function StudentCalendar() {
           slotMaxTime="24:00:00"
           allDaySlot={false}
           nowIndicator
+          navLinks
           editable={false}
           events={events}
           datesSet={onDatesSet}
@@ -249,7 +247,7 @@ export function StudentCalendar() {
           <p className="text-sm">
             {fmtRange(slot.start, slot.end)}에 예약을 신청할까요?
           </p>
-          <p className="text-xs text-zinc-500">
+          <p className="text-muted text-xs">
             트레이너가 수락하면 확정됩니다. 대기 중인 신청은 3건까지입니다.
           </p>
           <Button onClick={requestSlot}>신청하기</Button>

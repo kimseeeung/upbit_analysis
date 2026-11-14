@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { api, nextWeekday, setupPair } from "./helpers";
+import { api, nextWeekday, pickDateTime, setupPair } from "./helpers";
 
 test("오프라인: 백업으로 조회 · 임시 저장 → 복구 후 반영", async ({
   browser,
@@ -65,7 +65,7 @@ test("오프라인: 백업으로 조회 · 임시 저장 → 복구 후 반영",
   await trainer.getByRole("button", { name: "예약 등록" }).click();
   const sheet = trainer.getByRole("dialog", { name: "예약 등록" });
   await sheet.getByLabel("수강생").selectOption(studentId);
-  await sheet.getByLabel("시작 시각").fill(`${day}T15:00`);
+  await pickDateTime(sheet, "시작 시각", `${day}T15:00`);
   await sheet
     .getByRole("button", { name: "등록하고 확정 요청 보내기" })
     .click();

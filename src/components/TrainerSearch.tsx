@@ -36,7 +36,7 @@ export function TrainerSearch({
         value={q}
         onChange={(e) => setQ(e.target.value)}
       />
-      <ul className="flex flex-col divide-y divide-zinc-200 dark:divide-zinc-800">
+      <ul className="divide-line flex flex-col divide-y">
         {q.trim() &&
           hits
             .filter((h) => h.id !== excludeId)
@@ -48,7 +48,7 @@ export function TrainerSearch({
                   onClick={() => onPick(h)}
                 >
                   {h.name}
-                  <span className="block text-xs text-zinc-500">
+                  <span className="text-muted block text-xs">
                     {h.workplace}
                   </span>
                 </button>

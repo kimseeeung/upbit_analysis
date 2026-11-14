@@ -65,7 +65,7 @@ export function Notices() {
               onChange={(e) =>
                 setEditing((x) => ({ ...x, body: e.target.value }))
               }
-              className="rounded-lg border border-zinc-300 bg-white px-3 py-2 font-normal dark:border-zinc-700 dark:bg-zinc-900"
+              className="border-line bg-surface rounded-lg border px-3 py-2 font-normal"
             />
           </label>
           {error && <Msg tone="error">{error}</Msg>}
@@ -92,12 +92,10 @@ export function Notices() {
         {items.map((n) => (
           <li
             key={n.id}
-            className="rounded-xl border border-zinc-200 p-3 text-sm dark:border-zinc-800"
+            className="border-line bg-surface rounded-2xl border p-3 text-sm"
           >
             <p className="font-semibold">{n.title}</p>
-            <p className="text-xs text-zinc-500">
-              {fmtDateTime(n.publishedAt)}
-            </p>
+            <p className="text-muted text-xs">{fmtDateTime(n.publishedAt)}</p>
             <p className="mt-1 whitespace-pre-wrap">{n.body}</p>
             <div className="mt-2 flex gap-3 text-xs">
               <button
@@ -109,7 +107,7 @@ export function Notices() {
               </button>
               <button
                 type="button"
-                className="text-red-600 underline"
+                className="text-rose-600 underline"
                 onClick={() => remove(n.id)}
               >
                 삭제

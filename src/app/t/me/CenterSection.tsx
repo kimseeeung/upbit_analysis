@@ -78,7 +78,7 @@ export function CenterSection() {
         <>
           <p className="text-sm">
             {active.center.name}{" "}
-            <span className="text-zinc-500">· {active.center.address}</span>
+            <span className="text-muted">· {active.center.address}</span>
           </p>
           {active.center.status === "DISSOLVING" &&
             active.center.dissolveAt && (
@@ -137,7 +137,7 @@ export function CenterSection() {
           </p>
         )
       ) : (
-        <p className="text-sm text-zinc-500">개인 트레이너입니다.</p>
+        <p className="text-muted text-sm">개인 트레이너입니다.</p>
       )}
 
       {!active && (
@@ -214,7 +214,7 @@ export function CenterSection() {
               className="flex items-center justify-between text-sm"
             >
               <span>
-                {c.name} <span className="text-zinc-500">{c.address}</span>
+                {c.name} <span className="text-muted">{c.address}</span>
               </span>
               <Button
                 variant="secondary"

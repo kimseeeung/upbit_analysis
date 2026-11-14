@@ -17,15 +17,14 @@ export function TransferForm({ studentId }: { studentId: string }) {
   } | null>(null);
   return (
     <div className="flex flex-col gap-4">
-      <Link href={`/t/students/${studentId}`} className="text-sm text-zinc-500">
+      <Link href={`/t/students/${studentId}`} className="text-muted text-sm">
         ← 수강생 상세
       </Link>
       <h1 className="text-lg font-semibold">담당 트레이너 인계</h1>
       <Card title="새 트레이너">
         {pick ? (
           <p className="text-sm">
-            {pick.name}{" "}
-            <span className="text-zinc-500">· {pick.workplace}</span>{" "}
+            {pick.name} <span className="text-muted">· {pick.workplace}</span>{" "}
             <Button variant="ghost" onClick={() => setPick(null)}>
               바꾸기
             </Button>
@@ -45,7 +44,7 @@ export function TransferForm({ studentId }: { studentId: string }) {
           checked={memo}
           onChange={setMemo}
         />
-        <p className="text-xs text-zinc-500">
+        <p className="text-muted text-xs">
           예정 예약은 새 트레이너가 수락할 때 예약별로 유지·취소를 정합니다.
           수강 규칙은 새 트레이너 규칙으로 다시 동의를 받습니다.
         </p>

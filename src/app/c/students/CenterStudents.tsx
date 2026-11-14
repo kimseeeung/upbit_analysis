@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { api } from "@/components/api";
-import { Button, Card, Notice, TextField } from "@/components/ui";
+import { Button, Card, EmptyState, Notice, TextField } from "@/components/ui";
 
 interface Data {
   members: { id: string; name: string }[];
@@ -60,7 +60,7 @@ export function CenterStudents() {
     return msg ? (
       <Notice tone={msg.tone}>{msg.text}</Notice>
     ) : (
-      <p className="text-sm text-zinc-500">불러오는 중…</p>
+      <p className="text-muted text-sm">불러오는 중…</p>
     );
   const list = d.students.filter((s) => s.name.includes(q.trim()));
   return (
@@ -73,7 +73,7 @@ export function CenterStudents() {
         onChange={(e) => setQ(e.target.value)}
       />
       {list.length === 0 && (
-        <p className="text-sm text-zinc-500">수강생이 없습니다.</p>
+        <EmptyState icon="users">수강생이 없습니다.</EmptyState>
       )}
       {list.map((s) => (
         <Card key={s.studentId} title={s.name}>
@@ -91,7 +91,7 @@ export function CenterStudents() {
             )}
           </p>
           {s.transfer && (
-            <p className="text-xs text-zinc-500">
+            <p className="text-muted text-xs">
               담당 변경:{" "}
               {TRANSFER_STATUS[s.transfer.status] ?? s.transfer.status} · 이용권
               넘기기:{" "}
@@ -124,7 +124,7 @@ export function CenterStudents() {
                   onChange={(e) =>
                     setTarget((t) => ({ ...t, [s.studentId]: e.target.value }))
                   }
-                  className="rounded-lg border border-zinc-300 bg-white px-3 py-2 dark:border-zinc-700 dark:bg-zinc-900"
+                  className="border-line bg-surface rounded-lg border px-3 py-2"
                 >
                   <option value="">선택</option>
                   {d.members

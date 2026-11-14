@@ -29,7 +29,7 @@ export function CenterSettings() {
       <h1 className="text-lg font-semibold">센터 설정</h1>
       {msg && <Notice tone={msg.tone}>{msg.text}</Notice>}
       <Card title="센터 기본 수강 규칙">
-        <p className="text-xs text-zinc-500">
+        <p className="text-muted text-xs">
           소속 트레이너가 처음 규칙을 정할 때 초기값으로 씁니다.
         </p>
         {rules && <RulesEditor value={rules} onChange={setRules} />}
@@ -69,7 +69,7 @@ export function CenterSettings() {
         )}
       </Card>
       <Card title="센터 해산">
-        <p className="text-sm text-zinc-600 dark:text-zinc-300">
+        <p className="text-muted text-sm">
           소속 트레이너 전원에게 알리고 7일 뒤 개인 트레이너로 바뀝니다.
           수강생·이용권·기록은 그대로이고, 센터의 결제 합계·통계 화면은
           없어집니다.

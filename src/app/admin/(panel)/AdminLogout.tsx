@@ -8,7 +8,7 @@ export function AdminLogout() {
   return (
     <button
       type="button"
-      className="text-zinc-500"
+      className="text-muted"
       onClick={async () => {
         await api("/api/admin/logout", { body: {} });
         router.replace("/admin/login");

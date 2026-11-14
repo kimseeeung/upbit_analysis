@@ -14,7 +14,7 @@ export function TrainerChange() {
   } | null>(null);
   return (
     <Card title="담당 트레이너 변경">
-      <p className="text-xs text-zinc-500">
+      <p className="text-muted text-xs">
         새 트레이너가 수락하면 바뀝니다. 계정·이용권·이력은 그대로 이어지고,
         남은 이용권은 이전 트레이너가 넘기기에 동의해야 새 트레이너와 쓸 수
         있습니다.
@@ -22,8 +22,7 @@ export function TrainerChange() {
       {pick ? (
         <div className="flex items-center justify-between text-sm">
           <span>
-            {pick.name}{" "}
-            <span className="text-zinc-500">· {pick.workplace}</span>
+            {pick.name} <span className="text-muted">· {pick.workplace}</span>
           </span>
           <Button
             onClick={async () => {

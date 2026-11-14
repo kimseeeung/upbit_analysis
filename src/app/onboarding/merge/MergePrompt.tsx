@@ -45,7 +45,7 @@ export function MergePrompt() {
           key={c.studentId}
           title={`${c.trainerName} 트레이너의 수강생이 맞나요?`}
         >
-          <p className="text-sm text-zinc-600 dark:text-zinc-300">
+          <p className="text-muted text-sm">
             {c.workplace && `${c.workplace} · `}이 전화번호로 등록된 기록이
             있습니다 (이용권 {c.passCount}개, 수업 {c.bookingCount}건). 맞으면
             기존 기록을 내 계정으로 합칩니다.

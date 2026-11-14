@@ -19,11 +19,11 @@ export function NoticeList() {
       (r) => r.ok && setItems(r.data.notices),
     );
   }, []);
-  if (!items) return <p className="text-sm text-zinc-500">불러오는 중…</p>;
+  if (!items) return <p className="text-muted text-sm">불러오는 중…</p>;
   if (items.length === 0)
-    return <p className="text-sm text-zinc-500">공지사항이 없습니다</p>;
+    return <p className="text-muted text-sm">공지사항이 없습니다</p>;
   return (
-    <ul className="flex flex-col divide-y divide-zinc-100 dark:divide-zinc-800">
+    <ul className="divide-line flex flex-col divide-y">
       {items.map((n) => (
         <li key={n.id} className="py-2">
           <button
@@ -32,9 +32,7 @@ export function NoticeList() {
             onClick={() => setOpen(open === n.id ? null : n.id)}
           >
             <p className="text-sm font-medium">{n.title}</p>
-            <p className="text-xs text-zinc-500">
-              {fmtDateTime(n.publishedAt)}
-            </p>
+            <p className="text-muted text-xs">{fmtDateTime(n.publishedAt)}</p>
           </button>
           {open === n.id && (
             <p className="mt-2 text-sm whitespace-pre-wrap">{n.body}</p>

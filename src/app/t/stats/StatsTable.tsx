@@ -1,5 +1,6 @@
 "use client";
 
+import { DateSelect } from "@/components/pickers";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { api } from "@/components/api";
@@ -84,17 +85,15 @@ export function StatsTable() {
     <div className="flex flex-col gap-4">
       <h1 className="text-lg font-semibold">수강 현황</h1>
       <div className="flex flex-wrap items-end gap-2">
-        <TextField
+        <DateSelect
           label="시작일"
-          type="date"
           value={range.from}
-          onChange={(e) => setRange((r) => ({ ...r, from: e.target.value }))}
+          onChange={(v) => setRange((r) => ({ ...r, from: v }))}
         />
-        <TextField
+        <DateSelect
           label="종료일"
-          type="date"
           value={range.to}
-          onChange={(e) => setRange((r) => ({ ...r, to: e.target.value }))}
+          onChange={(v) => setRange((r) => ({ ...r, to: v }))}
         />
         <div className="flex gap-1">
           {[
@@ -106,7 +105,7 @@ export function StatsTable() {
               key={label as string}
               type="button"
               onClick={() => setRange(r as { from: string; to: string })}
-              className="rounded-full bg-zinc-100 px-3 py-1 text-sm dark:bg-zinc-800"
+              className="bg-brand-50 dark:bg-brand-700/20 rounded-full px-3 py-1 text-sm"
             >
               {label as string}
             </button>
@@ -116,17 +115,17 @@ export function StatsTable() {
       {s && (
         <div className="grid grid-cols-3 gap-2">
           <Card>
-            <p className="text-xs text-zinc-500">총 수업 수</p>
+            <p className="text-muted text-xs">총 수업 수</p>
             <p className="text-lg font-semibold">{s.totalClasses}회</p>
           </Card>
           <Card>
-            <p className="text-xs text-zinc-500">노쇼율</p>
+            <p className="text-muted text-xs">노쇼율</p>
             <p className="text-lg font-semibold">
               {(s.noShowRate * 100).toFixed(1)}%
             </p>
           </Card>
           <Card>
-            <p className="text-xs text-zinc-500">결제 합계</p>
+            <p className="text-muted text-xs">결제 합계</p>
             <p className="text-lg font-semibold">
               {s.paymentSum.toLocaleString("ko-KR")}원
             </p>
@@ -144,7 +143,7 @@ export function StatsTable() {
           aria-label="상태"
           value={filter}
           onChange={(e) => setFilter(e.target.value as typeof filter)}
-          className="rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+          className="border-line bg-surface rounded-xl border px-3 py-2.5 text-sm"
         >
           <option value="ALL">전체</option>
           <option value="CURRENT">지금 담당</option>
@@ -152,7 +151,7 @@ export function StatsTable() {
         </select>
         <a
           href={`/api/t/stats/csv?from=${range.from}&to=${range.to}`}
-          className="rounded-lg border border-zinc-300 px-3 py-2.5 text-sm dark:border-zinc-700"
+          className="border-line rounded-lg border px-3 py-2.5 text-sm"
         >
           엑셀 다운로드
         </a>
@@ -168,7 +167,7 @@ export function StatsTable() {
                 const [key, dir] = e.target.value.split(":");
                 setSort({ key: key as SortKey, dir: dir as "asc" | "desc" });
               }}
-              className="rounded-lg border border-zinc-300 bg-white px-2 py-1.5 dark:border-zinc-700 dark:bg-zinc-900"
+              className="border-line bg-surface rounded-lg border px-2 py-1.5"
             >
               {COLUMNS.flatMap((c) => [
                 <option key={`${c.key}:asc`} value={`${c.key}:asc`}>
@@ -184,7 +183,7 @@ export function StatsTable() {
             <div
               key={r.studentId}
               data-stat-row
-              className="rounded-xl border border-zinc-200 p-3 text-sm dark:border-zinc-800"
+              className="border-line bg-surface rounded-2xl border p-3 text-sm"
             >
               <p data-col className="font-semibold">
                 <Link
@@ -194,7 +193,7 @@ export function StatsTable() {
                   {r.name}
                 </Link>
                 {!r.isCurrent && (
-                  <span className="ml-1 text-xs font-normal text-zinc-500">
+                  <span className="text-muted ml-1 text-xs font-normal">
                     이전 담당
                   </span>
                 )}
@@ -217,12 +216,12 @@ export function StatsTable() {
                   ] as const
                 ).map(([label, v], i) => (
                   <div key={label} className={i === 6 ? "col-span-2" : ""}>
-                    <dt className="text-xs text-zinc-500">{label}</dt>
+                    <dt className="text-muted text-xs">{label}</dt>
                     <dd
                       data-col
                       className={
                         i === 6 && r.expirySoon
-                          ? "font-semibold text-red-600"
+                          ? "font-semibold text-rose-600"
                           : ""
                       }
                     >
@@ -234,7 +233,7 @@ export function StatsTable() {
             </div>
           ))}
           {rows.length === 0 && (
-            <p className="py-6 text-center text-sm text-zinc-500">
+            <p className="text-muted py-6 text-center text-sm">
               조회 기간에 해당하는 수강생이 없습니다.
             </p>
           )}
@@ -243,7 +242,7 @@ export function StatsTable() {
         <div className="overflow-x-auto">
           <table className="w-full min-w-[640px] text-sm">
             <thead>
-              <tr className="border-b border-zinc-200 text-left dark:border-zinc-800">
+              <tr className="border-line border-b text-left">
                 {COLUMNS.map((c) => (
                   <th key={c.key} className="px-2 py-2 font-medium">
                     <button
@@ -272,7 +271,7 @@ export function StatsTable() {
                 <tr
                   key={r.studentId}
                   data-stat-row
-                  className="border-b border-zinc-100 dark:border-zinc-800"
+                  className="border-line border-b"
                 >
                   <td data-col className="px-2 py-2">
                     <Link
@@ -282,9 +281,7 @@ export function StatsTable() {
                       {r.name}
                     </Link>
                     {!r.isCurrent && (
-                      <span className="ml-1 text-xs text-zinc-500">
-                        이전 담당
-                      </span>
+                      <span className="text-muted ml-1 text-xs">이전 담당</span>
                     )}
                   </td>
                   <td data-col className="px-2 py-2">
@@ -299,7 +296,7 @@ export function StatsTable() {
                   <td data-col className="px-2 py-2">
                     {r.canceled}
                     {r.lateCanceled > 0 && (
-                      <span className="text-xs text-zinc-500">
+                      <span className="text-muted text-xs">
                         {" "}
                         (당일 {r.lateCanceled})
                       </span>
@@ -313,7 +310,7 @@ export function StatsTable() {
                   </td>
                   <td
                     data-col
-                    className={`px-2 py-2 ${r.expirySoon ? "font-semibold text-red-600" : ""}`}
+                    className={`px-2 py-2 ${r.expirySoon ? "font-semibold text-rose-600" : ""}`}
                   >
                     {r.expiry ?? "-"}
                   </td>
@@ -323,7 +320,7 @@ export function StatsTable() {
                 <tr>
                   <td
                     colSpan={COLUMNS.length}
-                    className="px-2 py-6 text-center text-zinc-500"
+                    className="text-muted px-2 py-6 text-center"
                   >
                     조회 기간에 해당하는 수강생이 없습니다.
                   </td>
@@ -333,7 +330,7 @@ export function StatsTable() {
           </table>
         </div>
       )}
-      <p className="text-xs text-zinc-500">
+      <p className="text-muted text-xs">
         인계된 수강생의 수강·노쇼·취소는 수업을 진행한 트레이너에게, 전체·잔여는
         조회 종료일 기준 담당 트레이너에게 셉니다.
       </p>

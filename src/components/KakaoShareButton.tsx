@@ -104,11 +104,11 @@ export function KakaoShareButton({
       </Button>
       {msg && <Notice tone={msg.tone}>{msg.text}</Notice>}
       {link && (
-        <p className="text-xs break-all text-zinc-500" data-testid="share-link">
+        <p className="text-muted text-xs break-all" data-testid="share-link">
           {link}
         </p>
       )}
-      <p className="text-xs text-zinc-500">{NIGHT_NOTICE}</p>
+      <p className="text-muted text-xs">{NIGHT_NOTICE}</p>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { isoToKstLocal, kstLocalToIso } from "./fmt";
+import { DateTimeSelect } from "./pickers";
 
 export interface Slot {
   startAt: string;
@@ -24,15 +25,13 @@ export function SlotInputs({
   return (
     <div className="flex flex-col gap-2">
       {slots.map((s, i) => (
-        <div key={i} className="flex items-center gap-2">
-          <input
-            aria-label={`${label} ${i + 1}`}
-            type="datetime-local"
-            step={1800}
+        <div key={i} className="flex items-end gap-2">
+          <DateTimeSelect
+            className="flex-1"
+            label={`${label} ${i + 1}`}
             value={isoToKstLocal(s.startAt)}
-            onChange={(e) => {
-              if (!e.target.value) return;
-              const start = kstLocalToIso(e.target.value);
+            onChange={(v) => {
+              const start = kstLocalToIso(v);
               const end = new Date(
                 new Date(start).getTime() + durationMs,
               ).toISOString();
@@ -42,12 +41,11 @@ export function SlotInputs({
                 ),
               );
             }}
-            className="flex-1 rounded-lg border border-zinc-300 px-2 py-2 dark:border-zinc-700 dark:bg-zinc-900"
           />
           {slots.length > 1 && (
             <button
               type="button"
-              className="text-sm text-zinc-500"
+              className="text-muted text-sm"
               onClick={() => onChange(slots.filter((_, j) => j !== i))}
             >
               삭제
@@ -58,7 +56,7 @@ export function SlotInputs({
       {slots.length < max && (
         <button
           type="button"
-          className="self-start text-sm text-zinc-500 underline"
+          className="text-muted self-start text-sm underline"
           onClick={() => {
             const last = slots.at(-1);
             const start = new Date(

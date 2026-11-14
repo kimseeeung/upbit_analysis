@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { api, nextWeekday, setupPair as setup } from "./helpers";
+import { api, nextWeekday, pickDateTime, setupPair as setup } from "./helpers";
 
 test("트레이너 등록 → 수강생 확정 → 트레이너 변경 요청 → 수강생 수락", async ({
   browser,
@@ -18,7 +18,7 @@ test("트레이너 등록 → 수강생 확정 → 트레이너 변경 요청 �
   await trainer.getByRole("button", { name: "예약 등록" }).click();
   const sheet = trainer.getByRole("dialog", { name: "예약 등록" });
   await sheet.getByLabel("수강생").selectOption(studentId);
-  await sheet.getByLabel("시작 시각").fill(`${day}T19:00`);
+  await pickDateTime(sheet, "시작 시각", `${day}T19:00`);
   await sheet
     .getByRole("button", { name: "등록하고 확정 요청 보내기" })
     .click();
@@ -32,7 +32,7 @@ test("트레이너 등록 → 수강생 확정 → 트레이너 변경 요청 �
   // 같은 시간 중복 차단
   await trainer.getByRole("button", { name: "예약 등록" }).click();
   await sheet.getByLabel("수강생").selectOption(studentId);
-  await sheet.getByLabel("시작 시각").fill(`${day}T19:30`);
+  await pickDateTime(sheet, "시작 시각", `${day}T19:30`);
   await sheet
     .getByRole("button", { name: "등록하고 확정 요청 보내기" })
     .click();
@@ -56,7 +56,7 @@ test("트레이너 등록 → 수강생 확정 → 트레이너 변경 요청 �
   await ev.click();
   const detail = trainer.getByRole("dialog");
   await detail.getByRole("button", { name: "시간 변경 요청" }).click();
-  await detail.getByLabel("새 시간 1").fill(`${day2}T20:00`);
+  await pickDateTime(detail, "새 시간 1", `${day2}T20:00`);
   await detail.getByRole("button", { name: "변경 요청 보내기" }).click();
   await expect(trainer.getByText("변경 요청을 보냈습니다")).toBeVisible();
   // 수락 전까지 원래 시간 유지

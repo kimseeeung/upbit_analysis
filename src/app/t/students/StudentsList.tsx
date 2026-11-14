@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { api } from "@/components/api";
 import { readSnapshot } from "@/lib/offline/client";
-import { Button, Card, Notice, TextField } from "@/components/ui";
+import { Button, Card, EmptyState, Notice, TextField } from "@/components/ui";
 
 interface Row {
   studentId: string;
@@ -118,24 +118,21 @@ function AddStudent({ onDone }: { onDone: () => void }) {
               검색
             </Button>
           </div>
-          <ul className="flex flex-col divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
+          <ul className="divide-line flex flex-col divide-y text-sm">
             {hits.map((h) => (
               <li
                 key={h.studentId}
                 className="flex items-center justify-between py-2"
               >
                 <span>
-                  {h.name}{" "}
-                  <span className="text-zinc-500">{h.phoneMasked}</span>
+                  {h.name} <span className="text-muted">{h.phoneMasked}</span>
                 </span>
                 {h.linkedToMe ? (
-                  <span className="text-xs text-zinc-500">연결됨</span>
+                  <span className="text-muted text-xs">연결됨</span>
                 ) : h.hasTrainer ? (
-                  <span className="text-xs text-zinc-500">
-                    다른 트레이너 담당
-                  </span>
+                  <span className="text-muted text-xs">다른 트레이너 담당</span>
                 ) : h.requestPending ? (
-                  <span className="text-xs text-zinc-500">요청 보냄</span>
+                  <span className="text-muted text-xs">요청 보냄</span>
                 ) : (
                   <Button
                     variant="secondary"
@@ -238,8 +235,8 @@ export function StudentsList() {
             onClick={() => setFilter(f.key)}
             className={`rounded-full px-3 py-1 text-sm ${
               filter === f.key
-                ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
-                : "bg-zinc-100 dark:bg-zinc-800"
+                ? "bg-brand-500 text-white"
+                : "bg-brand-50 dark:bg-brand-700/20"
             }`}
           >
             {f.label}
@@ -247,10 +244,10 @@ export function StudentsList() {
         ))}
       </div>
       {rows?.length === 0 && (
-        <p className="text-sm text-zinc-500">수강생이 없습니다.</p>
+        <EmptyState icon="users">수강생이 없습니다.</EmptyState>
       )}
       {selected.length > 0 && (
-        <div className="flex flex-wrap items-center gap-2 rounded-lg bg-zinc-100 p-2 text-sm dark:bg-zinc-800">
+        <div className="bg-brand-50 dark:bg-brand-700/20 flex flex-wrap items-center gap-2 rounded-lg p-2 text-sm">
           <span>{selected.length}명 선택</span>
           <Button
             variant="secondary"
@@ -273,7 +270,7 @@ export function StudentsList() {
           </Button>
         </div>
       )}
-      <ul className="flex flex-col divide-y divide-zinc-200 dark:divide-zinc-800">
+      <ul className="divide-line flex flex-col divide-y">
         {rows?.map((s) => (
           <li key={s.studentId} className="flex items-center gap-2">
             <input
@@ -296,7 +293,7 @@ export function StudentsList() {
                 <span className="font-medium">
                   {s.name}
                   {!s.registered && (
-                    <span className="ml-1 text-xs text-zinc-500">미가입</span>
+                    <span className="text-muted ml-1 text-xs">미가입</span>
                   )}
                   {s.ruleUnagreed && (
                     <span className="ml-1 rounded bg-amber-100 px-1 text-xs text-amber-800 dark:bg-amber-900 dark:text-amber-200">
@@ -304,12 +301,12 @@ export function StudentsList() {
                     </span>
                   )}
                 </span>
-                <span className="text-xs text-zinc-500">
+                <span className="text-muted text-xs">
                   {STATUS_LABEL[s.status]} · 잔여 {s.remaining}회
                   {s.nextExpiry ? ` · 만료 ${s.nextExpiry}` : ""}
                 </span>
               </span>
-              <span className="text-zinc-400">›</span>
+              <span className="text-muted">›</span>
             </Link>
             <div className="flex flex-col gap-0.5 text-xs">
               <label className="flex items-center gap-1">

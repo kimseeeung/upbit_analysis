@@ -109,7 +109,7 @@ function DisputeItem({
     >
       <p className="text-sm">
         {d.name} · {fmtRange(d.startAt, d.endAt)}
-        <span className="block text-xs text-zinc-500">
+        <span className="text-muted block text-xs">
           {fmtDateTime(d.disputeAt)} · 사유: {d.reason}
         </span>
       </p>
@@ -143,7 +143,7 @@ function DisputeItem({
           기존 처리 유지
         </Button>
       </div>
-      <p className="text-xs text-zinc-500">
+      <p className="text-muted text-xs">
         7일 안에 고르지 않으면 수강생 의견 수락으로 처리됩니다.
       </p>
     </Card>
@@ -169,7 +169,7 @@ export function ApprovalInboxItems({
         <Card key={t.bookingId} title="트레이너 확정 필요">
           <p className="text-sm">
             {t.name} · {fmtRange(t.startAt, t.endAt)}
-            <span className="block text-xs text-zinc-500">
+            <span className="text-muted block text-xs">
               규칙 미동의 수강생의 미승인 기한이 지났습니다. 직접 완료 처리해
               주세요.
             </span>

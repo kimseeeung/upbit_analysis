@@ -5,7 +5,7 @@ import { api } from "@/components/api";
 import { readSnapshot } from "@/lib/offline/client";
 import { PassSummary, type PassView } from "@/components/PassCards";
 import { PausePanel } from "@/components/PausePanel";
-import { Notice } from "@/components/ui";
+import { EmptyState, Notice } from "@/components/ui";
 
 export function MyPasses() {
   const [data, setData] = useState<{
@@ -33,7 +33,7 @@ export function MyPasses() {
     return error ? (
       <Notice tone="error">{error}</Notice>
     ) : (
-      <p className="text-sm text-zinc-500">불러오는 중…</p>
+      <p className="text-muted text-sm">불러오는 중…</p>
     );
   const current = data.passes.filter(
     (p) => p.status === "ACTIVE" || p.status === "PAUSED",
@@ -44,7 +44,7 @@ export function MyPasses() {
   return (
     <div className="flex flex-col gap-4">
       {data.passes.length === 0 && (
-        <p className="text-sm text-zinc-500">등록된 이용권이 없습니다.</p>
+        <EmptyState icon="ticket">등록된 이용권이 없습니다.</EmptyState>
       )}
       {current.map((p) => (
         <PassSummary key={p.id} p={p}>

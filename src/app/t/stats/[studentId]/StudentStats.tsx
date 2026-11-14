@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { api } from "@/components/api";
 import { APPROVAL_METHOD_LABEL } from "@/components/approval-types";
 import { STATUS_STYLE, fmtDateTime, fmtRange } from "@/components/fmt";
-import { Card, Notice } from "@/components/ui";
+import { Card, EmptyState, Notice } from "@/components/ui";
 
 interface Item {
   id: string;
@@ -40,10 +40,10 @@ export function StudentStats({ studentId }: { studentId: string }) {
     );
   }, [studentId, from, to]);
   if (error) return <Notice tone="error">{error}</Notice>;
-  if (!data) return <p className="text-sm text-zinc-500">불러오는 중…</p>;
+  if (!data) return <p className="text-muted text-sm">불러오는 중…</p>;
   return (
     <div className="flex flex-col gap-4">
-      <Link href="/t/stats" className="text-sm text-zinc-500">
+      <Link href="/t/stats" className="text-muted text-sm">
         ← 수강 현황
       </Link>
       <h1 className="text-lg font-semibold">
@@ -53,11 +53,11 @@ export function StudentStats({ studentId }: { studentId: string }) {
         <Notice>이전 담당 수강생입니다. 직접 진행한 수업만 보입니다.</Notice>
       )}
       {data.groups.length === 0 && (
-        <p className="text-sm text-zinc-500">기간 안의 수업이 없습니다.</p>
+        <EmptyState icon="calendar">기간 안의 수업이 없습니다.</EmptyState>
       )}
       {data.groups.map((g) => (
         <Card key={g.passId ?? "none"} title={g.passName}>
-          <ul className="flex flex-col divide-y divide-zinc-100 text-sm dark:divide-zinc-800">
+          <ul className="divide-line flex flex-col divide-y text-sm">
             {g.items.map((b) => (
               <li key={b.id} className="flex flex-col py-2">
                 <span>
@@ -70,7 +70,7 @@ export function StudentStats({ studentId }: { studentId: string }) {
                     </span>
                   )}
                 </span>
-                <span className="text-xs text-zinc-500">
+                <span className="text-muted text-xs">
                   진행 {b.trainerName}
                   {b.approvedAt && ` · 승인 ${fmtDateTime(b.approvedAt)}`}
                   {b.approvalMethod &&

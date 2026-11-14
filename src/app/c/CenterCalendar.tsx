@@ -1,5 +1,6 @@
 "use client";
 
+import { DateSelect } from "@/components/pickers";
 import type { DatesSetArg, EventInput } from "@fullcalendar/core";
 import koLocale from "@fullcalendar/core/locales/ko";
 import dayGridPlugin from "@fullcalendar/daygrid";
@@ -11,7 +12,7 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import { useCallback, useMemo, useState } from "react";
 import { api } from "@/components/api";
 import { STATUS_STYLE, fmtRange, kstDateKey } from "@/components/fmt";
-import { Card, Notice, TextField } from "@/components/ui";
+import { Card, Notice } from "@/components/ui";
 
 const COLORS = [
   "#2563eb",
@@ -117,7 +118,7 @@ export function CenterCalendar() {
             />
             {t.name}
             {!t.current && (
-              <span className="text-xs text-zinc-500">(이전 소속)</span>
+              <span className="text-muted text-xs">(이전 소속)</span>
             )}
           </button>
         ))}
@@ -134,10 +135,7 @@ export function CenterCalendar() {
           headerToolbar={{
             left: "prev,next today",
             center: "title",
-            right:
-              displayMode === "MOBILE"
-                ? "timeGridDay,listWeek,dayGridMonth"
-                : "dayGridMonth,timeGridWeek,timeGridDay",
+            right: "timeGridDay,timeGridWeek,dayGridMonth,listWeek",
           }}
           buttonText={{
             today: "오늘",
@@ -157,12 +155,7 @@ export function CenterCalendar() {
         />
       </div>
       <Card title={`일 보기 (트레이너별) · ${day}`}>
-        <TextField
-          label="날짜"
-          type="date"
-          value={day}
-          onChange={(e) => setDay(e.target.value)}
-        />
+        <DateSelect label="날짜" value={day} onChange={(v) => setDay(v)} />
         <div
           className="grid gap-2"
           style={{
@@ -182,14 +175,14 @@ export function CenterCalendar() {
                 .map((b) => (
                   <div
                     key={b.id}
-                    className="rounded border-l-4 bg-zinc-50 px-2 py-1 text-xs dark:bg-zinc-800"
+                    className="bg-brand-50 dark:bg-brand-700/20 rounded border-l-4 px-2 py-1 text-xs"
                     style={{
                       borderColor: COLORS[t.colorIndex % COLORS.length],
                     }}
                   >
                     {fmtRange(b.startAt, b.endAt).split(" ").slice(1).join(" ")}{" "}
                     {b.studentName}
-                    <span className="block text-zinc-500">
+                    <span className="text-muted block">
                       {STATUS_STYLE[b.status].label}
                     </span>
                   </div>
@@ -197,7 +190,7 @@ export function CenterCalendar() {
             </div>
           ))}
         </div>
-        <p className="text-xs text-zinc-500">
+        <p className="text-muted text-xs">
           주 보기의 날짜를 누르거나 날짜를 바꾸면 그날의 트레이너별 일정이
           보입니다. 이 주에 불러온 일정만 표시합니다.
         </p>

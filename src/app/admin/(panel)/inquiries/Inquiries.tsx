@@ -61,15 +61,15 @@ export function Inquiries() {
         {items.map((q) => (
           <li
             key={q.id}
-            className="flex flex-col gap-2 rounded-xl border border-zinc-200 p-3 text-sm dark:border-zinc-800"
+            className="border-line bg-surface flex flex-col gap-2 rounded-2xl border p-3 text-sm"
           >
             <p className="font-semibold">{q.title}</p>
-            <p className="text-xs text-zinc-500">
+            <p className="text-muted text-xs">
               {q.userName} ({ROLE[q.userRole]}) · {fmtDateTime(q.createdAt)}
             </p>
             <p className="whitespace-pre-wrap">{q.body}</p>
             {q.answer ? (
-              <p className="rounded bg-zinc-100 p-2 whitespace-pre-wrap dark:bg-zinc-800">
+              <p className="bg-brand-50 dark:bg-brand-700/20 rounded p-2 whitespace-pre-wrap">
                 답변 ({q.answeredAt ? fmtDateTime(q.answeredAt) : ""}):{" "}
                 {q.answer}
               </p>
@@ -82,7 +82,7 @@ export function Inquiries() {
                   onChange={(e) =>
                     setDrafts((d) => ({ ...d, [q.id]: e.target.value }))
                   }
-                  className="rounded-lg border border-zinc-300 bg-white px-3 py-2 dark:border-zinc-700 dark:bg-zinc-900"
+                  className="border-line bg-surface rounded-lg border px-3 py-2"
                 />
                 <Button
                   disabled={!(drafts[q.id] ?? "").trim()}
@@ -95,7 +95,7 @@ export function Inquiries() {
           </li>
         ))}
         {items.length === 0 && (
-          <li className="text-sm text-zinc-500">문의가 없습니다</li>
+          <li className="text-muted text-sm">문의가 없습니다</li>
         )}
       </ul>
     </div>

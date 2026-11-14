@@ -1,5 +1,6 @@
 "use client";
 
+import { DateSelect, TimeSelect } from "@/components/pickers";
 import { useEffect, useState } from "react";
 import { api } from "./api";
 import { Button, Card, Notice } from "./ui";
@@ -52,13 +53,13 @@ export function AvailabilityEditor({ onSaved }: { onSaved?: () => void }) {
     if (r.ok) onSaved?.();
   }
 
-  if (!rules) return <p className="text-sm text-zinc-500">불러오는 중…</p>;
+  if (!rules) return <p className="text-muted text-sm">불러오는 중…</p>;
   const update = (i: number, patch: Partial<Rule>) =>
     setRules(rules.map((r, j) => (j === i ? { ...r, ...patch } : r)));
 
   return (
     <Card title="근무 가능 시간">
-      <p className="text-xs text-zinc-500">
+      <p className="text-muted text-xs">
         수강생은 이 시간 안에서만 예약을 신청할 수 있습니다. 설정하지 않으면
         수강생 화면에 예약 신청 버튼이 보이지 않습니다.
       </p>
@@ -70,7 +71,7 @@ export function AvailabilityEditor({ onSaved }: { onSaved?: () => void }) {
           return (
             <li
               key={wd}
-              className="flex flex-col gap-1 border-b border-zinc-100 pb-2 dark:border-zinc-800"
+              className="border-line flex flex-col gap-1 border-b pb-2"
             >
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">{DAYS[wd]}요일</span>
@@ -87,26 +88,20 @@ export function AvailabilityEditor({ onSaved }: { onSaved?: () => void }) {
                 </Button>
               </div>
               {items.length === 0 && (
-                <span className="text-xs text-zinc-400">휴무</span>
+                <span className="text-muted text-xs">휴무</span>
               )}
               {items.map(({ r, i }) => (
-                <div key={i} className="flex items-center gap-2">
-                  <input
-                    aria-label={`${DAYS[wd]}요일 시작`}
-                    type="time"
-                    step={1800}
+                <div key={i} className="flex flex-wrap items-end gap-2">
+                  <TimeSelect
+                    label={`${DAYS[wd]}요일 시작`}
                     value={r.startTime}
-                    onChange={(e) => update(i, { startTime: e.target.value })}
-                    className="rounded border border-zinc-300 px-2 py-1 dark:border-zinc-700 dark:bg-zinc-900"
+                    onChange={(v) => update(i, { startTime: v })}
                   />
                   ~
-                  <input
-                    aria-label={`${DAYS[wd]}요일 끝`}
-                    type="time"
-                    step={1800}
+                  <TimeSelect
+                    label={`${DAYS[wd]}요일 끝`}
                     value={r.endTime}
-                    onChange={(e) => update(i, { endTime: e.target.value })}
-                    className="rounded border border-zinc-300 px-2 py-1 dark:border-zinc-700 dark:bg-zinc-900"
+                    onChange={(v) => update(i, { endTime: v })}
                   />
                   <Button
                     variant="ghost"
@@ -122,19 +117,18 @@ export function AvailabilityEditor({ onSaved }: { onSaved?: () => void }) {
       </ul>
       <h3 className="text-sm font-medium">휴무일·예외일</h3>
       {exceptions.map((e, i) => (
-        <div key={i} className="flex flex-wrap items-center gap-2 text-sm">
-          <input
-            aria-label="예외일 날짜"
-            type="date"
+        <div
+          key={i}
+          className="border-line flex flex-wrap items-end gap-2 rounded-xl border p-3 text-sm"
+        >
+          <DateSelect
+            label="예외일 날짜"
             value={e.date}
-            onChange={(ev) =>
+            onChange={(v) =>
               setExceptions(
-                exceptions.map((x, j) =>
-                  j === i ? { ...x, date: ev.target.value } : x,
-                ),
+                exceptions.map((x, j) => (j === i ? { ...x, date: v } : x)),
               )
             }
-            className="rounded border border-zinc-300 px-2 py-1 dark:border-zinc-700 dark:bg-zinc-900"
           />
           <label className="flex items-center gap-1">
             <input
@@ -152,32 +146,28 @@ export function AvailabilityEditor({ onSaved }: { onSaved?: () => void }) {
           </label>
           {!e.isOff && (
             <>
-              <input
-                aria-label="예외일 시작"
-                type="time"
+              <TimeSelect
+                label="예외일 시작"
                 value={e.startTime ?? ""}
-                onChange={(ev) =>
+                onChange={(v) =>
                   setExceptions(
                     exceptions.map((x, j) =>
-                      j === i ? { ...x, startTime: ev.target.value } : x,
+                      j === i ? { ...x, startTime: v } : x,
                     ),
                   )
                 }
-                className="rounded border border-zinc-300 px-2 py-1 dark:border-zinc-700 dark:bg-zinc-900"
               />
               ~
-              <input
-                aria-label="예외일 끝"
-                type="time"
+              <TimeSelect
+                label="예외일 끝"
                 value={e.endTime ?? ""}
-                onChange={(ev) =>
+                onChange={(v) =>
                   setExceptions(
                     exceptions.map((x, j) =>
-                      j === i ? { ...x, endTime: ev.target.value } : x,
+                      j === i ? { ...x, endTime: v } : x,
                     ),
                   )
                 }
-                className="rounded border border-zinc-300 px-2 py-1 dark:border-zinc-700 dark:bg-zinc-900"
               />
             </>
           )}

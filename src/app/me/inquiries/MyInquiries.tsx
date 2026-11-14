@@ -60,7 +60,7 @@ export function MyInquiries() {
               rows={5}
               value={body}
               onChange={(e) => setBody(e.target.value)}
-              className="rounded-lg border border-zinc-300 bg-white px-3 py-2 font-normal dark:border-zinc-700 dark:bg-zinc-900"
+              className="border-line bg-surface rounded-lg border px-3 py-2 font-normal"
             />
           </label>
           {msg && <Notice tone={msg.tone}>{msg.text}</Notice>}
@@ -73,16 +73,16 @@ export function MyInquiries() {
         {items.map((q) => (
           <li
             key={q.id}
-            className="rounded-xl border border-zinc-200 p-3 text-sm dark:border-zinc-800"
+            className="border-line bg-surface rounded-2xl border p-3 text-sm"
           >
             <p className="font-medium">{q.title}</p>
-            <p className="text-xs text-zinc-500">
+            <p className="text-muted text-xs">
               {fmtDateTime(q.createdAt)} ·{" "}
               {q.answer ? "답변 완료" : "답변 대기"}
             </p>
             <p className="mt-1 whitespace-pre-wrap">{q.body}</p>
             {q.answer && (
-              <p className="mt-2 rounded bg-zinc-100 p-2 whitespace-pre-wrap dark:bg-zinc-800">
+              <p className="bg-brand-50 dark:bg-brand-700/20 mt-2 rounded p-2 whitespace-pre-wrap">
                 답변: {q.answer}
               </p>
             )}

@@ -1,6 +1,6 @@
 "use client";
 
-import { TextField } from "./ui";
+import { DateSelect } from "@/components/pickers";
 
 export function kstToday() {
   return new Date(Date.now() + 9 * 3600_000).toISOString().slice(0, 10);
@@ -29,17 +29,15 @@ export function PeriodPicker({
 }) {
   return (
     <div className="flex flex-wrap items-end gap-2">
-      <TextField
+      <DateSelect
         label="시작일"
-        type="date"
         value={value.from}
-        onChange={(e) => onChange({ ...value, from: e.target.value })}
+        onChange={(v) => onChange({ ...value, from: v })}
       />
-      <TextField
+      <DateSelect
         label="종료일"
-        type="date"
         value={value.to}
-        onChange={(e) => onChange({ ...value, to: e.target.value })}
+        onChange={(v) => onChange({ ...value, to: v })}
       />
       <div className="flex gap-1">
         {(
@@ -53,7 +51,7 @@ export function PeriodPicker({
             key={label}
             type="button"
             onClick={() => onChange(r)}
-            className="rounded-full bg-zinc-100 px-3 py-1 text-sm dark:bg-zinc-800"
+            className="bg-brand-50 dark:bg-brand-700/20 rounded-full px-3 py-1 text-sm"
           >
             {label}
           </button>

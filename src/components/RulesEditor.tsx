@@ -25,7 +25,7 @@ function Select<T extends string | number>({
     <label className="flex flex-col gap-1 text-sm">
       <span className="font-medium">{label}</span>
       <select
-        className="rounded-lg border border-zinc-300 bg-white px-3 py-2.5 dark:border-zinc-700 dark:bg-zinc-900"
+        className="border-line bg-surface rounded-xl border px-3 py-2.5"
         value={String(value)}
         onChange={(e) => {
           const found = options.find((o) => String(o) === e.target.value);
@@ -144,7 +144,7 @@ export function RulesLines({
   lines: { title: string; text: string }[];
 }) {
   return (
-    <dl className="grid grid-cols-[5rem_1fr] gap-x-2 gap-y-1 rounded-lg bg-zinc-100 p-3 text-xs dark:bg-zinc-800">
+    <dl className="bg-brand-50 dark:bg-brand-700/20 grid grid-cols-[5rem_1fr] gap-x-2 gap-y-1 rounded-lg p-3 text-xs">
       {lines.map((l) => (
         <div key={l.title} className="contents">
           <dt className="font-medium">{l.title}</dt>

@@ -1,5 +1,6 @@
 "use client";
 
+import { DateSelect } from "@/components/pickers";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { api } from "@/components/api";
@@ -7,7 +8,14 @@ import { OFFLINE_DISABLED, useOffline } from "@/lib/offline/network";
 import { PassSummary, type PassView } from "@/components/PassCards";
 import { PausePanel } from "@/components/PausePanel";
 import { RulesEditor } from "@/components/RulesEditor";
-import { Button, Card, Checkbox, Notice, TextField } from "@/components/ui";
+import {
+  Button,
+  Card,
+  Checkbox,
+  EmptyState,
+  Notice,
+  TextField,
+} from "@/components/ui";
 import { suggestEndDate, type RuleValues } from "@/lib/rules/rule-set";
 
 interface Detail {
@@ -158,18 +166,16 @@ function PassForm({
           value={f.bonusCount}
           onChange={(e) => set("bonusCount", e.target.value)}
         />
-        <TextField
+        <DateSelect
           label="시작일"
-          type="date"
           value={f.startDate}
-          onChange={(e) => set("startDate", e.target.value)}
+          onChange={(v) => set("startDate", v)}
         />
-        <TextField
+        <DateSelect
           label="만료일"
-          type="date"
           value={f.endDate}
-          onChange={(e) =>
-            setF((p) => ({ ...p, endDate: e.target.value, endTouched: true }))
+          onChange={(v) =>
+            setF((p) => ({ ...p, endDate: v, endTouched: true }))
           }
           hint={f.endTouched ? undefined : "횟수에 맞춰 제안한 날짜"}
         />
@@ -187,11 +193,11 @@ function PassForm({
           value={f.price}
           onChange={(e) => set("price", e.target.value)}
         />
-        <TextField
+        <DateSelect
           label="결제일"
-          type="date"
+          allowEmpty
           value={f.paidAt}
-          onChange={(e) => set("paidAt", e.target.value)}
+          onChange={(v) => set("paidAt", v)}
         />
         <TextField
           label="결제 수단"
@@ -200,7 +206,7 @@ function PassForm({
           onChange={(e) => set("payMethod", e.target.value)}
         />
       </div>
-      <p className="text-xs text-zinc-500">
+      <p className="text-muted text-xs">
         앱은 결제 기록만 남기고 실제 결제는 받지 않습니다.
       </p>
       <TextField
@@ -280,11 +286,11 @@ export function PassManager({ studentId }: { studentId: string }) {
     return msg ? (
       <Notice tone={msg.tone}>{msg.text}</Notice>
     ) : (
-      <p className="text-sm text-zinc-500">불러오는 중…</p>
+      <p className="text-muted text-sm">불러오는 중…</p>
     );
   return (
     <div className="flex flex-col gap-4">
-      <Link href={`/t/students/${studentId}`} className="text-sm text-zinc-500">
+      <Link href={`/t/students/${studentId}`} className="text-muted text-sm">
         ← {d.name}
       </Link>
       <div className="flex items-center justify-between">
@@ -348,12 +354,12 @@ export function PassManager({ studentId }: { studentId: string }) {
       )}
 
       {d.passes.length === 0 && mode.kind === "none" && (
-        <p className="text-sm text-zinc-500">등록한 이용권이 없습니다.</p>
+        <EmptyState icon="ticket">등록한 이용권이 없습니다.</EmptyState>
       )}
       {d.passes.map((p) => (
         <PassSummary key={p.id} p={p}>
           {p.status !== "REFUNDED" && (
-            <div className="flex flex-col gap-2 border-t border-zinc-200 pt-3 dark:border-zinc-800">
+            <div className="border-line flex flex-col gap-2 border-t pt-3">
               <div className="flex flex-wrap gap-2">
                 <Button
                   variant="secondary"
@@ -404,14 +410,12 @@ export function PassManager({ studentId }: { studentId: string }) {
                 </Notice>
               )}
               <div className="flex items-end gap-2">
-                <TextField
+                <DateSelect
                   className="flex-1"
                   label="만료일 연장"
-                  type="date"
+                  allowEmpty
                   value={extendTo[p.id] ?? ""}
-                  onChange={(e) =>
-                    setExtendTo((x) => ({ ...x, [p.id]: e.target.value }))
-                  }
+                  onChange={(v) => setExtendTo((x) => ({ ...x, [p.id]: v }))}
                 />
                 <Button
                   variant="secondary"
@@ -459,9 +463,7 @@ export function PassManager({ studentId }: { studentId: string }) {
           )}
           {p.changeLogs.length > 0 && (
             <details className="text-xs">
-              <summary className="cursor-pointer text-zinc-500">
-                변경 이력
-              </summary>
+              <summary className="text-muted cursor-pointer">변경 이력</summary>
               <ul className="mt-1 flex flex-col gap-0.5">
                 {p.changeLogs.map((c, i) => (
                   <li key={i}>

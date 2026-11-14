@@ -47,7 +47,7 @@ export function WithdrawCard() {
         </Button>
       ) : (
         <div className="flex flex-col gap-3">
-          <p className="text-sm text-zinc-600 dark:text-zinc-300">
+          <p className="text-muted text-sm">
             탈퇴하면 개인정보와{" "}
             {preview.role === "STUDENT"
               ? "본인 기록(예약, 승인 이력, 메모, 이용권)"

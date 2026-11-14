@@ -86,7 +86,7 @@ export function StudentBookingSheet({
         {fmtRange(b.startAt, b.endAt)} · {b.trainerName} 트레이너
       </p>
       {b.autoConfirmed && (
-        <p className="text-xs text-zinc-500">
+        <p className="text-muted text-xs">
           응답이 없어 수업 시작에 자동 확정되었습니다
         </p>
       )}
@@ -176,7 +176,7 @@ export function StudentBookingSheet({
                   거절
                 </Button>
               </div>
-              <p className="text-xs text-zinc-500">
+              <p className="text-muted text-xs">
                 응답하지 않으면 수업 시작 시각에 자동 확정됩니다.
               </p>
             </div>
@@ -186,7 +186,7 @@ export function StudentBookingSheet({
 
       {b.status === "REQUESTED" && (
         <>
-          <p className="text-sm text-zinc-500">
+          <p className="text-muted text-sm">
             트레이너의 수락을 기다리고 있습니다. 수업 12시간 전까지 응답이
             없으면 만료됩니다.
           </p>
@@ -214,7 +214,7 @@ export function StudentBookingSheet({
             </Notice>
           )}
           {cr?.kind === "CHANGE" && !cr.mine && (
-            <div className="flex flex-col gap-2 rounded-lg border border-zinc-300 p-3 dark:border-zinc-700">
+            <div className="border-line flex flex-col gap-2 rounded-lg border p-3">
               <p className="text-sm font-medium">
                 트레이너의 시간 변경 요청 (수락할 때까지 원래 시간 유지)
               </p>
@@ -359,7 +359,7 @@ export function StudentBookingSheet({
       )}
 
       {b.status === "CANCELED" && (
-        <p className="text-sm text-zinc-500">
+        <p className="text-muted text-sm">
           {b.canceledBy ?? ""} 취소 ·{" "}
           {b.canceledAt ? fmtDateTime(b.canceledAt) : ""} ·{" "}
           {b.deducted
@@ -377,7 +377,7 @@ export function StudentBookingSheet({
         </Notice>
       )}
       {b.rejectReason && (
-        <p className="text-sm text-zinc-500">거절 사유: {b.rejectReason}</p>
+        <p className="text-muted text-sm">거절 사유: {b.rejectReason}</p>
       )}
     </Modal>
   );

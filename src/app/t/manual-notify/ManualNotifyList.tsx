@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { api } from "@/components/api";
 import { fmtRange } from "@/components/fmt";
 import { KakaoShareButton } from "@/components/KakaoShareButton";
-import { Card, Notice } from "@/components/ui";
+import { Card, EmptyState, Notice } from "@/components/ui";
 
 interface Row {
   studentId: string;
@@ -29,7 +29,7 @@ export function ManualNotifyList() {
       (r) => r.ok && setRows(r.data.students),
     );
   }, []);
-  if (!rows) return <p className="text-sm text-zinc-500">불러오는 중…</p>;
+  if (!rows) return <p className="text-muted text-sm">불러오는 중…</p>;
   if (rows.length === 0)
     return (
       <Notice tone="success">모든 수강생이 알림을 받을 수 있습니다.</Notice>
@@ -39,7 +39,7 @@ export function ManualNotifyList() {
       {rows.map((r) => (
         <Card key={r.studentId} title={`${r.name} · ${r.reason}`}>
           {r.items.length === 0 && (
-            <p className="text-sm text-zinc-500">보낼 항목이 없습니다.</p>
+            <EmptyState icon="smile">보낼 항목이 없습니다. 🎉</EmptyState>
           )}
           {r.items.map((it) =>
             it.kind === "RULES" ? (
@@ -67,7 +67,7 @@ export function ManualNotifyList() {
                   <KakaoShareButton purpose="APPROVE" refId={it.refId} />
                 )}
                 {it.kind === "REMIND" && (
-                  <p className="text-xs text-zinc-500">
+                  <p className="text-muted text-xs">
                     수업 안내는 카톡 대화로 직접 알려 주세요.
                   </p>
                 )}

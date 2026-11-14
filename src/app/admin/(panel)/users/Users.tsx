@@ -91,7 +91,7 @@ export function Users() {
         </Button>
       </form>
       {rows && (
-        <ul className="flex flex-col divide-y divide-zinc-100 text-sm dark:divide-zinc-800">
+        <ul className="divide-line flex flex-col divide-y text-sm">
           {rows.map((u) => (
             <li key={u.id}>
               <button
@@ -100,15 +100,17 @@ export function Users() {
                 onClick={() => open(u.id)}
               >
                 {u.name} · {ROLE[u.role]} · {u.loginId} · {u.phone}
-                {u.suspended && <span className="ml-1 text-red-600">정지</span>}
+                {u.suspended && (
+                  <span className="ml-1 text-rose-600">정지</span>
+                )}
                 {u.status === "WITHDRAWING" && (
-                  <span className="ml-1 text-zinc-500">탈퇴 신청</span>
+                  <span className="text-muted ml-1">탈퇴 신청</span>
                 )}
               </button>
             </li>
           ))}
           {rows.length === 0 && (
-            <li className="py-2 text-zinc-500">검색 결과가 없습니다</li>
+            <li className="text-muted py-2">검색 결과가 없습니다</li>
           )}
         </ul>
       )}
@@ -116,13 +118,13 @@ export function Users() {
       {detail && (
         <Card title={`${detail.name} (${ROLE[detail.role]})`}>
           <dl className="grid grid-cols-[6rem_1fr] gap-1 text-sm">
-            <dt className="text-zinc-500">아이디</dt>
+            <dt className="text-muted">아이디</dt>
             <dd>{detail.loginId}</dd>
-            <dt className="text-zinc-500">전화번호</dt>
+            <dt className="text-muted">전화번호</dt>
             <dd>{detail.phone}</dd>
-            <dt className="text-zinc-500">가입일</dt>
+            <dt className="text-muted">가입일</dt>
             <dd>{fmtDateTime(detail.createdAt)}</dd>
-            <dt className="text-zinc-500">상태</dt>
+            <dt className="text-muted">상태</dt>
             <dd>
               {detail.suspendedAt
                 ? `정지 (${fmtDateTime(detail.suspendedAt)}, ${detail.suspendReason ?? ""})`
@@ -130,7 +132,7 @@ export function Users() {
                   ? "탈퇴 신청"
                   : "정상"}
             </dd>
-            <dt className="text-zinc-500">로그인 기기</dt>
+            <dt className="text-muted">로그인 기기</dt>
             <dd>
               {detail.sessions.map((s) => s.deviceLabel).join(", ") || "-"}
             </dd>
@@ -158,7 +160,7 @@ export function Users() {
           )}
           <div>
             <p className="text-sm font-medium">조회 기록</p>
-            <ul className="text-xs text-zinc-500">
+            <ul className="text-muted text-xs">
               {detail.accessLogs.map((l, i) => (
                 <li key={i}>
                   {fmtDateTime(l.at)} · {l.operatorName} ·{" "}

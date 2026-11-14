@@ -22,7 +22,8 @@ import { api } from "@/components/api";
 import { readSnapshot } from "@/lib/offline/client";
 import { listQueue, type QueueRow } from "@/lib/offline/store";
 import { STATUS_STYLE, fmtRange, kstDateKey } from "@/components/fmt";
-import { Notice, TextField } from "@/components/ui";
+import { CalendarPlus } from "lucide-react";
+import { Notice, SELECT } from "@/components/ui";
 import { NOTICE_ICON } from "./BookingNoticeControls";
 import { CreateBookingSheet } from "./CreateBookingSheet";
 import {
@@ -51,6 +52,19 @@ export function TrainerCalendar() {
   const [data, setData] = useState<CalendarData | null>(null);
   const [range, setRange] = useState<{ from: string; to: string } | null>(null);
   const [nameFilter, setNameFilter] = useState("");
+  const [studentNames, setStudentNames] = useState<string[]>([]);
+  useEffect(() => {
+    // 수강생별 보기 목록 (오프라인이면 휴대폰 백업)
+    void api<{ students: { name: string }[] }>(
+      "/api/t/students?filter=ALL",
+    ).then(async (r) => {
+      const list = r.ok
+        ? r.data.students
+        : ((await readSnapshot<{ students: { name: string }[] }>())?.students ??
+          []);
+      setStudentNames([...new Set(list.map((x) => x.name))].sort());
+    });
+  }, []);
   const [creating, setCreating] = useState<{ start: string } | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
   const [msg, setMsg] = useState<{
@@ -129,7 +143,7 @@ export function TrainerCalendar() {
     }));
     for (const b of data.bookings) {
       if (HIDDEN_BY_DEFAULT.includes(b.status)) continue;
-      if (nameFilter && !b.studentName.includes(nameFilter)) continue;
+      if (nameFilter && b.studentName !== nameFilter) continue;
       const st = STATUS_STYLE[b.status];
       const flags = [
         b.notice?.manualShare ? "📨" : "",
@@ -269,7 +283,7 @@ export function TrainerCalendar() {
           {data && data.pendingRequests > 0 && (
             <Link
               href="/t/requests"
-              className="rounded-full bg-red-600 px-2.5 py-0.5 text-xs text-white"
+              className="rounded-full bg-rose-500 px-2.5 py-1 text-xs font-semibold text-white"
             >
               대기 요청 {data.pendingRequests}
             </Link>
@@ -283,8 +297,9 @@ export function TrainerCalendar() {
                 ).toISOString(),
               })
             }
-            className="rounded-lg bg-zinc-900 px-3 py-1.5 text-sm text-white dark:bg-zinc-100 dark:text-zinc-900"
+            className="bg-brand-500 shadow-brand-500/30 hover:bg-brand-600 inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-sm font-semibold text-white shadow-sm"
           >
+            <CalendarPlus className="size-4" aria-hidden />
             예약 등록
           </button>
         </div>
@@ -297,11 +312,22 @@ export function TrainerCalendar() {
           </Link>
         </Notice>
       )}
-      <TextField
-        label="수강생 이름 필터"
-        value={nameFilter}
-        onChange={(e) => setNameFilter(e.target.value)}
-      />
+      <label className="flex flex-col gap-1.5">
+        <span className="text-sm font-semibold">수강생별 보기</span>
+        <select
+          aria-label="수강생별 보기"
+          className={SELECT}
+          value={nameFilter}
+          onChange={(e) => setNameFilter(e.target.value)}
+        >
+          <option value="">전체 수강생</option>
+          {studentNames.map((n) => (
+            <option key={n} value={n}>
+              {n}
+            </option>
+          ))}
+        </select>
+      </label>
       {msg && <Notice tone={msg.tone}>{msg.text}</Notice>}
       <div className="text-sm [&_.fc-button]:whitespace-nowrap [&_.fc-toolbar]:flex-wrap [&_.fc-toolbar]:gap-2 [&_.fc-toolbar-title]:text-base max-sm:[&_.fc-toolbar-title]:text-sm">
         <FullCalendar
@@ -323,10 +349,7 @@ export function TrainerCalendar() {
           headerToolbar={{
             left: "prev,next today",
             center: "title",
-            right:
-              displayMode === "MOBILE"
-                ? "timeGridDay,listWeek,dayGridMonth"
-                : "dayGridMonth,timeGridWeek,timeGridDay",
+            right: "timeGridDay,timeGridWeek,dayGridMonth,listWeek",
           }}
           buttonText={{
             today: "오늘",
@@ -342,6 +365,7 @@ export function TrainerCalendar() {
           slotDuration="00:30:00"
           allDaySlot={false}
           nowIndicator
+          navLinks
           selectable
           selectMirror
           editable

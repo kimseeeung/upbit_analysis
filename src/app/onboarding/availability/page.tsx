@@ -9,7 +9,7 @@ export default function OnboardingAvailabilityPage() {
       <AvailabilitySetup />
       <Link
         href="/t"
-        className="rounded-lg border border-zinc-300 px-4 py-2.5 text-center text-sm dark:border-zinc-700"
+        className="border-line rounded-lg border px-4 py-2.5 text-center text-sm"
       >
         나중에 하기
       </Link>

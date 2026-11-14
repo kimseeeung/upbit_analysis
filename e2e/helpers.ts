@@ -232,3 +232,35 @@ export async function cronTick(page: Page) {
   expect(res.ok()).toBe(true);
   return res.json();
 }
+
+type Scope = Page | import("@playwright/test").Locator;
+
+/** 날짜 드롭다운(년/월/일) 고르기. value: "YYYY-MM-DD" */
+export async function pickDate(scope: Scope, label: string, value: string) {
+  const [y, m, d] = value.split("-").map(Number);
+  await scope
+    .getByLabel(`${label} 년`, { exact: true })
+    .selectOption(String(y));
+  await scope
+    .getByLabel(`${label} 월`, { exact: true })
+    .selectOption(String(m));
+  await scope
+    .getByLabel(`${label} 일`, { exact: true })
+    .selectOption(String(d));
+}
+
+/** 날짜·시각 드롭다운(년/월/일/오전·오후/시/분) 고르기. value: "YYYY-MM-DDTHH:MM" */
+export async function pickDateTime(scope: Scope, label: string, value: string) {
+  const [date, time] = value.split("T");
+  await pickDate(scope, label, date);
+  const [hh, mm] = time.split(":").map(Number);
+  await scope
+    .getByLabel(`${label} 오전/오후`, { exact: true })
+    .selectOption(hh >= 12 ? "PM" : "AM");
+  await scope
+    .getByLabel(`${label} 시`, { exact: true })
+    .selectOption(String(hh % 12 === 0 ? 12 : hh % 12));
+  await scope
+    .getByLabel(`${label} 분`, { exact: true })
+    .selectOption(String(mm));
+}

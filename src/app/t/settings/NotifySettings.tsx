@@ -37,7 +37,7 @@ export function NotifySettings() {
           aria-label="전일 수업 알림 시각"
           value={time ?? "20:00"}
           onChange={(e) => save(e.target.value)}
-          className="rounded-lg border border-zinc-300 bg-white px-3 py-2.5 dark:border-zinc-700 dark:bg-zinc-900"
+          className="border-line bg-surface rounded-xl border px-3 py-2.5"
         >
           {DAY_BEFORE_TIME_OPTIONS.map((t) => (
             <option key={t} value={t}>
@@ -46,12 +46,12 @@ export function NotifySettings() {
           ))}
         </select>
       </label>
-      <p className="text-xs text-zinc-500">
+      <p className="text-muted text-xs">
         수업 전날 이 시각에 수강생에게 알림을 보냅니다. 수강생별 끄기는 수강생
         상세에서 합니다.
       </p>
       {msg && <Notice tone={msg.tone}>{msg.text}</Notice>}
-      <p className="text-xs text-zinc-500">{NIGHT_NOTICE}</p>
+      <p className="text-muted text-xs">{NIGHT_NOTICE}</p>
     </Card>
   );
 }

@@ -44,7 +44,7 @@ export function LinkShell({
 }) {
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-4 px-4 py-10">
-      <p className="text-sm text-zinc-500">PT 관리</p>
+      <p className="text-muted text-sm">PT 관리</p>
       <h1 className="text-xl font-semibold">{title}</h1>
       {done ? <Notice tone="success">{done}</Notice> : children}
       {error && <Notice tone="error">{error}</Notice>}

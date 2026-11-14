@@ -54,7 +54,7 @@ export function AdminLoginForm() {
   if (challenge)
     return (
       <form onSubmit={step2} className="flex flex-col gap-3">
-        <p className="text-sm text-zinc-600 dark:text-zinc-300">
+        <p className="text-muted text-sm">
           등록된 휴대폰(끝자리 {challenge.hint})으로 보낸 인증번호를 입력해
           주세요.
         </p>
@@ -97,7 +97,7 @@ export function AdminLoginForm() {
       <Button type="submit" disabled={busy || !loginId || !password}>
         다음
       </Button>
-      <p className="text-xs text-zinc-500">
+      <p className="text-muted text-xs">
         5회 실패하면 30분 동안 잠깁니다. 30분 동안 쓰지 않으면 로그아웃됩니다.
       </p>
     </form>

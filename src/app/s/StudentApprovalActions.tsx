@@ -97,7 +97,7 @@ export function StudentApprovalActions({
                 거절
               </Button>
             </div>
-            <p className="text-xs text-zinc-500">
+            <p className="text-muted text-xs">
               PIN을 5회 틀리면 잠깁니다. 내 정보에서 본인인증 후 다시 설정할 수
               있습니다.
             </p>
@@ -109,7 +109,7 @@ export function StudentApprovalActions({
   if (b.status === "COMPLETED") {
     return (
       <div className="flex flex-col gap-2">
-        <p className="text-sm text-zinc-500">
+        <p className="text-muted text-sm">
           완료 · {b.approvedAt ? fmtDateTime(b.approvedAt) : ""}
           {b.approvalMethod
             ? ` · ${APPROVAL_METHOD_LABEL[b.approvalMethod]}`
@@ -131,7 +131,7 @@ export function StudentApprovalActions({
               : "차감 없음"}
         </p>
         {b.appliedRule && (
-          <p className="text-xs text-zinc-500">적용 규칙: {b.appliedRule}</p>
+          <p className="text-muted text-xs">적용 규칙: {b.appliedRule}</p>
         )}
         {disputeInfo}
         {!b.disputeKind &&
@@ -167,7 +167,7 @@ export function StudentApprovalActions({
     return (
       <>
         {b.appliedRule && (
-          <p className="text-xs text-zinc-500">적용 규칙: {b.appliedRule}</p>
+          <p className="text-muted text-xs">적용 규칙: {b.appliedRule}</p>
         )}
         {disputeInfo}
       </>

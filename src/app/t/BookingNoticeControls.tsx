@@ -25,7 +25,7 @@ export const NOTICE_ICON: Record<
   SCHEDULED: {
     icon: "🔔",
     label: "전일 알림 발송 예정",
-    cls: "bg-zinc-200 text-zinc-600 grayscale",
+    cls: "bg-zinc-200 text-muted grayscale",
   },
   SENT: {
     icon: "🔔",
@@ -38,7 +38,7 @@ export const NOTICE_ICON: Record<
     cls: "bg-green-100 text-green-700",
   },
   FAILED: { icon: "!", label: "보내지 못함", cls: "bg-red-100 text-red-700" },
-  OFF: { icon: "🔕", label: "알림 꺼짐", cls: "bg-zinc-100 text-zinc-500" },
+  OFF: { icon: "🔕", label: "알림 꺼짐", cls: "bg-brand-50 text-muted" },
 };
 
 /** 예약 상세의 알림 상태·예외 끄기·다시 보내기·카톡 보내기 (4.2, 4.8, 8.4) */
@@ -83,7 +83,7 @@ export function BookingNoticeControls({
 
   const icon = notice?.dayBefore ? NOTICE_ICON[notice.dayBefore] : null;
   return (
-    <div className="flex flex-col gap-2 rounded-lg bg-zinc-50 p-3 text-sm dark:bg-zinc-800/50">
+    <div className="bg-brand-50 dark:bg-brand-700/20/50 flex flex-col gap-2 rounded-lg p-3 text-sm">
       <p className="font-medium">알림</p>
       {icon && (
         <p>
@@ -99,7 +99,7 @@ export function BookingNoticeControls({
         </p>
       )}
       {notice?.twoHours && (
-        <p className="text-xs text-zinc-500">
+        <p className="text-muted text-xs">
           2시간 전 알림:{" "}
           {notice.twoHours === "SENT"
             ? `보냄 ${notice.twoHoursSentAt ? fmtDateTime(notice.twoHoursSentAt) : ""}`
@@ -144,7 +144,7 @@ export function BookingNoticeControls({
           label="카톡으로 승인 요청 보내기"
         />
       )}
-      {error && <p className="text-xs text-red-600">{error}</p>}
+      {error && <p className="text-xs text-rose-600">{error}</p>}
     </div>
   );
 }

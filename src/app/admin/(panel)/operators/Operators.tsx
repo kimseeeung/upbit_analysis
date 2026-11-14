@@ -78,7 +78,7 @@ export function Operators() {
     void load();
   }
 
-  if (!data) return <p className="text-sm text-zinc-500">불러오는 중…</p>;
+  if (!data) return <p className="text-muted text-sm">불러오는 중…</p>;
   return (
     <div className="flex flex-col gap-4">
       <h1 className="text-lg font-semibold">관리자</h1>
@@ -86,7 +86,7 @@ export function Operators() {
       <div className="overflow-x-auto">
         <table className="w-full min-w-[640px] text-sm">
           <thead>
-            <tr className="border-b border-zinc-200 text-left dark:border-zinc-800">
+            <tr className="border-line border-b text-left">
               <th className="px-2 py-2">이름</th>
               <th className="px-2 py-2">아이디</th>
               <th className="px-2 py-2">상태</th>
@@ -101,12 +101,12 @@ export function Operators() {
               <tr
                 key={o.id}
                 data-operator={o.name}
-                className="border-b border-zinc-100 dark:border-zinc-800"
+                className="border-line border-b"
               >
                 <td className="px-2 py-2">
                   {o.name}
                   {o.id === data.me && (
-                    <span className="ml-1 text-xs text-zinc-500">(나)</span>
+                    <span className="text-muted ml-1 text-xs">(나)</span>
                   )}
                 </td>
                 <td className="px-2 py-2">{o.loginId ?? "-"}</td>
@@ -120,7 +120,7 @@ export function Operators() {
                   {o.status !== "DISABLED" && (
                     <button
                       type="button"
-                      className="text-red-600 underline"
+                      className="text-rose-600 underline"
                       onClick={() => disable(o)}
                     >
                       {o.status === "INVITED" ? "초대 취소" : "비활성화"}
@@ -132,7 +132,7 @@ export function Operators() {
           </tbody>
         </table>
       </div>
-      <p className="text-xs text-zinc-500">
+      <p className="text-muted text-xs">
         활성 관리자는 최소 1명 있어야 합니다.
       </p>
 
@@ -168,15 +168,12 @@ export function Operators() {
       <Card title="운영 알림">
         <ul className="flex flex-col gap-1 text-sm">
           {data.alerts.map((a) => (
-            <li
-              key={a.id}
-              className={a.readAt ? "text-zinc-500" : "font-medium"}
-            >
+            <li key={a.id} className={a.readAt ? "text-muted" : "font-medium"}>
               {fmtDateTime(a.createdAt)} · {a.message}
             </li>
           ))}
           {data.alerts.length === 0 && (
-            <li className="text-zinc-500">알림이 없습니다</li>
+            <li className="text-muted">알림이 없습니다</li>
           )}
         </ul>
       </Card>

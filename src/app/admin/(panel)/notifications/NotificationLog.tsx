@@ -38,7 +38,7 @@ export function NotificationLog() {
         aria-label="상태"
         value={status}
         onChange={(e) => setStatus(e.target.value)}
-        className="w-40 rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+        className="border-line bg-surface w-40 rounded-lg border px-3 py-2 text-sm"
       >
         <option value="">전체</option>
         {Object.entries(STATUS).map(([k, v]) => (
@@ -50,7 +50,7 @@ export function NotificationLog() {
       <div className="overflow-x-auto">
         <table className="w-full min-w-[640px] text-sm">
           <thead>
-            <tr className="border-b border-zinc-200 text-left dark:border-zinc-800">
+            <tr className="border-line border-b text-left">
               <th className="px-2 py-2">보낼 시각</th>
               <th className="px-2 py-2">받는 사람</th>
               <th className="px-2 py-2">종류</th>
@@ -60,10 +60,7 @@ export function NotificationLog() {
           </thead>
           <tbody>
             {(rows ?? []).map((n) => (
-              <tr
-                key={n.id}
-                className="border-b border-zinc-100 dark:border-zinc-800"
-              >
+              <tr key={n.id} className="border-line border-b">
                 <td className="px-2 py-2">{fmtDateTime(n.sendAt)}</td>
                 <td className="px-2 py-2">{n.recipient}</td>
                 <td className="px-2 py-2">{n.type}</td>
@@ -71,7 +68,7 @@ export function NotificationLog() {
                 <td className="px-2 py-2">
                   {STATUS[n.status] ?? n.status}
                   {n.failReason && (
-                    <span className="text-xs text-zinc-500">
+                    <span className="text-muted text-xs">
                       {" "}
                       · {n.failReason}
                     </span>

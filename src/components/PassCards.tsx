@@ -54,15 +54,15 @@ export function PassSummary({
         <span>
           잔여 <strong>{p.remaining}</strong> / {p.total}회
         </span>
-        <span className="text-zinc-500">예정 {p.scheduled}회</span>
-        <span className="text-zinc-500">
+        <span className="text-muted">예정 {p.scheduled}회</span>
+        <span className="text-muted">
           {p.startDate} ~ {p.endDate}
         </span>
-        <span className="rounded bg-zinc-100 px-1.5 text-xs dark:bg-zinc-800">
+        <span className="bg-brand-50 dark:bg-brand-700/20 rounded px-1.5 text-xs">
           {PASS_STATUS_LABEL[p.status]}
         </span>
       </div>
-      <p className="text-xs text-zinc-500">
+      <p className="text-muted text-xs">
         등록 {p.count}회{p.bonusCount ? ` + 서비스 ${p.bonusCount}회` : ""} ·
         1회 {p.sessionMinutes}분 · 판매 {p.soldBy}
       </p>

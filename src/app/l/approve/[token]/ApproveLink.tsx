@@ -34,14 +34,14 @@ export function ApproveLink({ token }: { token: string }) {
             {fmtRange(data.startAt, data.endAt)}
           </p>
           {data.status !== "PENDING_APPROVAL" || data.disputed ? (
-            <p className="text-sm text-zinc-500">이미 처리된 수업입니다.</p>
+            <p className="text-muted text-sm">이미 처리된 수업입니다.</p>
           ) : !data.registered ? (
             <>
               <p className="text-sm">
                 수업 완료 승인은 가입한 뒤 PIN으로 할 수 있습니다.
               </p>
               <Link
-                className="rounded-lg bg-zinc-900 px-4 py-2.5 text-center text-sm text-white dark:bg-zinc-100 dark:text-zinc-900"
+                className="bg-brand-500 rounded-xl px-4 py-2.5 text-center text-sm font-semibold text-white"
                 href={`/signup?role=STUDENT&name=${encodeURIComponent(data.signupPrefill?.name ?? "")}&phone=${encodeURIComponent(data.signupPrefill?.phone ?? "")}&then=${encodeURIComponent(back)}`}
               >
                 가입하고 승인하기

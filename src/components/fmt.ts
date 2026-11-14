@@ -65,9 +65,9 @@ export function isoToKstLocal(iso: string | Date): string {
 }
 
 export const STATUS_STYLE: Record<string, { label: string; color: string }> = {
-  REQUESTED: { label: "신청 대기", color: "#8b5cf6" },
+  REQUESTED: { label: "신청 대기", color: "#ec4899" },
   PENDING_CONFIRM: { label: "확정 대기", color: "#f59e0b" },
-  CONFIRMED: { label: "예약 확정", color: "#2563eb" },
+  CONFIRMED: { label: "예약 확정", color: "#7c5cff" },
   PENDING_APPROVAL: { label: "완료 승인 대기", color: "#0d9488" },
   COMPLETED: { label: "완료", color: "#16a34a" },
   NO_SHOW: { label: "노쇼", color: "#dc2626" },

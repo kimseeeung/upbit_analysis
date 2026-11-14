@@ -6,7 +6,7 @@ import { ApprovalInboxItems, type ApprovalInbox } from "./ApprovalInboxItems";
 import { TransferInboxItems, type TransferInbox } from "./TransferInboxItems";
 import { fmtDateTime, fmtRange } from "./fmt";
 import { RulesLines } from "./RulesEditor";
-import { Button, Card, Notice, TextField } from "./ui";
+import { Button, Card, EmptyState, Notice, TextField } from "./ui";
 
 interface Slot {
   startAt: string;
@@ -91,7 +91,7 @@ function ConsentItem({
   }
   return (
     <Card title={`수강 규칙 동의 · ${c.passName}`}>
-      <p className="text-sm text-zinc-500">
+      <p className="text-muted text-sm">
         {c.trainerName} 트레이너가 수강 규칙 동의를 요청했습니다.
       </p>
       <RulesLines lines={c.rules} />
@@ -157,7 +157,7 @@ export function RequestsInbox() {
     return error ? (
       <Notice tone="error">{error}</Notice>
     ) : (
-      <p className="text-sm text-zinc-500">불러오는 중…</p>
+      <p className="text-muted text-sm">불러오는 중…</p>
     );
   async function post(url: string, body: unknown) {
     setError(null);
@@ -184,7 +184,7 @@ export function RequestsInbox() {
     <div className="flex flex-col gap-3">
       {error && <Notice tone="error">{error}</Notice>}
       {empty && (
-        <p className="text-sm text-zinc-500">처리할 요청이 없습니다.</p>
+        <EmptyState icon="smile">처리할 요청이 없습니다. 🎉</EmptyState>
       )}
       {data.linkRequests.map((l) => (
         <Card key={l.id} title="연결 요청">
@@ -193,9 +193,9 @@ export function RequestsInbox() {
               ? `${l.fromName} 트레이너`
               : `${l.fromName} 수강생`}
             {l.workplace && (
-              <span className="text-zinc-500"> · {l.workplace}</span>
+              <span className="text-muted"> · {l.workplace}</span>
             )}
-            <span className="block text-xs text-zinc-500">
+            <span className="text-muted block text-xs">
               {l.fromPhoneMasked}
             </span>
           </p>
@@ -219,9 +219,7 @@ export function RequestsInbox() {
         <Card key={p.id} title="일시정지 요청">
           <p className="text-sm">
             {p.studentName} · {p.passName} · {p.startDate}~{p.endDate}
-            <span className="block text-xs text-zinc-500">
-              사유: {p.reason}
-            </span>
+            <span className="text-muted block text-xs">사유: {p.reason}</span>
           </p>
           <div className="flex gap-2">
             <Button
@@ -253,7 +251,7 @@ export function RequestsInbox() {
               : "예약 확정 요청"
           }
         >
-          <p className="text-sm text-zinc-500">{c.trainerName} 트레이너</p>
+          <p className="text-muted text-sm">{c.trainerName} 트레이너</p>
           <ul className="text-sm">
             {c.times.map((t) => (
               <li key={t.startAt}>{fmtRange(t.startAt, t.endAt)}</li>
@@ -284,7 +282,7 @@ export function RequestsInbox() {
               {c.grouped ? "모두 거절" : "거절"}
             </Button>
           </div>
-          <p className="text-xs text-zinc-500">
+          <p className="text-muted text-xs">
             다른 시간 제안은 캘린더에서 예약을 눌러 할 수 있습니다.
           </p>
         </Card>
@@ -323,7 +321,7 @@ export function RequestsInbox() {
         <Card key={b.bookingId} title="취소 요청">
           <p className="text-sm">
             {b.name} · {fmtDateTime(b.startAt)} 수업
-            <span className="block text-xs text-zinc-500">
+            <span className="text-muted block text-xs">
               {fmtDateTime(b.requestedAt)} 요청
               {b.reason ? ` · ${b.reason}` : ""} (차감은 요청 시각 기준)
             </span>
@@ -360,7 +358,7 @@ export function RequestsInbox() {
         >
           <p className="text-sm">
             {c.name} · 지금 {fmtRange(c.startAt, c.endAt)}
-            <span className="block text-xs text-zinc-500">
+            <span className="text-muted block text-xs">
               {fmtDateTime(c.expiresAt)}까지 응답이 없으면 원래 시간대로 진행
             </span>
           </p>
