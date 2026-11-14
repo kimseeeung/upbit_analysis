@@ -1,5 +1,6 @@
 /**
  * 서버가 뜰 때 한 번:
+ * - 약관 기본값 준비(있으면 그대로)
  * - 운영 관리자가 없으면 환경 변수(OPERATOR_INIT_*)로 첫 관리자 생성 (12.1)
  * - 지금 배포 버전 기록 (APP_VERSION, DEPLOYED_BY, DEPLOY_SUMMARY) (12.3)
  * - 예약 작업(pg-boss) 시작
@@ -17,6 +18,8 @@ export async function register() {
       const { getDb } = await import("@/lib/db");
       const { bootstrapFirstOperator } =
         await import("@/server/admin/operator-auth");
+      const { ensureDefaultTerms } = await import("@/server/terms-defaults");
+      await ensureDefaultTerms(getDb());
       const r = await bootstrapFirstOperator(getDb());
       if (r === "created")
         console.info("[admin] 첫 운영 관리자를 만들었습니다");

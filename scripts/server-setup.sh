@@ -23,11 +23,11 @@ MEM=$(free -m | awk '/Mem:/{print $2}')
 SWAP=$(free -m | awk '/Swap:/{print $2}')
 if [ "$MEM" -lt 4000 ] && [ "$SWAP" -lt 1000 ]; then
   if [ ! -f /swapfile ]; then
-    fallocate -l 2G /swapfile && chmod 600 /swapfile && mkswap /swapfile >/dev/null
+    fallocate -l 1G /swapfile && chmod 600 /swapfile && mkswap /swapfile >/dev/null
     grep -q '/swapfile' /etc/fstab || echo '/swapfile none swap sw 0 0' >> /etc/fstab
   fi
   swapon /swapfile 2>/dev/null || true
-  echo "스왑 2GB 켬"
+  echo "스왑 1GB 켬"
 else
   echo "충분함"
 fi

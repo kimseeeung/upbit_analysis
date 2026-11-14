@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // 배포 묶음 (npm run deploy 가 만듦)
+    "release/**",
+    "demo-tmp/**",
   ]),
 ]);
 

@@ -49,3 +49,6 @@ next-env.d.ts
 
 # 배포 설정 (서버 주소)
 .deploy.env
+
+# 배포 묶음 (npm run deploy 가 만듦)
+/release/

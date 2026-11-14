@@ -1,5 +1,6 @@
 # 머슬매니아 서버 구성: 앱 + PostgreSQL (+ 선택: HTTPS 자동 발급 Caddy)
-# 값은 .env.production에서 읽는다 (docker compose --env-file .env.production ...)
+# 앱은 서버에서 빌드하지 않고, 내 컴퓨터에서 만든 묶음(release/)을 그대로 실행한다.
+# 값은 .env.production 에서 읽는다 (docker compose --env-file .env.production ...)
 services:
   db:
     image: postgres:16-alpine
@@ -16,21 +17,34 @@ services:
       retries: 20
 
   app:
-    build:
-      context: .
-      args:
-        NEXT_PUBLIC_NOTIFY_QUIET_HOURS: ${NEXT_PUBLIC_NOTIFY_QUIET_HOURS:-}
+    image: node:22-bookworm-slim
     restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - ./release:/app:ro
     env_file: .env.production
     environment:
+      NODE_ENV: production
+      PORT: "3000"
+      HOSTNAME: 0.0.0.0
       DATABASE_URL: postgresql://ptapp:${POSTGRES_PASSWORD}@db:5432/ptapp?schema=public
       JOBS_ENABLED: "1"
       APP_VERSION: ${APP_VERSION:-dev}
       DEPLOYED_BY: ${DEPLOYED_BY:-배포 스크립트}
       DEPLOY_SUMMARY: ${DEPLOY_SUMMARY:-}
+      # 작은 서버(메모리 1GB)에 맞춘 메모리 한도
+      NODE_OPTIONS: --max-old-space-size=384
+    # 시작할 때마다: DB 마이그레이션(이전 버전과 호환) → 서버 (약관 기본값·첫 관리자는 서버가 뜰 때 준비)
+    command: ["sh", "-c", "node migrate.mjs && exec node server.js"]
     depends_on:
       db:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      start_period: 60s
+      retries: 3
     # 같은 서버의 nginx 등이 넘겨받을 수 있게 서버 안에서만 연다
     ports:
       - "127.0.0.1:${APP_PORT:-3100}:3000"
