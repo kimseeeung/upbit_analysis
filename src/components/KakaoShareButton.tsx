@@ -1,7 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { NIGHT_NOTICE, NIGHT_SHARE_CONFIRM, isNight } from "@/lib/notify/night";
+import {
+  NIGHT_NOTICE,
+  NIGHT_SHARE_CONFIRM,
+  isNight,
+  quietHoursEnabled,
+} from "@/lib/notify/night";
 import { api } from "./api";
 import { Button, Notice } from "./ui";
 
@@ -108,7 +113,9 @@ export function KakaoShareButton({
           {link}
         </p>
       )}
-      <p className="text-muted text-xs">{NIGHT_NOTICE}</p>
+      {quietHoursEnabled() && (
+        <p className="text-muted text-xs">{NIGHT_NOTICE}</p>
+      )}
     </div>
   );
 }

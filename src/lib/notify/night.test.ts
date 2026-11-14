@@ -1,7 +1,7 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { kstDateTime, toKstParts } from "@/lib/time";
 import {
-  DAY_BEFORE_TIME_OPTIONS,
+  dayBeforeTimeOptions,
   NIGHT_NOTICE,
   adjustForNight,
   dayBeforeAt,
@@ -10,6 +10,9 @@ import {
   planReminder,
   planTwoHourReminder,
 } from "./night";
+
+// 야간 발송 제한을 켠 상태의 규칙 검사 (기본은 꺼짐)
+vi.stubEnv("NEXT_PUBLIC_NOTIFY_QUIET_HOURS", "1");
 
 const MIN = 60_000;
 const HOUR = 60 * MIN;
@@ -160,10 +163,10 @@ describe("전일 알림", () => {
     );
   });
   it("고를 수 있는 시각은 08:00~20:30", () => {
-    expect(DAY_BEFORE_TIME_OPTIONS[0]).toBe("08:00");
-    expect(DAY_BEFORE_TIME_OPTIONS.at(-1)).toBe("20:30");
+    expect(dayBeforeTimeOptions()[0]).toBe("08:00");
+    expect(dayBeforeTimeOptions().at(-1)).toBe("20:30");
     expect(
-      DAY_BEFORE_TIME_OPTIONS.every(
+      dayBeforeTimeOptions().every(
         (t) =>
           !isNight(
             kstDateTime(

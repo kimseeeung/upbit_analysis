@@ -1,5 +1,8 @@
 /**
  * 야간 발송 제한 (명세 8.3). 순수 함수.
+ * 2026-11-14 사용자 요청으로 기본은 꺼짐(시간 제한 없이 바로 보냄).
+ * 다시 켜려면 환경 변수 NEXT_PUBLIC_NOTIFY_QUIET_HOURS=1 (빌드 시 화면에도 반영).
+ * 아래 규칙은 켰을 때만 적용된다.
  * - 21:00~08:00(한국 시간)에는 자동 알림(웹 푸시)을 보내지 않고 08:00에 보낸다
  * - 2시간 전 알림 시각이 야간이면 08:00에 보내되, 그 시각이 수업 1시간 전보다 늦으면 보내지 않는다
  * - 예약을 늦게 잡아 알림 시각이 이미 지났으면 그 알림은 보내지 않는다
@@ -25,8 +28,14 @@ export const NIGHT_NOTICE =
 
 export const NIGHT_SHARE_CONFIRM = "지금은 야간 시간입니다. 그래도 보낼까요?";
 
-/** 한국 시간 21:00~08:00 */
+/** 야간 발송 제한을 쓰는가 (기본 꺼짐) */
+export function quietHoursEnabled(): boolean {
+  return process.env.NEXT_PUBLIC_NOTIFY_QUIET_HOURS === "1";
+}
+
+/** 한국 시간 21:00~08:00. 제한을 끄면 언제나 false */
 export function isNight(at: Date): boolean {
+  if (!quietHoursEnabled()) return false;
   const h = toKstParts(at).hour;
   return h >= NIGHT_START_HOUR || h < DAY_START_HOUR;
 }
@@ -89,15 +98,26 @@ export function planDayBeforeReminder(
   return planReminder(dayBeforeAt(startAt, time), now);
 }
 
-/** 전일 알림 시각으로 고를 수 있는 값: 08:00~20:30, 30분 간격 (야간이 시작되는 21:00은 제외) */
-export const DAY_BEFORE_TIME_OPTIONS: string[] = Array.from(
-  { length: (20 - 8) * 2 + 2 },
-  (_, i) => {
-    const minutes = 8 * 60 + i * 30;
-    return `${String(Math.floor(minutes / 60)).padStart(2, "0")}:${String(minutes % 60).padStart(2, "0")}`;
-  },
-);
+/** 30분 간격 시각 목록 (from~to, 분 단위) */
+function halfHours(from: number, to: number): string[] {
+  const out: string[] = [];
+  for (let m = from; m <= to; m += 30)
+    out.push(
+      `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`,
+    );
+  return out;
+}
+
+/**
+ * 전일 알림 시각으로 고를 수 있는 값 (30분 간격).
+ * 제한을 끄면 00:00~23:30, 켜면 08:00~20:30 (야간이 시작되는 21:00은 제외)
+ */
+export function dayBeforeTimeOptions(): string[] {
+  return quietHoursEnabled()
+    ? halfHours(8 * 60, 20 * 60 + 30)
+    : halfHours(0, 23 * 60 + 30);
+}
 
 export function isValidDayBeforeTime(t: string): boolean {
-  return DAY_BEFORE_TIME_OPTIONS.includes(t);
+  return dayBeforeTimeOptions().includes(t);
 }

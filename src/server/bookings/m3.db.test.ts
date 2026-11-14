@@ -1,4 +1,4 @@
-import { afterAll, beforeEach, describe, expect, it } from "vitest";
+import { afterAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { kstDateTime } from "@/lib/time";
 import { AppError } from "@/server/errors";
 import { getAvailableCount } from "@/server/passes/availability-service";
@@ -25,6 +25,9 @@ import {
   type TrainerCreateResult,
 } from "./booking-service";
 import { getStudentCalendar } from "./calendar-service";
+
+// 야간 발송 제한을 켠 상태의 규칙 검사 (기본은 꺼짐)
+vi.stubEnv("NEXT_PUBLIC_NOTIFY_QUIET_HOURS", "1");
 
 const db = testDb();
 const HOUR = 3600_000;

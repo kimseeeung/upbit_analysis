@@ -2,7 +2,7 @@
 
 import { api } from "@/components/api";
 import { Card, Checkbox } from "@/components/ui";
-import { NIGHT_NOTICE } from "@/lib/notify/night";
+import { NIGHT_NOTICE, quietHoursEnabled } from "@/lib/notify/night";
 
 /** 수강생별 알림 설정 (3.6) */
 export function StudentNotify({
@@ -35,7 +35,9 @@ export function StudentNotify({
         checked={notify2h}
         onChange={(v) => set({ notify2h: v })}
       />
-      <p className="text-muted text-xs">{NIGHT_NOTICE}</p>
+      {quietHoursEnabled() && (
+        <p className="text-muted text-xs">{NIGHT_NOTICE}</p>
+      )}
     </Card>
   );
 }

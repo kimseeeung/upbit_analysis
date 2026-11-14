@@ -3,7 +3,11 @@
 import { useEffect, useState } from "react";
 import { api } from "@/components/api";
 import { Card, Notice } from "@/components/ui";
-import { DAY_BEFORE_TIME_OPTIONS, NIGHT_NOTICE } from "@/lib/notify/night";
+import {
+  dayBeforeTimeOptions,
+  NIGHT_NOTICE,
+  quietHoursEnabled,
+} from "@/lib/notify/night";
 
 /** 전일 알림 시각 (3.6, 08:00~21:00 사이만) + 야간 주석 */
 export function NotifySettings() {
@@ -39,7 +43,7 @@ export function NotifySettings() {
           onChange={(e) => save(e.target.value)}
           className="border-line bg-surface rounded-xl border px-3 py-2.5"
         >
-          {DAY_BEFORE_TIME_OPTIONS.map((t) => (
+          {dayBeforeTimeOptions().map((t) => (
             <option key={t} value={t}>
               {t}
             </option>
@@ -51,7 +55,9 @@ export function NotifySettings() {
         상세에서 합니다.
       </p>
       {msg && <Notice tone={msg.tone}>{msg.text}</Notice>}
-      <p className="text-muted text-xs">{NIGHT_NOTICE}</p>
+      {quietHoursEnabled() && (
+        <p className="text-muted text-xs">{NIGHT_NOTICE}</p>
+      )}
     </Card>
   );
 }

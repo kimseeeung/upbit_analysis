@@ -19,7 +19,7 @@ function acceptNightConfirm(page: Page) {
   });
 }
 
-test("전일 알림 시각 설정과 야간 주석 문구", async ({ page }) => {
+test("전일 알림 시각 설정 (야간 제한 없음)", async ({ page }) => {
   const t = uniq();
   await signupViaUi(page, {
     role: "트레이너",
@@ -28,14 +28,15 @@ test("전일 알림 시각 설정과 야간 주석 문구", async ({ page }) => 
     name: `알림코치${t.id}`,
   });
   await page.goto("/t/settings");
-  await expect(page.getByText(NIGHT_NOTICE).first()).toBeVisible();
+  // 야간 발송 제한을 꺼서 주석 문구가 없고, 하루 전체에서 고를 수 있다
+  await expect(page.getByText(NIGHT_NOTICE)).toHaveCount(0);
   const select = page.getByLabel("전일 수업 알림 시각");
-  await expect(select.locator("option")).toHaveCount(26);
-  await expect(select.locator("option").last()).toHaveText("20:30");
-  await select.selectOption("19:30");
+  await expect(select.locator("option")).toHaveCount(48);
+  await expect(select.locator("option").last()).toHaveText("23:30");
+  await select.selectOption("22:30");
   await expect(page.getByText("저장했습니다")).toBeVisible();
   const r = await api(page, "GET", "/api/t/settings/notify");
-  expect(r.dayBeforeNotifyTime).toBe("19:30");
+  expect(r.dayBeforeNotifyTime).toBe("22:30");
 });
 
 test("미가입 수강생: 카톡 링크로 예약 수락·규칙 동의, 가입 후 링크에서 완료 승인", async ({
@@ -80,7 +81,7 @@ test("미가입 수강생: 카톡 링크로 예약 수락·규칙 동의, 가입
   await page.goto("/t/manual-notify");
   const card = page.locator("section", { hasText: `${studentName} · 미가입` });
   await expect(card).toBeVisible();
-  await expect(card.getByText(NIGHT_NOTICE).first()).toBeVisible();
+  await expect(card.getByText(NIGHT_NOTICE)).toHaveCount(0);
   const confirmItem = card
     .locator("div", { has: page.locator("p", { hasText: /^확정 요청/ }) })
     .last();

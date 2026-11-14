@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { NIGHT_NOTICE } from "@/lib/notify/night";
+import { NIGHT_NOTICE, quietHoursEnabled } from "@/lib/notify/night";
 import { api } from "./api";
 import { Button, Notice } from "./ui";
 
@@ -93,7 +93,9 @@ export function PushSetup({ showNotice = true }: { showNotice?: boolean }) {
         </Notice>
       )}
       {error && <Notice tone="error">{error}</Notice>}
-      {showNotice && <p className="text-muted text-xs">{NIGHT_NOTICE}</p>}
+      {showNotice && quietHoursEnabled() && (
+        <p className="text-muted text-xs">{NIGHT_NOTICE}</p>
+      )}
     </div>
   );
 }

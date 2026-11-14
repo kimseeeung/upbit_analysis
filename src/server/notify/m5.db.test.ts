@@ -1,4 +1,4 @@
-import { afterAll, beforeEach, describe, expect, it } from "vitest";
+import { afterAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { isNight } from "@/lib/notify/night";
 import { kstDateTime } from "@/lib/time";
 import {
@@ -19,6 +19,9 @@ import {
   markNotificationConfirmed,
 } from "./notify-service";
 import { scheduleReminders } from "./reminders";
+
+// 야간 발송 제한을 켠 상태의 규칙 검사 (기본은 꺼짐)
+vi.stubEnv("NEXT_PUBLIC_NOTIFY_QUIET_HOURS", "1");
 
 const db = testDb();
 const MIN = 60_000;
