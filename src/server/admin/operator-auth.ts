@@ -80,7 +80,7 @@ export async function operatorLoginStart(
   db: RootDb,
   input: { loginId: string; password: string },
   now = new Date(),
-): Promise<{ challengeToken: string; phoneHint: string }> {
+): Promise<{ challengeToken: string; phoneHint: string; testCode?: string }> {
   const op = await db.operatorAccount.findUnique({
     where: { loginId: input.loginId.trim() },
   });
@@ -108,7 +108,11 @@ export async function operatorLoginStart(
       createdAt: now,
     },
   });
-  return { challengeToken: token, phoneHint: op.phone.slice(-4) };
+  return {
+    challengeToken: token,
+    phoneHint: op.phone.slice(-4),
+    ...(sms.testCode ? { testCode: sms.testCode } : {}),
+  };
 }
 
 /** 2단계: 휴대폰 인증번호 → 관리자 세션 (자동 로그인 없음, 30분) */

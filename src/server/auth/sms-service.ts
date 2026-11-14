@@ -71,7 +71,8 @@ export async function issueCode(
   purpose: SmsPurpose,
   now = new Date(),
 ): Promise<SendCodeResult> {
-  const test = smsTestMode() && purpose !== "ADMIN_2FA";
+  // 문자 업체 연결 전: 회원·운영 관리자 모두 000000 (2026-11-14 사용자 요청)
+  const test = smsTestMode();
   if (!test) {
     // 하루 5회는 한국 날짜 기준이므로 전날 00:00 KST부터 넉넉히 읽는다
     const recent = await db.smsVerification.findMany({

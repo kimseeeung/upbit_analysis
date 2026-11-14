@@ -39,12 +39,13 @@ export function InviteAccept({ token }: { token: string }) {
 
   async function sendCode() {
     setError(null);
-    const r = await api<{ verificationId: string }>(
+    const r = await api<{ verificationId: string; testCode?: string }>(
       `/api/admin/invite/${token}/sms`,
       { body: {} },
     );
     if (!r.ok) return setError(r.message);
     setVerificationId(r.data.verificationId);
+    if (r.data.testCode) setCode(r.data.testCode);
   }
   async function verify() {
     setError(null);

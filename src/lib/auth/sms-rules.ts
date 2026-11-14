@@ -21,7 +21,7 @@ export const TEST_SMS_CODE = "000000";
 /**
  * 테스트 모드: 실제 문자를 보내지 않는 개발용 발송(SMS_PROVIDER=console)일 때는
  * 인증번호를 000000으로 고정하고 재발송 대기·하루 횟수 제한을 두지 않는다.
- * SMS_FIXED_CODE=0이면 끈다. 운영 관리자 2단계 인증에는 쓰지 않는다.
+ * SMS_FIXED_CODE=0이면 끈다. 운영 관리자 2단계 인증도 같은 번호를 쓴다(사용자 요청).
  */
 export function smsTestMode(
   env: Record<string, string | undefined> = process.env,

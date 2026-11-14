@@ -22,15 +22,18 @@ export function AdminLoginForm() {
     e.preventDefault();
     setBusy(true);
     setError(null);
-    const r = await api<{ challengeToken: string; phoneHint: string }>(
-      "/api/admin/login",
-      {
-        body: { loginId, password },
-      },
-    );
+    const r = await api<{
+      challengeToken: string;
+      phoneHint: string;
+      testCode?: string;
+    }>("/api/admin/login", {
+      body: { loginId, password },
+    });
     setBusy(false);
     if (!r.ok) return setError(r.message);
     setChallenge({ token: r.data.challengeToken, hint: r.data.phoneHint });
+    // 문자 업체 연결 전(테스트 모드): 인증번호 000000을 미리 채운다
+    setCode(r.data.testCode ?? "");
     setPassword("");
   }
 
