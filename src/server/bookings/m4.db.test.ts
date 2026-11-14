@@ -445,6 +445,23 @@ describe("거절과 이의 제기", () => {
       (await runApprovalJobs(db, new Date(END.getTime() + 6 * DAY)))
         .autoCompleted,
     ).toBe(0);
+    // 이견 중에는 트레이너가 노쇼·취소로 바꿀 수 없다 (한 달 시뮬레이션에서 발견)
+    await expectAppError(
+      markNoShow(
+        db,
+        { trainerId: s.trainer.userId, bookingId: s.bookingId },
+        END,
+      ),
+      "DISPUTED",
+    );
+    await expectAppError(
+      cancelByTrainer(
+        db,
+        { trainerId: s.trainer.userId, bookingId: s.bookingId },
+        END,
+      ),
+      "DISPUTED",
+    );
     await resolveDispute(
       db,
       {

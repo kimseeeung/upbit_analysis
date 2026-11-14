@@ -20,13 +20,14 @@ npm run dev
 
 ## 명령
 
-| 명령                                 | 내용                                    |
-| ------------------------------------ | --------------------------------------- |
-| `npm test`                           | Vitest 단위 테스트 (규칙·계산)          |
-| `npm run test:e2e`                   | Playwright (빌드 후 3100 포트에서 실행) |
-| `npm run lint` / `npm run typecheck` | ESLint / 타입 검사                      |
-| `npm run format`                     | Prettier                                |
-| `npm run db:deploy`                  | 운영 DB 마이그레이션 적용               |
+| 명령                                 | 내용                                                              |
+| ------------------------------------ | ----------------------------------------------------------------- |
+| `npm test`                           | Vitest 단위 테스트 (규칙·계산)                                    |
+| `npm run test:sim`                   | 한 달 운영 시뮬레이션 (트레이너 6·수강생 30명, `SIM_SEED`로 재현) |
+| `npm run test:e2e`                   | Playwright (빌드 후 3100 포트에서 실행)                           |
+| `npm run lint` / `npm run typecheck` | ESLint / 타입 검사                                                |
+| `npm run format`                     | Prettier                                                          |
+| `npm run db:deploy`                  | 운영 DB 마이그레이션 적용                                         |
 
 ## 구조 (M0)
 

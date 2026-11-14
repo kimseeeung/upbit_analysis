@@ -196,6 +196,12 @@ export async function markNoShow(
 ) {
   return db.$transaction(async (tx) => {
     const b = await loadForTrainer(tx, input.trainerId, input.bookingId);
+    // 수강생이 이의를 제기한 수업은 이견 처리로만 결정한다 (5.2)
+    if (b.disputed && !b.disputeResolvedAt)
+      throw new AppError(
+        "DISPUTED",
+        "이견 처리 중인 수업입니다. 이견 처리에서 결정해 주세요",
+      );
     const ctx = await bookingPassContext(tx, b);
     if (
       b.status === "CONFIRMED" &&

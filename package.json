@@ -18,6 +18,7 @@
     "db:deploy": "prisma migrate deploy",
     "postinstall": "prisma generate",
     "test:db": "vitest run --config vitest.db.config.mts",
+    "test:sim": "vitest run --config vitest.sim.config.mts",
     "db:seed": "prisma db seed",
     "db:demo": "tsx prisma/demo.ts"
   },

@@ -571,7 +571,7 @@ export async function reschedulePendingByTrainer(
     ) {
       throw new AppError(
         "NO_REMAINING",
-        "그 날짜에는 예약 가능 횟수가 없습니다",
+        "그 날짜에는 예약할 수 없습니다. 예약 가능 횟수가 없거나 이용권 만료일 이후·일시정지 기간입니다",
       );
     }
     await assertNoOverlap(tx, {
@@ -621,7 +621,7 @@ export async function chooseProposal(
     ) {
       throw new AppError(
         "NO_REMAINING",
-        "그 날짜에는 예약 가능 횟수가 없습니다",
+        "그 날짜에는 예약할 수 없습니다. 예약 가능 횟수가 없거나 이용권 만료일 이후·일시정지 기간입니다",
       );
     }
     await assertNoOverlap(tx, {
@@ -848,7 +848,7 @@ export async function respondTimeChange(
     ) {
       throw new AppError(
         "NO_REMAINING",
-        "그 날짜에는 예약 가능 횟수가 없습니다",
+        "그 날짜에는 예약할 수 없습니다. 예약 가능 횟수가 없거나 이용권 만료일 이후·일시정지 기간입니다",
       );
     }
     await assertNoOverlap(tx, {
@@ -910,6 +910,13 @@ export async function cancelByTrainer(
         409,
       );
     }
+    // 이의가 걸린 수업은 이견 처리로만 결정한다 (5.2)
+    if (b.disputed && !b.disputeResolvedAt)
+      throw new AppError(
+        "DISPUTED",
+        "이견 처리 중인 수업입니다. 이견 처리에서 결정해 주세요",
+        409,
+      );
     await closeOpenChangeRequests(tx, b.id, now);
     await transition(tx, b, "CANCELED", {
       by: input.trainerId,
