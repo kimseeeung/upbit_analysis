@@ -111,7 +111,7 @@ export function CenterCalendar() {
                   h.includes(t.id) ? h.filter((x) => x !== t.id) : [...h, t.id],
                 )
               }
-              className={`bg-surface border-line flex items-center gap-1 rounded-full border px-2.5 py-1 text-sm font-semibold ${hidden.includes(t.id) ? "opacity-40" : ""}`}
+              className={`bg-fill flex items-center gap-1 rounded-full px-3 py-1.5 text-sm font-semibold ${hidden.includes(t.id) ? "opacity-40" : ""}`}
             >
               <span
                 className="inline-block size-3 rounded-full"

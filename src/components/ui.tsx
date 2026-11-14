@@ -3,12 +3,13 @@
 import {
   AlertTriangle,
   ChevronLeft,
+  ChevronRight,
+  SlidersHorizontal,
   UserPlus,
   ArrowRight,
   BadgeCheck,
   Bell,
   Download,
-  Filter,
   ListChecks,
   LogIn,
   MessageCircle,
@@ -56,7 +57,14 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useId, useRef, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useId,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import {
   hangulToQwerty,
   hasHangul,
@@ -105,7 +113,7 @@ export type IconName = keyof typeof ICONS;
 /** 카드 제목으로 어울리는 아이콘을 고른다 (따로 정하지 않았을 때) */
 const TITLE_ICONS: [RegExp, IconName][] = [
   [/알림 못 받는|직접 보낼/, "send"],
-  [/알림/, "bell"],
+  [/알림|수신/, "bell"],
   [/설정/, "settings"],
   [/동기화 충돌/, "refresh"],
   [/기기/, "phone"],
@@ -158,9 +166,9 @@ export function IconBubble({
   return (
     <span
       aria-hidden
-      className={`inline-flex shrink-0 items-center justify-center rounded-full ${box} ${tone}`}
+      className={`inline-flex shrink-0 items-center justify-center rounded-xl ${box} ${tone}`}
     >
-      <Icon className={icon} strokeWidth={2.2} />
+      <Icon className={icon} strokeWidth={2} />
     </span>
   );
 }
@@ -237,10 +245,8 @@ export function LinkButton({
     buttonIconElement(children)
   );
   const style = {
-    primary:
-      "bg-brand-500 text-white shadow-sm shadow-brand-500/25 hover:bg-brand-600",
-    secondary:
-      "border border-line bg-surface hover:border-brand-300 hover:bg-brand-50 dark:hover:bg-brand-700/20",
+    primary: "bg-brand-500 text-white hover:bg-brand-600",
+    secondary: "bg-fill hover:bg-line",
     soft: "bg-brand-50 text-brand-700 hover:bg-brand-100 dark:bg-brand-700/20 dark:text-brand-100",
   }[variant];
   return (
@@ -251,6 +257,64 @@ export function LinkButton({
       {auto}
       {children}
     </Link>
+  );
+}
+
+/** 메뉴 줄: 아이콘 · 글자 · › (내 정보, 바로가기 목록) */
+export function MenuLink({
+  href,
+  icon,
+  children,
+  sub,
+}: {
+  href: string;
+  icon?: IconName;
+  children: string;
+  sub?: ReactNode;
+}) {
+  const Icon = ICONS[icon ?? iconForTitle(children)];
+  return (
+    <Link
+      href={href}
+      className="hover:bg-fill flex items-center justify-between gap-2 px-5 py-4 transition"
+    >
+      <span className="flex min-w-0 items-center gap-2.5">
+        <Icon className="text-brand-500 size-5 shrink-0" aria-hidden />
+        <span className="truncate text-[17px] font-bold">{children}</span>
+        {sub && <span className="text-muted truncate text-sm">{sub}</span>}
+      </span>
+      <ChevronRight className="text-muted size-5 shrink-0" aria-hidden />
+    </Link>
+  );
+}
+
+/** 바로가기 아이콘 메뉴 (홈 화면 위쪽) */
+export function QuickMenu({
+  items,
+}: {
+  items: { href: string; label: string; icon: IconName; badge?: number }[];
+}) {
+  return (
+    <nav
+      aria-label="바로가기"
+      className="bg-surface grid grid-cols-4 gap-1 rounded-2xl px-2 py-4"
+    >
+      {items.map((it) => (
+        <Link
+          key={it.href}
+          href={it.href}
+          className="hover:bg-fill relative flex flex-col items-center gap-1.5 rounded-xl py-1 text-[13px] font-semibold"
+        >
+          <IconBubble name={it.icon} size="lg" />
+          {it.label}
+          {!!it.badge && (
+            <span className="absolute top-0 right-3 min-w-5 rounded-full bg-rose-500 px-1.5 text-center text-[11px] font-bold text-white">
+              {it.badge}
+            </span>
+          )}
+        </Link>
+      ))}
+    </nav>
   );
 }
 
@@ -341,9 +405,9 @@ export function Button({
       : null;
   const styles = {
     primary:
-      "bg-brand-500 text-white shadow-sm shadow-brand-500/25 hover:bg-brand-600 active:scale-[0.98] disabled:bg-brand-200 disabled:shadow-none dark:disabled:bg-brand-700/40",
+      "bg-brand-500 text-white hover:bg-brand-600 active:scale-[0.98] disabled:bg-brand-200 dark:disabled:bg-brand-700/40",
     secondary:
-      "border border-line bg-surface text-foreground hover:border-brand-300 hover:bg-brand-50 disabled:text-muted dark:hover:bg-brand-700/20",
+      "bg-fill text-foreground hover:bg-line active:scale-[0.98] disabled:text-muted",
     danger:
       "bg-rose-500 text-white hover:bg-rose-600 active:scale-[0.98] disabled:bg-rose-200",
     ghost: "text-muted underline-offset-2 hover:underline",
@@ -351,7 +415,7 @@ export function Button({
   return (
     <button
       type="button"
-      className={`inline-flex items-center justify-center gap-1.5 rounded-xl px-4 py-2.5 text-sm font-semibold transition disabled:cursor-not-allowed ${styles} ${className}`}
+      className={`inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl px-4 py-2.5 text-[15px] font-bold transition disabled:cursor-not-allowed ${styles} ${className}`}
       {...props}
     >
       {auto}
@@ -361,7 +425,7 @@ export function Button({
 }
 
 const FIELD =
-  "w-full rounded-xl border border-line bg-surface px-3 py-2.5 text-base outline-none transition focus:border-brand-400 focus:ring-4 focus:ring-brand-100 disabled:opacity-60 dark:focus:ring-brand-700/30";
+  "w-full rounded-xl border border-transparent bg-fill px-4 py-3 text-base outline-none transition placeholder:text-muted/70 focus:border-brand-400 focus:bg-surface disabled:opacity-60";
 
 /**
  * 입력 칸. keyboard: 영문 칸(아이디·비밀번호)은 한글 자판으로 친 글자를 영문으로 바꿔 주고,
@@ -403,7 +467,7 @@ export function TextField({
 
   return (
     <div className={`flex flex-col gap-1.5 ${className}`}>
-      <label htmlFor={id} className="text-sm font-semibold">
+      <label htmlFor={id} className="text-muted text-[13px] font-semibold">
         {label}
       </label>
       <input
@@ -471,7 +535,7 @@ export function PasswordField(
 
 /** 드롭다운 공통 모양 */
 export const SELECT =
-  "rounded-xl border border-line bg-surface px-3 py-2.5 text-base outline-none transition focus:border-brand-400 focus:ring-4 focus:ring-brand-100 dark:focus:ring-brand-700/30";
+  "rounded-xl border border-transparent bg-fill px-3 py-3 text-base outline-none transition focus:border-brand-400 focus:bg-surface";
 
 export function Checkbox({
   label,
@@ -529,34 +593,80 @@ export function Notice({
   );
 }
 
+/** 내 정보처럼 메뉴 목록으로 보여 줄 때: 안의 카드를 눌러서 펼치는 줄로 바꾼다 */
+const CollapseContext = createContext(false);
+export function CollapsibleCards({ children }: { children: ReactNode }) {
+  return (
+    <CollapseContext.Provider value={true}>
+      <div className="bg-surface divide-line flex flex-col divide-y overflow-hidden rounded-2xl">
+        {children}
+      </div>
+    </CollapseContext.Provider>
+  );
+}
+
 export function Card({
   title,
   icon,
   count,
   actions,
+  collapsible,
   children,
 }: {
   title?: string;
   icon?: IconName;
-  /** 목록 개수 배지 */
+  /** 목록 개수 */
   count?: number;
   /** 제목 오른쪽 버튼 */
   actions?: ReactNode;
+  /** 눌러서 펼치는 줄 (지정하지 않으면 CollapsibleCards 안에서만) */
+  collapsible?: boolean;
   children: ReactNode;
 }) {
+  const inGroup = useContext(CollapseContext);
+  const fold = (collapsible ?? inGroup) && !!title;
+  const [open, setOpen] = useState(false);
+  const Icon = title ? ICONS[icon ?? iconForTitle(title)] : null;
+  const heading = title && Icon && (
+    <span className="flex min-w-0 items-center gap-2.5">
+      <Icon
+        className="text-brand-500 size-5 shrink-0"
+        strokeWidth={2}
+        aria-hidden
+      />
+      <span className="truncate text-[17px] font-bold">{title}</span>
+      {count !== undefined && (
+        <span className="text-brand-500 text-[15px] font-bold">{count}</span>
+      )}
+    </span>
+  );
+  if (fold)
+    return (
+      <section className="flex flex-col">
+        <button
+          type="button"
+          aria-expanded={open}
+          onClick={() => setOpen((v) => !v)}
+          className="hover:bg-fill flex items-center justify-between gap-2 px-5 py-4 text-left transition"
+        >
+          {heading}
+          <ChevronRight
+            className={`text-muted size-5 shrink-0 transition ${open ? "rotate-90" : ""}`}
+            aria-hidden
+          />
+        </button>
+        {open && (
+          <div className="flex flex-col gap-3 px-5 pb-5">{children}</div>
+        )}
+      </section>
+    );
   return (
-    <section className="border-line bg-surface flex flex-col gap-3 rounded-2xl border p-4 shadow-sm shadow-black/[0.03]">
+    <section
+      className={`flex flex-col gap-3 ${inGroup ? "px-5 py-4" : "bg-surface rounded-2xl p-5"}`}
+    >
       {title && (
-        <div className="border-line -mx-4 -mt-1 flex items-center justify-between gap-2 border-b px-4 pb-3">
-          <h2 className="flex min-w-0 items-center gap-2 text-base font-bold">
-            <IconBubble name={icon ?? iconForTitle(title)} size="sm" />
-            <span className="truncate">{title}</span>
-            {count !== undefined && (
-              <span className="bg-brand-100 text-brand-700 dark:bg-brand-700/30 dark:text-brand-100 rounded-full px-2 py-0.5 text-xs font-bold">
-                {count}
-              </span>
-            )}
-          </h2>
+        <div className="flex items-center justify-between gap-2">
+          <h2 className="min-w-0">{heading}</h2>
           {actions && (
             <div className="flex shrink-0 items-center gap-2">{actions}</div>
           )}
@@ -573,32 +683,25 @@ export function Card({
  */
 export function PageHeader({
   title,
-  icon,
   description,
   children,
 }: {
   title: ReactNode;
+  /** 예전 호출 호환용 (제목 영역은 아이콘 없이 깔끔하게) */
   icon?: IconName;
   description?: ReactNode;
   /** 오른쪽 버튼 */
   children?: ReactNode;
 }) {
   return (
-    <header className="border-line flex flex-wrap items-center justify-between gap-3 border-b pb-4">
-      <div className="flex min-w-0 items-center gap-3">
-        <IconBubble
-          name={
-            icon ??
-            (typeof title === "string" ? iconForTitle(title) : "sparkles")
-          }
-          size="lg"
-        />
-        <div className="min-w-0">
-          <h1 className="truncate text-xl font-extrabold">{title}</h1>
-          {description && (
-            <p className="text-muted mt-0.5 text-sm">{description}</p>
-          )}
-        </div>
+    <header className="flex flex-wrap items-end justify-between gap-3 px-1 pt-1">
+      <div className="min-w-0">
+        <h1 className="truncate text-[22px] font-extrabold tracking-tight">
+          {title}
+        </h1>
+        {description && (
+          <p className="text-muted mt-1 text-sm">{description}</p>
+        )}
       </div>
       {children && (
         <div className="flex flex-wrap items-center gap-2">{children}</div>
@@ -620,10 +723,10 @@ export function FilterBar({
   return (
     <section
       aria-label={title}
-      className="border-brand-100 bg-brand-50/60 dark:border-brand-700/30 dark:bg-brand-700/10 flex flex-col gap-3 rounded-2xl border p-4"
+      className="bg-surface flex flex-col gap-3 rounded-2xl p-4"
     >
-      <p className="text-brand-700 dark:text-brand-200 flex items-center gap-1.5 text-xs font-bold">
-        <Filter className="size-3.5" aria-hidden />
+      <p className="text-muted flex items-center gap-1.5 text-[13px] font-bold">
+        <SlidersHorizontal className="text-brand-500 size-4" aria-hidden />
         {title}
       </p>
       {children}
@@ -641,14 +744,13 @@ export function SectionTitle({
   icon?: IconName;
   count?: number;
 }) {
+  const Icon = ICONS[icon ?? iconForTitle(title)];
   return (
-    <h2 className="flex items-center gap-2 pt-1 text-base font-bold">
-      <IconBubble name={icon ?? iconForTitle(title)} size="sm" />
+    <h2 className="flex items-center gap-2 px-1 pt-2 text-[17px] font-bold">
+      <Icon className="text-brand-500 size-5" aria-hidden />
       {title}
       {count !== undefined && (
-        <span className="bg-brand-100 text-brand-700 dark:bg-brand-700/30 dark:text-brand-100 rounded-full px-2 py-0.5 text-xs font-bold">
-          {count}
-        </span>
+        <span className="text-brand-500 font-bold">{count}</span>
       )}
     </h2>
   );
@@ -665,10 +767,10 @@ export function StatTile({
   icon?: IconName;
 }) {
   return (
-    <div className="border-line bg-surface flex items-center gap-3 rounded-2xl border p-3 shadow-sm shadow-black/[0.03]">
+    <div className="bg-surface flex items-center gap-3 rounded-2xl p-4">
       <IconBubble name={icon ?? iconForTitle(label)} size="md" />
       <div className="min-w-0">
-        <p className="text-muted text-xs">{label}</p>
+        <p className="text-muted text-[13px]">{label}</p>
         <p className="text-lg font-extrabold">{value}</p>
       </div>
     </div>
@@ -684,7 +786,7 @@ export function EmptyState({
   children: ReactNode;
 }) {
   return (
-    <div className="border-line text-muted flex flex-col items-center gap-2 rounded-2xl border border-dashed px-4 py-8 text-center text-sm">
+    <div className="bg-surface text-muted flex flex-col items-center gap-3 rounded-2xl px-4 py-10 text-center text-sm">
       <IconBubble name={icon} size="lg" />
       <div>{children}</div>
     </div>
@@ -714,7 +816,7 @@ export function RoleTabs({
     <div
       role="radiogroup"
       aria-label="회원 유형"
-      className="grid grid-cols-3 gap-2"
+      className="bg-fill grid grid-cols-3 gap-1 rounded-2xl p-1"
     >
       {(Object.keys(ROLE_LABEL) as RoleKey[]).map((r) => {
         const Icon = ROLE_ICON[r];
@@ -725,10 +827,10 @@ export function RoleTabs({
             role="radio"
             aria-checked={value === r}
             onClick={() => onChange(r)}
-            className={`flex flex-col items-center gap-1 rounded-2xl border px-2 py-3 text-sm font-semibold transition ${
+            className={`flex flex-col items-center gap-1 rounded-xl px-2 py-2.5 text-sm font-bold transition ${
               value === r
-                ? "border-brand-500 bg-brand-500 shadow-brand-500/30 text-white shadow-sm"
-                : "border-line bg-surface hover:border-brand-300"
+                ? "bg-surface text-brand-600 dark:text-brand-200 shadow-sm"
+                : "text-muted hover:text-foreground"
             }`}
           >
             <Icon className="size-5" aria-hidden />

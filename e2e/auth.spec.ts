@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { signupViaUi, uniq, verifyPhone } from "./helpers";
+import { openMenu, signupViaUi, uniq, verifyPhone } from "./helpers";
 
 test("트레이너 가입 → 안내 → 근무 시간(나중에) → 트레이너 홈", async ({
   page,
@@ -18,7 +18,9 @@ test("트레이너 가입 → 안내 → 근무 시간(나중에) → 트레이�
   await expect(page).toHaveURL(/\/onboarding\/availability/);
   await page.getByRole("link", { name: "나중에 하기" }).click();
   await expect(page).toHaveURL(/\/t$/);
-  await expect(page.getByText(`김트레${u.id}님`)).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: `김트레${u.id}님 내 정보` }),
+  ).toBeVisible();
 });
 
 test("수강생 가입(트레이너 검색) → 로그아웃 → 자동 로그인 → 기기 목록", async ({
@@ -72,6 +74,7 @@ test("수강생 가입(트레이너 검색) → 로그아웃 → 자동 로그�
 
   await page.goto("/s/me");
   await expect(page.getByText("로그인된 기기")).toBeVisible();
+  await openMenu(page, "로그인된 기기");
   await expect(page.getByText("이 기기")).toBeVisible();
   await expect(page.getByText("수업 완료 승인 PIN")).toBeVisible();
 
@@ -80,6 +83,7 @@ test("수강생 가입(트레이너 검색) → 로그아웃 → 자동 로그�
   await expect(page).toHaveURL(/\/s$/);
 
   await page.goto("/s/me");
+  await openMenu(page, "로그인된 기기");
   await page.getByRole("button", { name: "모든 기기에서 로그아웃" }).click();
   await expect(page).toHaveURL(/\/login/);
   await page.goto("/s");

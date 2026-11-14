@@ -23,7 +23,13 @@ import { readSnapshot } from "@/lib/offline/client";
 import { listQueue, type QueueRow } from "@/lib/offline/store";
 import { STATUS_STYLE, fmtRange, kstDateKey } from "@/components/fmt";
 import { CalendarPlus } from "lucide-react";
-import { FilterBar, Notice, PageHeader, SELECT } from "@/components/ui";
+import {
+  FilterBar,
+  Notice,
+  PageHeader,
+  QuickMenu,
+  SELECT,
+} from "@/components/ui";
 import { NOTICE_ICON } from "./BookingNoticeControls";
 import { CreateBookingSheet } from "./CreateBookingSheet";
 import {
@@ -312,6 +318,19 @@ export function TrainerCalendar() {
           </button>
         </div>
       </PageHeader>
+      <QuickMenu
+        items={[
+          { href: "/t/students", label: "수강생", icon: "users" },
+          {
+            href: "/t/requests",
+            label: "요청함",
+            icon: "inbox",
+            badge: data?.pendingRequests,
+          },
+          { href: "/t/stats", label: "수강 현황", icon: "chart" },
+          { href: "/t/settings", label: "설정", icon: "settings" },
+        ]}
+      />
       {data && !data.hasAvailability && (
         <Notice tone="warning">
           근무 가능 시간을 설정하지 않아 수강생이 예약을 신청할 수 없습니다.{" "}

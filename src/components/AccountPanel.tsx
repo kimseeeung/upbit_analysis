@@ -2,7 +2,6 @@
 
 import { AtSign, CalendarHeart, Phone } from "lucide-react";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { validatePassword, validatePin } from "@/lib/auth/policy";
@@ -16,7 +15,9 @@ import {
   Button,
   Card,
   Checkbox,
+  CollapsibleCards,
   Loading,
+  MenuLink,
   Notice,
   PasswordField,
   ROLE_LABEL,
@@ -52,7 +53,48 @@ const fmt = (iso: string) =>
     minute: "2-digit",
   });
 
-function ProfileCard({
+/** 맨 위 프로필 (항상 보임) */
+function ProfileHero({ profile }: { profile: Profile }) {
+  return (
+    <section
+      aria-label="내 프로필"
+      className="bg-surface flex flex-col gap-4 rounded-2xl p-5"
+    >
+      {/* 프로필 카드 */}
+      <div className="from-brand-500 shadow-brand-500/25 flex items-center gap-3 rounded-2xl bg-gradient-to-br to-pink-400 p-4 text-white shadow-md">
+        <span className="inline-flex size-14 shrink-0 items-center justify-center rounded-full bg-white/25 text-2xl font-black ring-2 ring-white/60">
+          {profile.name.slice(0, 1)}
+        </span>
+        <div className="min-w-0">
+          <p className="truncate text-lg font-extrabold">{profile.name}님</p>
+          <span className="mt-0.5 inline-flex items-center gap-1 rounded-full bg-white/25 px-2 py-0.5 text-xs font-bold">
+            {ROLE_LABEL[profile.role]}
+          </span>
+        </div>
+      </div>
+      <dl className="grid grid-cols-[auto_1fr] items-center gap-x-3 gap-y-2 text-sm">
+        <dt className="text-muted inline-flex items-center gap-1.5">
+          <AtSign className="size-4" aria-hidden />
+          아이디
+        </dt>
+        <dd className="font-semibold">{profile.loginId}</dd>
+        <dt className="text-muted inline-flex items-center gap-1.5">
+          <Phone className="size-4" aria-hidden />
+          전화번호
+        </dt>
+        <dd className="font-semibold">{profile.phoneMasked}</dd>
+        <dt className="text-muted inline-flex items-center gap-1.5">
+          <CalendarHeart className="size-4" aria-hidden />
+          가입일
+        </dt>
+        <dd className="font-semibold">{profile.joinedAt}</dd>
+      </dl>
+    </section>
+  );
+}
+
+/** 이름·근무지 수정 (접히는 메뉴 줄) */
+function ProfileEditCard({
   profile,
   reload,
 }: {
@@ -86,36 +128,7 @@ function ProfileCard({
   }
 
   return (
-    <Card title="기본 정보">
-      {/* 프로필 카드 */}
-      <div className="from-brand-500 shadow-brand-500/25 flex items-center gap-3 rounded-2xl bg-gradient-to-br to-pink-400 p-4 text-white shadow-md">
-        <span className="inline-flex size-14 shrink-0 items-center justify-center rounded-full bg-white/25 text-2xl font-black ring-2 ring-white/60">
-          {profile.name.slice(0, 1)}
-        </span>
-        <div className="min-w-0">
-          <p className="truncate text-lg font-extrabold">{profile.name}님</p>
-          <span className="mt-0.5 inline-flex items-center gap-1 rounded-full bg-white/25 px-2 py-0.5 text-xs font-bold">
-            {ROLE_LABEL[profile.role]}
-          </span>
-        </div>
-      </div>
-      <dl className="grid grid-cols-[auto_1fr] items-center gap-x-3 gap-y-2 text-sm">
-        <dt className="text-muted inline-flex items-center gap-1.5">
-          <AtSign className="size-4" aria-hidden />
-          아이디
-        </dt>
-        <dd className="font-semibold">{profile.loginId}</dd>
-        <dt className="text-muted inline-flex items-center gap-1.5">
-          <Phone className="size-4" aria-hidden />
-          전화번호
-        </dt>
-        <dd className="font-semibold">{profile.phoneMasked}</dd>
-        <dt className="text-muted inline-flex items-center gap-1.5">
-          <CalendarHeart className="size-4" aria-hidden />
-          가입일
-        </dt>
-        <dd className="font-semibold">{profile.joinedAt}</dd>
-      </dl>
+    <Card title="기본 정보 수정" icon="user">
       <TextField
         label="이름"
         value={name}
@@ -392,7 +405,8 @@ function MarketingCard({ agreed }: { agreed: boolean }) {
   );
 }
 
-export function AccountPanel() {
+/** children: 메뉴 맨 위에 넣을 항목 (예: 담당 트레이너 변경) */
+export function AccountPanel({ children }: { children?: React.ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [error, setError] = useState<string | null>(null);
   const load = useCallback(async () => {
@@ -409,30 +423,39 @@ export function AccountPanel() {
   if (!profile)
     return error ? <Notice tone="error">{error}</Notice> : <Loading />;
   return (
-    <div className="flex flex-col gap-4">
-      <ProfileCard profile={profile} reload={load} />
-      <PhoneCard reload={load} />
-      <PasswordCard loginId={profile.loginId} />
-      {profile.role === "STUDENT" && <PinCard locked={profile.pinLocked} />}
-      {profile.marketing && <MarketingCard agreed={profile.marketing.agreed} />}
-      <Card title="알림 설정">
-        <PushSetup />
-      </Card>
-      <Card title="휴대폰 백업">
-        <LastBackup />
-      </Card>
-      <Card title="공지사항·문의">
-        <div className="flex gap-4 text-sm">
-          <Link className="underline" href="/me/notices">
-            공지사항
-          </Link>
-          <Link className="underline" href="/me/inquiries">
-            문의하기
-          </Link>
-        </div>
-      </Card>
-      <DevicesCard />
-      <WithdrawCard />
+    <div className="flex flex-col gap-3">
+      <ProfileHero profile={profile} />
+      <CollapsibleCards>
+        <ProfileEditCard profile={profile} reload={load} />
+        {children}
+        <PhoneCard reload={load} />
+        <PasswordCard loginId={profile.loginId} />
+        {profile.role === "STUDENT" && <PinCard locked={profile.pinLocked} />}
+        {profile.marketing && (
+          <MarketingCard agreed={profile.marketing.agreed} />
+        )}
+        <Card title="알림 설정">
+          <PushSetup />
+        </Card>
+        <Card title="휴대폰 백업">
+          <LastBackup />
+        </Card>
+        <DevicesCard />
+      </CollapsibleCards>
+      <nav
+        aria-label="고객 지원"
+        className="bg-surface divide-line flex flex-col divide-y overflow-hidden rounded-2xl"
+      >
+        <MenuLink href="/me/notices" icon="megaphone">
+          공지사항
+        </MenuLink>
+        <MenuLink href="/me/inquiries" icon="question">
+          문의하기
+        </MenuLink>
+      </nav>
+      <CollapsibleCards>
+        <WithdrawCard />
+      </CollapsibleCards>
     </div>
   );
 }

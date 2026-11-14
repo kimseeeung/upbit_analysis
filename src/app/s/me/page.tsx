@@ -7,8 +7,9 @@ export default function MyInfoPage() {
   return (
     <RoleLayout area="student">
       <PageHeader title="내 정보" />
-      <TrainerChange />
-      <AccountPanel />
+      <AccountPanel>
+        <TrainerChange />
+      </AccountPanel>
     </RoleLayout>
   );
 }

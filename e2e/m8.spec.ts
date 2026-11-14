@@ -3,6 +3,7 @@ import {
   api,
   cronTick,
   insertPastBooking,
+  openMenu,
   setupPair,
   withE2eDb,
 } from "./helpers";
@@ -26,7 +27,8 @@ test("수강생 탈퇴 신청 → 다시 로그인해 취소 → 다시 탈퇴 �
 
   // 탈퇴 신청
   await student.goto("/s/me");
-  await student.getByRole("button", { name: "회원 탈퇴" }).click();
+  await openMenu(student, "회원 탈퇴");
+  await student.getByRole("button", { name: "회원 탈퇴" }).last().click();
   await expect(student.getByText(/남은 이용권 1개/)).toBeVisible();
   await student.getByLabel("비밀번호", { exact: true }).fill("abcd123!");
   await student.getByRole("button", { name: "탈퇴 신청" }).click();

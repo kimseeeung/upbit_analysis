@@ -2,20 +2,22 @@
 
 /* ── 디자인 토큰: 보라 브랜드색 + 부드러운 배경 (밝은/어두운 화면) ── */
 :root {
-  --background: #f7f6fb;
-  --foreground: #1f1d2b;
+  --background: #f2f3f6;
+  --foreground: #191b22;
   --surface: #ffffff;
-  --line: #e9e6f2;
-  --muted: #6f6a83;
+  --line: #eceef2;
+  --fill: #f4f5f8;
+  --muted: #7b7f8c;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #111018;
+    --background: #0f0f14;
     --foreground: #ecebf3;
-    --surface: #1b1a24;
-    --line: #2d2b3a;
-    --muted: #a19db3;
+    --surface: #1a1a22;
+    --line: #2a2a35;
+    --fill: #22222c;
+    --muted: #9a9cab;
   }
 }
 
@@ -25,6 +27,7 @@
   --color-surface: var(--surface);
   --color-line: var(--line);
   --color-muted: var(--muted);
+  --color-fill: var(--fill);
   --color-brand-50: #f4f1ff;
   --color-brand-100: #e9e3ff;
   --color-brand-200: #d4c8ff;
@@ -59,23 +62,23 @@ body {
   --fc-neutral-bg-color: color-mix(in srgb, var(--line) 40%, transparent);
   --fc-today-bg-color: color-mix(in srgb, #7c5cff 8%, transparent);
   --fc-now-indicator-color: #ff6b8b;
-  --fc-button-bg-color: var(--surface);
-  --fc-button-border-color: var(--line);
+  --fc-button-bg-color: var(--fill);
+  --fc-button-border-color: transparent;
   --fc-button-text-color: var(--foreground);
-  --fc-button-hover-bg-color: #f4f1ff;
-  --fc-button-hover-border-color: #d4c8ff;
+  --fc-button-hover-bg-color: var(--line);
+  --fc-button-hover-border-color: transparent;
   --fc-button-active-bg-color: #7c5cff;
   --fc-button-active-border-color: #7c5cff;
   --fc-list-event-hover-bg-color: color-mix(in srgb, #7c5cff 8%, transparent);
   background: var(--surface);
   border-radius: 1rem;
   padding: 0.75rem;
-  box-shadow: 0 1px 2px rgb(31 29 43 / 0.06);
 }
 .fc .fc-button {
   border-radius: 0.75rem !important;
   font-size: 0.85rem;
-  padding: 0.35rem 0.7rem;
+  font-weight: 700;
+  padding: 0.4rem 0.75rem;
   box-shadow: none !important;
 }
 .fc .fc-button-primary:not(:disabled).fc-button-active,
@@ -114,8 +117,8 @@ body {
 
 @media (prefers-color-scheme: dark) {
   .fc {
-    --fc-button-hover-bg-color: #2a2540;
-    --fc-button-hover-border-color: #5434cc;
+    --fc-button-hover-bg-color: var(--line);
+    --fc-button-hover-border-color: transparent;
   }
 }
 

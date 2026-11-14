@@ -55,7 +55,7 @@ export function PeriodPicker({
             key={label}
             type="button"
             onClick={() => onChange(r)}
-            className="bg-surface border-line hover:border-brand-300 rounded-full border px-3 py-1 text-sm font-semibold"
+            className="bg-fill hover:bg-line rounded-full px-3.5 py-1.5 text-sm font-semibold"
           >
             {label}
           </button>

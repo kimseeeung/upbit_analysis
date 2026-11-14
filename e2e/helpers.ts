@@ -264,3 +264,9 @@ export async function pickDateTime(scope: Scope, label: string, value: string) {
     .getByLabel(`${label} 분`, { exact: true })
     .selectOption(String(mm));
 }
+
+/** 내 정보의 접힌 메뉴 줄을 펼친다 */
+export async function openMenu(page: Page, title: string) {
+  const row = page.locator("button[aria-expanded]", { hasText: title }).first();
+  if ((await row.getAttribute("aria-expanded")) !== "true") await row.click();
+}

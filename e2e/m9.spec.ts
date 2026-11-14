@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { api, nextWeekday, pickDateTime, setupPair } from "./helpers";
+import { api, nextWeekday, openMenu, pickDateTime, setupPair } from "./helpers";
 
 test("오프라인: 백업으로 조회 · 임시 저장 → 복구 후 반영", async ({
   browser,
@@ -47,6 +47,7 @@ test("오프라인: 백업으로 조회 · 임시 저장 → 복구 후 반영",
     trainer.locator(".fc-event", { hasText: `${studentName} · 확정 대기` }),
   ).toBeVisible();
   await trainer.goto("/t/me");
+  await openMenu(trainer, "휴대폰 백업");
   await expect(trainer.getByText(/마지막 백업: \d/)).toBeVisible({
     timeout: 15_000,
   });

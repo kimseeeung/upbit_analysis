@@ -35,7 +35,9 @@ function Group({
 }) {
   return (
     <fieldset className={`flex min-w-0 flex-col gap-1.5 ${className}`}>
-      <legend className="mb-1.5 text-sm font-semibold">{label}</legend>
+      <legend className="text-muted mb-1.5 text-[13px] font-semibold">
+        {label}
+      </legend>
       <div className="flex flex-wrap items-center gap-1.5">{children}</div>
     </fieldset>
   );
@@ -281,7 +283,7 @@ export function DurationSelect({
 }) {
   return (
     <label className="flex flex-col gap-1.5">
-      <span className="text-sm font-semibold">{label}</span>
+      <span className="text-muted text-[13px] font-semibold">{label}</span>
       <select
         aria-label={label}
         className={SELECT}

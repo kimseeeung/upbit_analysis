@@ -76,51 +76,37 @@ export function AppShell({
       {switchTo.label}
     </Link>
   );
+  const mobile = mode === "MOBILE";
   const me = (
     <Link
       href={meHref}
-      className="hover:bg-brand-50 dark:hover:bg-brand-700/20 inline-flex min-w-0 items-center gap-1.5 rounded-full py-1 pr-2 pl-1"
+      aria-label={`${name}님 내 정보`}
+      className="hover:bg-fill inline-flex min-w-0 items-center gap-1.5 rounded-full py-1 pr-2 pl-1"
     >
-      <span className="from-brand-300 inline-flex size-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br to-pink-300 text-xs font-bold text-white">
+      <span className="bg-brand-100 text-brand-700 dark:bg-brand-700/30 dark:text-brand-100 inline-flex size-8 shrink-0 items-center justify-center rounded-full text-sm font-bold">
         {name.slice(0, 1)}
       </span>
-      <span className="truncate">{name}님</span>
+      {!mobile && (
+        <span className="truncate text-sm font-semibold">{name}님</span>
+      )}
     </Link>
   );
 
-  // 모바일: 좁은 화면에서 글자가 깨지지 않게 두 줄로 나눔
-  const header =
-    mode === "MOBILE" ? (
-      <header className="border-line bg-surface/90 sticky top-0 z-30 flex flex-col gap-2 border-b px-4 py-2.5 backdrop-blur">
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex min-w-0 items-center gap-2">
-            <Logo sub={sub} />
-            {switchLink}
-          </div>
-          <div className="text-sm whitespace-nowrap">
-            <LogoutButton compact />
-          </div>
-        </div>
-        <div className="flex items-center justify-between gap-2 text-sm">
-          <DisplayToggle />
-          {me}
-        </div>
-      </header>
-    ) : (
-      <header className="border-line bg-surface/90 sticky top-0 z-30 flex items-center justify-between gap-2 border-b px-5 py-3 backdrop-blur">
-        <div className="flex items-center gap-3">
-          <Logo sub={sub} />
-          {switchLink}
-        </div>
-        <div className="flex items-center gap-3 text-sm whitespace-nowrap">
-          <DisplayToggle />
-          {me}
-          <LogoutButton />
-        </div>
-      </header>
-    );
+  // 한 줄 상단 바: 왼쪽 로고, 오른쪽 아이콘 버튼
+  const header = (
+    <header className="border-line bg-surface sticky top-0 z-30 flex h-14 items-center justify-between gap-2 border-b px-4">
+      <div className="flex min-w-0 items-center gap-2">
+        <Logo sub={mobile ? undefined : sub} />
+        {switchLink}
+      </div>
+      <div className="flex items-center gap-1 text-sm whitespace-nowrap">
+        <DisplayToggle compact={mobile} />
+        {me}
+        <LogoutButton compact={mobile} />
+      </div>
+    </header>
+  );
 
-  const mobile = mode === "MOBILE";
   // 모바일/PC가 바뀌어도 본문(children)은 같은 자리에 두어 입력 중인 내용이 사라지지 않게 한다
   return (
     <>
@@ -129,7 +115,7 @@ export function AppShell({
         {!mobile && (
           <nav
             aria-label="주 메뉴"
-            className="bg-surface border-line sticky top-[61px] flex h-[calc(100vh-61px)] w-52 shrink-0 flex-col gap-1 border-r p-3 text-sm"
+            className="bg-surface border-line sticky top-14 flex h-[calc(100vh-3.5rem)] w-56 shrink-0 flex-col gap-0.5 border-r p-3 text-[15px]"
           >
             {tabs.map((t) => {
               const Icon = tabIcon(t.href);
@@ -141,8 +127,8 @@ export function AppShell({
                   aria-current={active ? "page" : undefined}
                   className={`flex items-center gap-2.5 rounded-xl px-3 py-2.5 transition ${
                     active
-                      ? "bg-brand-500 shadow-brand-500/30 font-semibold text-white shadow-sm"
-                      : "text-muted hover:bg-brand-50 hover:text-foreground dark:hover:bg-brand-700/20"
+                      ? "bg-brand-50 text-brand-700 dark:bg-brand-700/20 dark:text-brand-100 font-bold"
+                      : "text-muted hover:bg-fill hover:text-foreground"
                   }`}
                 >
                   <Icon className="size-[18px]" aria-hidden />
@@ -155,8 +141,8 @@ export function AppShell({
         <main
           className={
             mobile
-              ? "mx-auto flex w-full max-w-3xl flex-1 flex-col gap-5 px-4 py-5 pb-28"
-              : "mx-auto flex w-full max-w-5xl flex-1 flex-col gap-5 px-6 py-6"
+              ? "mx-auto flex w-full max-w-3xl flex-1 flex-col gap-3 px-3 py-4 pb-28"
+              : "mx-auto flex w-full max-w-5xl flex-1 flex-col gap-4 px-6 py-6"
           }
         >
           {children}
@@ -165,7 +151,7 @@ export function AppShell({
       {mobile && (
         <nav
           aria-label="주 메뉴"
-          className="bg-surface/95 border-line fixed inset-x-0 bottom-0 z-30 flex overflow-x-auto border-t px-1 pt-1 pb-[max(env(safe-area-inset-bottom),0.25rem)] backdrop-blur"
+          className="bg-surface border-line fixed inset-x-0 bottom-0 z-30 flex overflow-x-auto border-t pb-[max(env(safe-area-inset-bottom),0.25rem)]"
         >
           {tabs.map((t) => {
             const Icon = tabIcon(t.href);
@@ -175,19 +161,17 @@ export function AppShell({
                 key={t.href}
                 href={t.href}
                 aria-current={active ? "page" : undefined}
-                className={`flex min-w-16 flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[11px] whitespace-nowrap transition ${
+                className={`flex min-w-16 flex-1 flex-col items-center gap-1 px-1 pt-2 pb-1.5 text-[11px] whitespace-nowrap transition ${
                   active
                     ? "text-brand-600 dark:text-brand-200 font-bold"
                     : "text-muted"
                 }`}
               >
-                <span
-                  className={`inline-flex h-7 w-11 items-center justify-center rounded-full transition ${
-                    active ? "bg-brand-100 dark:bg-brand-700/30" : ""
-                  }`}
-                >
-                  <Icon className="size-5" aria-hidden />
-                </span>
+                <Icon
+                  className="size-6"
+                  strokeWidth={active ? 2.3 : 1.8}
+                  aria-hidden
+                />
                 {t.label}
               </Link>
             );

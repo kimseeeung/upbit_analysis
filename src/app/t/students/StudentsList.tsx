@@ -1,5 +1,7 @@
 "use client";
 
+import { ChevronRight } from "lucide-react";
+
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { api } from "@/components/api";
@@ -246,9 +248,7 @@ export function StudentsList() {
               aria-selected={filter === f.key}
               onClick={() => setFilter(f.key)}
               className={`rounded-full px-3 py-1 text-sm font-semibold ${
-                filter === f.key
-                  ? "bg-brand-500 text-white"
-                  : "bg-surface border-line border"
+                filter === f.key ? "bg-brand-500 text-white" : "bg-fill"
               }`}
             >
               {f.label}
@@ -320,7 +320,10 @@ export function StudentsList() {
                     {s.nextExpiry ? ` · 만료 ${s.nextExpiry}` : ""}
                   </span>
                 </span>
-                <span className="text-muted">›</span>
+                <ChevronRight
+                  className="text-muted size-5 shrink-0"
+                  aria-hidden
+                />
               </Link>
               <div className="flex flex-col gap-0.5 text-xs">
                 <label className="flex items-center gap-1">
