@@ -8,8 +8,8 @@ if [ ! -f .env.production ]; then
   exit 1
 fi
 
-export APP_VERSION="$(git rev-parse --short HEAD 2>/dev/null || date +%Y%m%d%H%M)"
-export DEPLOY_SUMMARY="$(git log -1 --pretty=%s 2>/dev/null || echo '')"
+export APP_VERSION="${APP_VERSION:-$(git rev-parse --short HEAD 2>/dev/null || date +%Y%m%d%H%M)}"
+export DEPLOY_SUMMARY="${DEPLOY_SUMMARY:-$(git log -1 --pretty=%s 2>/dev/null || echo '')}"
 export DEPLOYED_BY="${DEPLOYED_BY:-$(whoami)}"
 
 echo "▶ 버전 $APP_VERSION 빌드·시작"
