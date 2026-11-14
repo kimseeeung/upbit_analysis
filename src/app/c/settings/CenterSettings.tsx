@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { api } from "@/components/api";
 import { fmtDateTime } from "@/components/fmt";
 import { RulesEditor } from "@/components/RulesEditor";
-import { Button, Card, Notice, TextField } from "@/components/ui";
+import { Button, Card, Notice, PageHeader, TextField } from "@/components/ui";
 import type { RuleValues } from "@/lib/rules/rule-set";
 
 /** 센터 설정 (9.3~9.5): 기본 수강 규칙, 관리자 추가, 센터 해산 */
@@ -26,7 +26,7 @@ export function CenterSettings() {
   }, []);
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-lg font-semibold">센터 설정</h1>
+      <PageHeader title="센터 설정" />
       {msg && <Notice tone={msg.tone}>{msg.text}</Notice>}
       <Card title="센터 기본 수강 규칙">
         <p className="text-muted text-xs">

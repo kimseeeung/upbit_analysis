@@ -3,7 +3,14 @@
 import { useState } from "react";
 import { api } from "@/components/api";
 import { fmtDateTime } from "@/components/fmt";
-import { Button, Card, Notice, TextField } from "@/components/ui";
+import {
+  Button,
+  Card,
+  FilterBar,
+  Notice,
+  PageHeader,
+  TextField,
+} from "@/components/ui";
 
 interface Row {
   id: string;
@@ -78,18 +85,20 @@ export function Users() {
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-lg font-semibold">회원 조회</h1>
-      <form onSubmit={search} className="flex items-end gap-2">
-        <TextField
-          className="flex-1"
-          label="이름·아이디·전화번호 뒷자리"
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-        />
-        <Button type="submit" disabled={q.trim().length < 2}>
-          검색
-        </Button>
-      </form>
+      <PageHeader title="회원 조회" />
+      <FilterBar title="회원 검색">
+        <form onSubmit={search} className="flex items-end gap-2">
+          <TextField
+            className="flex-1"
+            label="이름·아이디·전화번호 뒷자리"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+          />
+          <Button type="submit" disabled={q.trim().length < 2}>
+            검색
+          </Button>
+        </form>
+      </FilterBar>
       {rows && (
         <ul className="divide-line flex flex-col divide-y text-sm">
           {rows.map((u) => (

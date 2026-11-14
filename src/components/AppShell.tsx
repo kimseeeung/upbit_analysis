@@ -120,16 +120,52 @@ export function AppShell({
       </header>
     );
 
-  if (mode === "MOBILE") {
-    return (
-      <>
-        {header}
-        <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-5 px-4 py-5 pb-28">
+  const mobile = mode === "MOBILE";
+  // 모바일/PC가 바뀌어도 본문(children)은 같은 자리에 두어 입력 중인 내용이 사라지지 않게 한다
+  return (
+    <>
+      {header}
+      <div className="flex flex-1">
+        {!mobile && (
+          <nav
+            aria-label="주 메뉴"
+            className="bg-surface border-line sticky top-[61px] flex h-[calc(100vh-61px)] w-52 shrink-0 flex-col gap-1 border-r p-3 text-sm"
+          >
+            {tabs.map((t) => {
+              const Icon = tabIcon(t.href);
+              const active = isActive(pathname, t.href);
+              return (
+                <Link
+                  key={t.href}
+                  href={t.href}
+                  aria-current={active ? "page" : undefined}
+                  className={`flex items-center gap-2.5 rounded-xl px-3 py-2.5 transition ${
+                    active
+                      ? "bg-brand-500 shadow-brand-500/30 font-semibold text-white shadow-sm"
+                      : "text-muted hover:bg-brand-50 hover:text-foreground dark:hover:bg-brand-700/20"
+                  }`}
+                >
+                  <Icon className="size-[18px]" aria-hidden />
+                  {t.label}
+                </Link>
+              );
+            })}
+          </nav>
+        )}
+        <main
+          className={
+            mobile
+              ? "mx-auto flex w-full max-w-3xl flex-1 flex-col gap-5 px-4 py-5 pb-28"
+              : "mx-auto flex w-full max-w-5xl flex-1 flex-col gap-5 px-6 py-6"
+          }
+        >
           {children}
         </main>
+      </div>
+      {mobile && (
         <nav
           aria-label="주 메뉴"
-          className="border-line bg-surface/95 fixed inset-x-0 bottom-0 z-30 flex overflow-x-auto border-t px-1 pt-1 pb-[max(env(safe-area-inset-bottom),0.25rem)] backdrop-blur"
+          className="bg-surface/95 border-line fixed inset-x-0 bottom-0 z-30 flex overflow-x-auto border-t px-1 pt-1 pb-[max(env(safe-area-inset-bottom),0.25rem)] backdrop-blur"
         >
           {tabs.map((t) => {
             const Icon = tabIcon(t.href);
@@ -157,41 +193,7 @@ export function AppShell({
             );
           })}
         </nav>
-      </>
-    );
-  }
-  return (
-    <>
-      {header}
-      <div className="flex flex-1">
-        <nav
-          aria-label="주 메뉴"
-          className="border-line bg-surface sticky top-[61px] flex h-[calc(100vh-61px)] w-52 shrink-0 flex-col gap-1 border-r p-3 text-sm"
-        >
-          {tabs.map((t) => {
-            const Icon = tabIcon(t.href);
-            const active = isActive(pathname, t.href);
-            return (
-              <Link
-                key={t.href}
-                href={t.href}
-                aria-current={active ? "page" : undefined}
-                className={`flex items-center gap-2.5 rounded-xl px-3 py-2.5 transition ${
-                  active
-                    ? "bg-brand-500 shadow-brand-500/30 font-semibold text-white shadow-sm"
-                    : "text-muted hover:bg-brand-50 hover:text-foreground dark:hover:bg-brand-700/20"
-                }`}
-              >
-                <Icon className="size-[18px]" aria-hidden />
-                {t.label}
-              </Link>
-            );
-          })}
-        </nav>
-        <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-5 px-6 py-6">
-          {children}
-        </main>
-      </div>
+      )}
     </>
   );
 }

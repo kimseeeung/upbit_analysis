@@ -4,7 +4,15 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { api } from "@/components/api";
 import { readSnapshot } from "@/lib/offline/client";
-import { Button, Card, EmptyState, Notice, TextField } from "@/components/ui";
+import {
+  Button,
+  Card,
+  EmptyState,
+  FilterBar,
+  Notice,
+  PageHeader,
+  TextField,
+} from "@/components/ui";
 
 interface Row {
   studentId: string;
@@ -214,125 +222,132 @@ export function StudentsList() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold">수강생</h1>
+      <PageHeader title="수강생">
         <Button variant="secondary" onClick={() => setAdding((v) => !v)}>
           {adding ? "닫기" : "수강생 등록"}
         </Button>
-      </div>
+      </PageHeader>
       {adding && <AddStudent onDone={load} />}
-      <TextField
-        label="이름 검색"
-        value={q}
-        onChange={(e) => setQ(e.target.value)}
-      />
-      <div className="flex gap-1" role="tablist" aria-label="상태">
-        {FILTERS.map((f) => (
-          <button
-            key={f.key}
-            role="tab"
-            aria-selected={filter === f.key}
-            onClick={() => setFilter(f.key)}
-            className={`rounded-full px-3 py-1 text-sm ${
-              filter === f.key
-                ? "bg-brand-500 text-white"
-                : "bg-brand-50 dark:bg-brand-700/20"
-            }`}
-          >
-            {f.label}
-          </button>
-        ))}
-      </div>
-      {rows?.length === 0 && (
-        <EmptyState icon="users">수강생이 없습니다.</EmptyState>
-      )}
-      {selected.length > 0 && (
-        <div className="bg-brand-50 dark:bg-brand-700/20 flex flex-wrap items-center gap-2 rounded-lg p-2 text-sm">
-          <span>{selected.length}명 선택</span>
-          <Button
-            variant="secondary"
-            onClick={() =>
-              bulk(selected, { notifyDayBefore: true, notify2h: true })
-            }
-          >
-            알림 켜기
-          </Button>
-          <Button
-            variant="secondary"
-            onClick={() =>
-              bulk(selected, { notifyDayBefore: false, notify2h: false })
-            }
-          >
-            알림 끄기
-          </Button>
-          <Button variant="ghost" onClick={() => setSelected([])}>
-            선택 해제
-          </Button>
-        </div>
-      )}
-      <ul className="divide-line flex flex-col divide-y">
-        {rows?.map((s) => (
-          <li key={s.studentId} className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              aria-label={`${s.name} 선택`}
-              checked={selected.includes(s.studentId)}
-              onChange={(e) =>
-                setSelected((x) =>
-                  e.target.checked
-                    ? [...x, s.studentId]
-                    : x.filter((y) => y !== s.studentId),
-                )
-              }
-            />
-            <Link
-              href={`/t/students/${s.studentId}`}
-              className="flex flex-1 items-center justify-between gap-2 py-3"
+      <FilterBar>
+        <TextField
+          label="이름 검색"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+        />
+        <div
+          className="flex flex-wrap gap-1.5"
+          role="tablist"
+          aria-label="상태"
+        >
+          {FILTERS.map((f) => (
+            <button
+              key={f.key}
+              role="tab"
+              aria-selected={filter === f.key}
+              onClick={() => setFilter(f.key)}
+              className={`rounded-full px-3 py-1 text-sm font-semibold ${
+                filter === f.key
+                  ? "bg-brand-500 text-white"
+                  : "bg-surface border-line border"
+              }`}
             >
-              <span className="flex flex-col">
-                <span className="font-medium">
-                  {s.name}
-                  {!s.registered && (
-                    <span className="text-muted ml-1 text-xs">미가입</span>
-                  )}
-                  {s.ruleUnagreed && (
-                    <span className="ml-1 rounded bg-amber-100 px-1 text-xs text-amber-800 dark:bg-amber-900 dark:text-amber-200">
-                      규칙 미동의
-                    </span>
-                  )}
+              {f.label}
+            </button>
+          ))}
+        </div>
+      </FilterBar>
+      <Card title="수강생 목록" icon="users" count={rows?.length ?? 0}>
+        {rows?.length === 0 && (
+          <EmptyState icon="users">수강생이 없습니다.</EmptyState>
+        )}
+        {selected.length > 0 && (
+          <div className="bg-brand-50 dark:bg-brand-700/20 flex flex-wrap items-center gap-2 rounded-lg p-2 text-sm">
+            <span>{selected.length}명 선택</span>
+            <Button
+              variant="secondary"
+              onClick={() =>
+                bulk(selected, { notifyDayBefore: true, notify2h: true })
+              }
+            >
+              알림 켜기
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={() =>
+                bulk(selected, { notifyDayBefore: false, notify2h: false })
+              }
+            >
+              알림 끄기
+            </Button>
+            <Button variant="ghost" onClick={() => setSelected([])}>
+              선택 해제
+            </Button>
+          </div>
+        )}
+        <ul className="divide-line flex flex-col divide-y">
+          {rows?.map((s) => (
+            <li key={s.studentId} className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                aria-label={`${s.name} 선택`}
+                checked={selected.includes(s.studentId)}
+                onChange={(e) =>
+                  setSelected((x) =>
+                    e.target.checked
+                      ? [...x, s.studentId]
+                      : x.filter((y) => y !== s.studentId),
+                  )
+                }
+              />
+              <Link
+                href={`/t/students/${s.studentId}`}
+                className="flex flex-1 items-center justify-between gap-2 py-3"
+              >
+                <span className="flex flex-col">
+                  <span className="font-medium">
+                    {s.name}
+                    {!s.registered && (
+                      <span className="text-muted ml-1 text-xs">미가입</span>
+                    )}
+                    {s.ruleUnagreed && (
+                      <span className="ml-1 rounded bg-amber-100 px-1 text-xs text-amber-800 dark:bg-amber-900 dark:text-amber-200">
+                        규칙 미동의
+                      </span>
+                    )}
+                  </span>
+                  <span className="text-muted text-xs">
+                    {STATUS_LABEL[s.status]} · 잔여 {s.remaining}회
+                    {s.nextExpiry ? ` · 만료 ${s.nextExpiry}` : ""}
+                  </span>
                 </span>
-                <span className="text-muted text-xs">
-                  {STATUS_LABEL[s.status]} · 잔여 {s.remaining}회
-                  {s.nextExpiry ? ` · 만료 ${s.nextExpiry}` : ""}
-                </span>
-              </span>
-              <span className="text-muted">›</span>
-            </Link>
-            <div className="flex flex-col gap-0.5 text-xs">
-              <label className="flex items-center gap-1">
-                <input
-                  type="checkbox"
-                  checked={s.notifyDayBefore}
-                  onChange={(e) =>
-                    bulk([s.studentId], { notifyDayBefore: e.target.checked })
-                  }
-                />
-                전일
-              </label>
-              <label className="flex items-center gap-1">
-                <input
-                  type="checkbox"
-                  checked={s.notify2h}
-                  onChange={(e) =>
-                    bulk([s.studentId], { notify2h: e.target.checked })
-                  }
-                />
-                2시간
-              </label>
-            </div>
-          </li>
-        ))}
-      </ul>
+                <span className="text-muted">›</span>
+              </Link>
+              <div className="flex flex-col gap-0.5 text-xs">
+                <label className="flex items-center gap-1">
+                  <input
+                    type="checkbox"
+                    checked={s.notifyDayBefore}
+                    onChange={(e) =>
+                      bulk([s.studentId], { notifyDayBefore: e.target.checked })
+                    }
+                  />
+                  전일
+                </label>
+                <label className="flex items-center gap-1">
+                  <input
+                    type="checkbox"
+                    checked={s.notify2h}
+                    onChange={(e) =>
+                      bulk([s.studentId], { notify2h: e.target.checked })
+                    }
+                  />
+                  2시간
+                </label>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </Card>
     </div>
   );
 }

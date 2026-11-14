@@ -3,7 +3,13 @@
 import { useCallback, useEffect, useState } from "react";
 import { api } from "@/components/api";
 import { fmtDateTime } from "@/components/fmt";
-import { Button, Checkbox, Notice } from "@/components/ui";
+import {
+  Button,
+  Checkbox,
+  FilterBar,
+  Notice,
+  PageHeader,
+} from "@/components/ui";
 
 interface Item {
   id: string;
@@ -50,12 +56,14 @@ export function Inquiries() {
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-lg font-semibold">문의</h1>
-      <Checkbox
-        label="답변 전만 보기"
-        checked={unanswered}
-        onChange={setUnanswered}
-      />
+      <PageHeader title="문의" />
+      <FilterBar>
+        <Checkbox
+          label="답변 전만 보기"
+          checked={unanswered}
+          onChange={setUnanswered}
+        />
+      </FilterBar>
       {error && <Notice tone="error">{error}</Notice>}
       <ul className="flex flex-col gap-2">
         {items.map((q) => (

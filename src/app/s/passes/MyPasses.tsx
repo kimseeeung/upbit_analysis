@@ -5,7 +5,7 @@ import { api } from "@/components/api";
 import { readSnapshot } from "@/lib/offline/client";
 import { PassSummary, type PassView } from "@/components/PassCards";
 import { PausePanel } from "@/components/PausePanel";
-import { EmptyState, Notice } from "@/components/ui";
+import { EmptyState, Notice, SectionTitle } from "@/components/ui";
 
 export function MyPasses() {
   const [data, setData] = useState<{
@@ -46,6 +46,13 @@ export function MyPasses() {
       {data.passes.length === 0 && (
         <EmptyState icon="ticket">등록된 이용권이 없습니다.</EmptyState>
       )}
+      {current.length > 0 && (
+        <SectionTitle
+          title="사용 중인 이용권"
+          icon="ticket"
+          count={current.length}
+        />
+      )}
       {current.map((p) => (
         <PassSummary key={p.id} p={p}>
           <PausePanel passId={p.id} role="STUDENT" />
@@ -53,7 +60,11 @@ export function MyPasses() {
       ))}
       {past.length > 0 && (
         <>
-          <h2 className="font-semibold">지난 이용권</h2>
+          <SectionTitle
+            title="지난 이용권"
+            icon="history"
+            count={past.length}
+          />
           {past.map((p) => (
             <PassSummary key={p.id} p={p} />
           ))}

@@ -8,6 +8,7 @@ import {
   Card,
   Modal,
   Notice,
+  PageHeader,
   PasswordField,
   TextField,
 } from "@/components/ui";
@@ -96,7 +97,7 @@ export function Versions() {
     data.versions.find((x) => x.version === v);
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-lg font-semibold">버전·롤백</h1>
+      <PageHeader title="버전·롤백" />
       <div className="flex flex-wrap gap-2">
         <Button
           disabled={!data.previous}
@@ -113,57 +114,59 @@ export function Versions() {
           </Button>
         )}
       </div>
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[560px] text-sm">
-          <thead>
-            <tr className="border-line border-b text-left">
-              <th className="px-2 py-2">버전</th>
-              <th className="px-2 py-2">배포 일시</th>
-              <th className="px-2 py-2">배포한 사람</th>
-              <th className="px-2 py-2">변경 요약</th>
-              <th className="px-2 py-2" />
-            </tr>
-          </thead>
-          <tbody>
-            {data.versions.map((v) => (
-              <tr
-                key={v.version}
-                className={`border-line border-b ${v.isCurrent ? "bg-emerald-50 font-semibold dark:bg-emerald-950" : ""}`}
-              >
-                <td className="px-2 py-2">
-                  {v.version}
-                  {v.isCurrent && (
-                    <span className="ml-1 text-xs text-emerald-700">
-                      지금 버전
-                    </span>
-                  )}
-                </td>
-                <td className="px-2 py-2">{fmtDateTime(v.deployedAt)}</td>
-                <td className="px-2 py-2">{v.deployedBy}</td>
-                <td className="px-2 py-2">{v.summary || "-"}</td>
-                <td className="px-2 py-2">
-                  {!v.isCurrent && (
-                    <button
-                      type="button"
-                      className="underline"
-                      onClick={() => open(v)}
-                    >
-                      이 버전으로
-                    </button>
-                  )}
-                </td>
+      <Card title="배포 버전" icon="history" count={data.versions.length}>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[560px] text-sm">
+            <thead>
+              <tr className="border-line border-b text-left">
+                <th className="px-2 py-2">버전</th>
+                <th className="px-2 py-2">배포 일시</th>
+                <th className="px-2 py-2">배포한 사람</th>
+                <th className="px-2 py-2">변경 요약</th>
+                <th className="px-2 py-2" />
               </tr>
-            ))}
-            {data.versions.length === 0 && (
-              <tr>
-                <td colSpan={5} className="text-muted px-2 py-6 text-center">
-                  배포 기록이 없습니다 (APP_VERSION 환경 변수로 기록)
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {data.versions.map((v) => (
+                <tr
+                  key={v.version}
+                  className={`border-line border-b ${v.isCurrent ? "bg-emerald-50 font-semibold dark:bg-emerald-950" : ""}`}
+                >
+                  <td className="px-2 py-2">
+                    {v.version}
+                    {v.isCurrent && (
+                      <span className="ml-1 text-xs text-emerald-700">
+                        지금 버전
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-2 py-2">{fmtDateTime(v.deployedAt)}</td>
+                  <td className="px-2 py-2">{v.deployedBy}</td>
+                  <td className="px-2 py-2">{v.summary || "-"}</td>
+                  <td className="px-2 py-2">
+                    {!v.isCurrent && (
+                      <button
+                        type="button"
+                        className="underline"
+                        onClick={() => open(v)}
+                      >
+                        이 버전으로
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+              {data.versions.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="text-muted px-2 py-6 text-center">
+                    배포 기록이 없습니다 (APP_VERSION 환경 변수로 기록)
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </Card>
 
       <Card title="롤백 기록">
         <ul className="flex flex-col gap-2 text-sm">

@@ -15,6 +15,22 @@ export const DAILY_SEND_LIMIT = 5;
 export const MAX_ATTEMPTS = 5;
 export const VERIFIED_USE_WINDOW_MS = 30 * 60 * 1000;
 
+/** 테스트 모드 고정 인증번호 */
+export const TEST_SMS_CODE = "000000";
+
+/**
+ * 테스트 모드: 실제 문자를 보내지 않는 개발용 발송(SMS_PROVIDER=console)일 때는
+ * 인증번호를 000000으로 고정하고 재발송 대기·하루 횟수 제한을 두지 않는다.
+ * SMS_FIXED_CODE=0이면 끈다. 운영 관리자 2단계 인증에는 쓰지 않는다.
+ */
+export function smsTestMode(
+  env: Record<string, string | undefined> = process.env,
+): boolean {
+  return (
+    (env.SMS_PROVIDER ?? "console") === "console" && env.SMS_FIXED_CODE !== "0"
+  );
+}
+
 export function generateSmsCode(): string {
   return String(randomInt(0, 1_000_000)).padStart(6, "0");
 }

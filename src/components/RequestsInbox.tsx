@@ -6,7 +6,14 @@ import { ApprovalInboxItems, type ApprovalInbox } from "./ApprovalInboxItems";
 import { TransferInboxItems, type TransferInbox } from "./TransferInboxItems";
 import { fmtDateTime, fmtRange } from "./fmt";
 import { RulesLines } from "./RulesEditor";
-import { Button, Card, EmptyState, Notice, TextField } from "./ui";
+import {
+  Button,
+  Card,
+  EmptyState,
+  Notice,
+  SectionTitle,
+  TextField,
+} from "./ui";
 
 interface Slot {
   startAt: string;
@@ -180,8 +187,26 @@ export function RequestsInbox() {
     data.passDecisions.length === 0 &&
     data.transferConsents.length === 0 &&
     data.departureChoices.every((c) => c.choice);
+  const total =
+    data.linkRequests.length +
+    data.ruleConsents.length +
+    data.bookingRequests.length +
+    data.cancelRequests.length +
+    data.changeRequests.length +
+    data.confirmRequests.length +
+    data.approvalRequests.length +
+    data.disputes.length +
+    data.trainerConfirms.length +
+    data.pauseRequests.length +
+    data.transferRequests.length +
+    data.passDecisions.length +
+    data.transferConsents.length +
+    data.departureChoices.filter((c) => !c.choice).length;
   return (
     <div className="flex flex-col gap-3">
+      {!empty && (
+        <SectionTitle title="처리할 요청" icon="inbox" count={total} />
+      )}
       {error && <Notice tone="error">{error}</Notice>}
       {empty && (
         <EmptyState icon="smile">처리할 요청이 없습니다. 🎉</EmptyState>

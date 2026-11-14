@@ -5,8 +5,10 @@ import {
   RESEND_COOLDOWN_MS,
   canConsumeVerification,
   checkCanSend,
+  TEST_SMS_CODE,
   generateSmsCode,
   precheckAttempt,
+  smsTestMode,
 } from "@/lib/auth/sms-rules";
 import { isValidMobilePhone, normalizePhone } from "@/lib/phone";
 import { startOfKstDay } from "@/lib/time";
@@ -27,6 +29,8 @@ export interface SendCodeResult {
   verificationId: string;
   expiresAt: Date;
   resendAfterSec: number;
+  /** 테스트 모드일 때만: 화면에 미리 채울 인증번호 */
+  testCode?: string;
 }
 
 export async function sendVerificationCode(
@@ -67,28 +71,32 @@ export async function issueCode(
   purpose: SmsPurpose,
   now = new Date(),
 ): Promise<SendCodeResult> {
-  // 하루 5회는 한국 날짜 기준이므로 전날 00:00 KST부터 넉넉히 읽는다
-  const recent = await db.smsVerification.findMany({
-    where: {
-      phone,
-      createdAt: { gte: new Date(startOfKstDay(now).getTime() - 1) },
-    },
-    select: { createdAt: true },
-  });
-  const check = checkCanSend(
-    recent.map((r) => r.createdAt),
-    now,
-  );
-  if (!check.ok) {
-    throw new AppError(
-      check.reason,
-      check.message,
-      429,
-      check.reason === "COOLDOWN" ? { retryAfterSec: check.retryAfterSec } : {},
+  const test = smsTestMode() && purpose !== "ADMIN_2FA";
+  if (!test) {
+    // 하루 5회는 한국 날짜 기준이므로 전날 00:00 KST부터 넉넉히 읽는다
+    const recent = await db.smsVerification.findMany({
+      where: {
+        phone,
+        createdAt: { gte: new Date(startOfKstDay(now).getTime() - 1) },
+      },
+      select: { createdAt: true },
+    });
+    const check = checkCanSend(
+      recent.map((r) => r.createdAt),
+      now,
     );
+    if (!check.ok) {
+      throw new AppError(
+        check.reason,
+        check.message,
+        429,
+        check.reason === "COOLDOWN"
+          ? { retryAfterSec: check.retryAfterSec }
+          : {},
+      );
+    }
   }
-
-  const code = generateSmsCode();
+  const code = test ? TEST_SMS_CODE : generateSmsCode();
   const hashed = await hashSecret(code);
   const expiresAt = new Date(now.getTime() + CODE_TTL_MS);
   const row = await db.smsVerification.create({
@@ -108,7 +116,8 @@ export async function issueCode(
   return {
     verificationId: row.id,
     expiresAt,
-    resendAfterSec: RESEND_COOLDOWN_MS / 1000,
+    resendAfterSec: test ? 0 : RESEND_COOLDOWN_MS / 1000,
+    ...(test ? { testCode: TEST_SMS_CODE } : {}),
   };
 }
 

@@ -1,5 +1,7 @@
 "use client";
 
+import { CalendarClock, CalendarRange, ScrollText, Ticket } from "lucide-react";
+
 import { RulesLines } from "./RulesEditor";
 import { Card } from "./ui";
 import { PASS_STATUS_LABEL } from "@/lib/rules/rule-set";
@@ -50,12 +52,17 @@ export function PassSummary({
 }) {
   return (
     <Card title={p.name}>
-      <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
-        <span>
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm">
+        <span className="inline-flex items-center gap-1">
+          <Ticket className="text-brand-500 size-4" aria-hidden />
           잔여 <strong>{p.remaining}</strong> / {p.total}회
         </span>
-        <span className="text-muted">예정 {p.scheduled}회</span>
-        <span className="text-muted">
+        <span className="text-muted inline-flex items-center gap-1">
+          <CalendarClock className="size-4" aria-hidden />
+          예정 {p.scheduled}회
+        </span>
+        <span className="text-muted inline-flex items-center gap-1">
+          <CalendarRange className="size-4" aria-hidden />
           {p.startDate} ~ {p.endDate}
         </span>
         <span className="bg-brand-50 dark:bg-brand-700/20 rounded px-1.5 text-xs">
@@ -67,7 +74,8 @@ export function PassSummary({
         1회 {p.sessionMinutes}분 · 판매 {p.soldBy}
       </p>
       <div className="flex flex-col gap-1">
-        <p className="text-xs font-medium">
+        <p className="inline-flex items-center gap-1 text-xs font-semibold">
+          <ScrollText className="size-3.5" aria-hidden />
           {p.ruleAgreed
             ? "동의한 수강 규칙"
             : "수강 규칙 (미동의: 노쇼·당일 취소를 차감하지 않습니다)"}

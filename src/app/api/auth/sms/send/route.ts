@@ -14,5 +14,6 @@ export const POST = route(async (request) => {
     verificationId: r.verificationId,
     expiresAt: r.expiresAt.toISOString(),
     resendAfterSec: r.resendAfterSec,
+    ...(r.testCode ? { testCode: r.testCode } : {}),
   });
 });

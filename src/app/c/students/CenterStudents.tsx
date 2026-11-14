@@ -2,7 +2,16 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { api } from "@/components/api";
-import { Button, Card, EmptyState, Notice, TextField } from "@/components/ui";
+import {
+  Button,
+  Card,
+  EmptyState,
+  FilterBar,
+  Notice,
+  PageHeader,
+  SectionTitle,
+  TextField,
+} from "@/components/ui";
 
 interface Data {
   members: { id: string; name: string }[];
@@ -65,13 +74,16 @@ export function CenterStudents() {
   const list = d.students.filter((s) => s.name.includes(q.trim()));
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-lg font-semibold">수강생 관리</h1>
+      <PageHeader title="수강생 관리" />
       {msg && <Notice tone={msg.tone}>{msg.text}</Notice>}
-      <TextField
-        label="이름 검색"
-        value={q}
-        onChange={(e) => setQ(e.target.value)}
-      />
+      <FilterBar>
+        <TextField
+          label="이름 검색"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+        />
+      </FilterBar>
+      <SectionTitle title="수강생 목록" icon="users" count={list.length} />
       {list.length === 0 && (
         <EmptyState icon="users">수강생이 없습니다.</EmptyState>
       )}

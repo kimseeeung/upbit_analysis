@@ -2,7 +2,21 @@
 
 import {
   AlertTriangle,
+  ArrowRight,
+  BadgeCheck,
   Bell,
+  Download,
+  Filter,
+  ListChecks,
+  LogIn,
+  MessageCircle,
+  Pencil,
+  Plus,
+  Save,
+  Search,
+  Send,
+  Trash2,
+  Undo2,
   Building2,
   CalendarDays,
   CheckCircle2,
@@ -25,6 +39,9 @@ import {
   NotebookPen,
   PauseCircle,
   ScrollText,
+  Settings,
+  BarChart3,
+  RefreshCw,
   Smartphone,
   Smile,
   Sparkles,
@@ -66,6 +83,10 @@ export const ICONS = {
   memo: NotebookPen,
   pause: PauseCircle,
   scroll: ScrollText,
+  settings: Settings,
+  chart: BarChart3,
+  refresh: RefreshCw,
+  send: Send,
   phone: Smartphone,
   smile: Smile,
   sparkles: Sparkles,
@@ -77,7 +98,10 @@ export type IconName = keyof typeof ICONS;
 
 /** 카드 제목으로 어울리는 아이콘을 고른다 (따로 정하지 않았을 때) */
 const TITLE_ICONS: [RegExp, IconName][] = [
+  [/알림 못 받는|직접 보낼/, "send"],
   [/알림/, "bell"],
+  [/설정/, "settings"],
+  [/동기화 충돌/, "refresh"],
   [/기기/, "phone"],
   [/백업|동기화/, "cloud"],
   [/비밀번호/, "key"],
@@ -99,7 +123,7 @@ const TITLE_ICONS: [RegExp, IconName][] = [
   [/초대/, "mail"],
   [/일정|예약|수업|캘린더/, "calendar"],
   [/정보|프로필|전화/, "user"],
-  [/현황|통계/, "clipboard"],
+  [/현황|통계/, "chart"],
 ];
 export function iconForTitle(title: string): IconName {
   return TITLE_ICONS.find(([re]) => re.test(title))?.[1] ?? "sparkles";
@@ -179,14 +203,46 @@ export function PageShell({
   );
 }
 
+/** 버튼 글자에 어울리는 아이콘 (글자만 있는 버튼에 자동으로 붙임) */
+const BUTTON_ICONS: [RegExp, LucideIcon][] = [
+  [/카톡/, MessageCircle],
+  [/^로그인$/, LogIn],
+  [/수락|확인|승인|동의/, BadgeCheck],
+  [/거절|취소|닫기/, X],
+  [/되돌|복구|재개/, Undo2],
+  [/저장/, Save],
+  [/삭제|비활성화|해제/, Trash2],
+  [/검색|찾기/, Search],
+  [/다운로드/, Download],
+  [/보내기|요청|신청|제안|공유/, Send],
+  [/등록|추가|만들기|초대/, Plus],
+  [/수정|변경|편집/, Pencil],
+  [/선택|고르기/, ListChecks],
+  [/다음|계속|시작/, ArrowRight],
+];
+export function buttonIcon(label: string): LucideIcon | null {
+  return BUTTON_ICONS.find(([re]) => re.test(label))?.[1] ?? null;
+}
+function buttonIconElement(label: string): ReactNode {
+  const Icon = buttonIcon(label);
+  return Icon ? <Icon className="size-4 shrink-0" aria-hidden /> : null;
+}
+
 export function Button({
   children,
   variant = "primary",
   className = "",
+  icon = true,
   ...props
 }: React.ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: "primary" | "secondary" | "danger" | "ghost";
+  /** false면 자동 아이콘을 붙이지 않음 */
+  icon?: boolean;
 }) {
+  const auto =
+    icon && variant !== "ghost" && typeof children === "string"
+      ? buttonIconElement(children)
+      : null;
   const styles = {
     primary:
       "bg-brand-500 text-white shadow-sm shadow-brand-500/25 hover:bg-brand-600 active:scale-[0.98] disabled:bg-brand-200 disabled:shadow-none dark:disabled:bg-brand-700/40",
@@ -202,6 +258,7 @@ export function Button({
       className={`inline-flex items-center justify-center gap-1.5 rounded-xl px-4 py-2.5 text-sm font-semibold transition disabled:cursor-not-allowed ${styles} ${className}`}
       {...props}
     >
+      {auto}
       {children}
     </button>
   );
@@ -379,22 +436,146 @@ export function Notice({
 export function Card({
   title,
   icon,
+  count,
+  actions,
   children,
 }: {
   title?: string;
   icon?: IconName;
+  /** 목록 개수 배지 */
+  count?: number;
+  /** 제목 오른쪽 버튼 */
+  actions?: ReactNode;
   children: ReactNode;
 }) {
   return (
     <section className="border-line bg-surface flex flex-col gap-3 rounded-2xl border p-4 shadow-sm shadow-black/[0.03]">
       {title && (
-        <h2 className="flex items-center gap-2 text-base font-bold">
-          <IconBubble name={icon ?? iconForTitle(title)} size="sm" />
-          {title}
-        </h2>
+        <div className="border-line -mx-4 -mt-1 flex items-center justify-between gap-2 border-b px-4 pb-3">
+          <h2 className="flex min-w-0 items-center gap-2 text-base font-bold">
+            <IconBubble name={icon ?? iconForTitle(title)} size="sm" />
+            <span className="truncate">{title}</span>
+            {count !== undefined && (
+              <span className="bg-brand-100 text-brand-700 dark:bg-brand-700/30 dark:text-brand-100 rounded-full px-2 py-0.5 text-xs font-bold">
+                {count}
+              </span>
+            )}
+          </h2>
+          {actions && (
+            <div className="flex shrink-0 items-center gap-2">{actions}</div>
+          )}
+        </div>
       )}
       {children}
     </section>
+  );
+}
+
+/**
+ * 화면 제목 영역: 아이콘 + 제목 + 설명, 오른쪽에 주요 버튼.
+ * 모든 화면 맨 위에 같은 모양으로 둔다.
+ */
+export function PageHeader({
+  title,
+  icon,
+  description,
+  children,
+}: {
+  title: ReactNode;
+  icon?: IconName;
+  description?: ReactNode;
+  /** 오른쪽 버튼 */
+  children?: ReactNode;
+}) {
+  return (
+    <header className="border-line flex flex-wrap items-center justify-between gap-3 border-b pb-4">
+      <div className="flex min-w-0 items-center gap-3">
+        <IconBubble
+          name={
+            icon ??
+            (typeof title === "string" ? iconForTitle(title) : "sparkles")
+          }
+          size="lg"
+        />
+        <div className="min-w-0">
+          <h1 className="truncate text-xl font-extrabold">{title}</h1>
+          {description && (
+            <p className="text-muted mt-0.5 text-sm">{description}</p>
+          )}
+        </div>
+      </div>
+      {children && (
+        <div className="flex flex-wrap items-center gap-2">{children}</div>
+      )}
+    </header>
+  );
+}
+
+/**
+ * 조회 조건 영역: 기간·검색·필터를 한 상자에 모아 목록과 구분한다.
+ */
+export function FilterBar({
+  title = "조회 조건",
+  children,
+}: {
+  title?: string;
+  children: ReactNode;
+}) {
+  return (
+    <section
+      aria-label={title}
+      className="border-brand-100 bg-brand-50/60 dark:border-brand-700/30 dark:bg-brand-700/10 flex flex-col gap-3 rounded-2xl border p-4"
+    >
+      <p className="text-brand-700 dark:text-brand-200 flex items-center gap-1.5 text-xs font-bold">
+        <Filter className="size-3.5" aria-hidden />
+        {title}
+      </p>
+      {children}
+    </section>
+  );
+}
+
+/** 목록 위 소제목 (카드 여러 개로 된 목록에 씀) */
+export function SectionTitle({
+  title,
+  icon,
+  count,
+}: {
+  title: string;
+  icon?: IconName;
+  count?: number;
+}) {
+  return (
+    <h2 className="flex items-center gap-2 pt-1 text-base font-bold">
+      <IconBubble name={icon ?? iconForTitle(title)} size="sm" />
+      {title}
+      {count !== undefined && (
+        <span className="bg-brand-100 text-brand-700 dark:bg-brand-700/30 dark:text-brand-100 rounded-full px-2 py-0.5 text-xs font-bold">
+          {count}
+        </span>
+      )}
+    </h2>
+  );
+}
+
+/** 요약 숫자 카드 (총 수업 수 등) */
+export function StatTile({
+  label,
+  value,
+  icon,
+}: {
+  label: string;
+  value: ReactNode;
+  icon?: IconName;
+}) {
+  return (
+    <div className="border-line bg-surface flex items-center gap-3 rounded-2xl border p-3 shadow-sm shadow-black/[0.03]">
+      <IconBubble name={icon ?? iconForTitle(label)} size="md" />
+      <div className="min-w-0">
+        <p className="text-muted text-xs">{label}</p>
+        <p className="text-lg font-extrabold">{value}</p>
+      </div>
+    </div>
   );
 }
 

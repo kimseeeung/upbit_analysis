@@ -14,6 +14,7 @@ import {
   Checkbox,
   EmptyState,
   Notice,
+  PageHeader,
   TextField,
 } from "@/components/ui";
 import { suggestEndDate, type RuleValues } from "@/lib/rules/rule-set";
@@ -293,8 +294,7 @@ export function PassManager({ studentId }: { studentId: string }) {
       <Link href={`/t/students/${studentId}`} className="text-muted text-sm">
         ← {d.name}
       </Link>
-      <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold">이용권 관리</h1>
+      <PageHeader title="이용권 관리">
         {mode.kind === "none" && (
           <Button
             disabled={offline}
@@ -304,7 +304,7 @@ export function PassManager({ studentId }: { studentId: string }) {
             이용권 추가
           </Button>
         )}
-      </div>
+      </PageHeader>
       {offline && (
         <Notice tone="warning">
           {OFFLINE_DISABLED} (이용권·결제 기록 등록)

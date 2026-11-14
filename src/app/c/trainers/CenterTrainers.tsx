@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { api } from "@/components/api";
 import { fmtDateTime } from "@/components/fmt";
-import { Button, Card, Notice } from "@/components/ui";
+import { Button, Card, Notice, PageHeader } from "@/components/ui";
 
 interface Data {
   center: {
@@ -76,12 +76,16 @@ export function CenterTrainers() {
   const left = d.members.filter((m) => m.status === "LEFT" && m.joinedAt);
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-lg font-semibold">
-        트레이너 관리 · {d.center.name}{" "}
-        {d.center.verified && (
-          <span className="text-xs text-blue-600">인증 센터</span>
-        )}
-      </h1>
+      <PageHeader
+        title={
+          <>
+            트레이너 관리 · {d.center.name}{" "}
+            {d.center.verified && (
+              <span className="text-xs text-blue-600">인증 센터</span>
+            )}
+          </>
+        }
+      />
       {d.center.status === "DISSOLVING" && d.center.dissolveAt && (
         <Notice tone="warning">
           {fmtDateTime(d.center.dissolveAt)}에 해산됩니다.

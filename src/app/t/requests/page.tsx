@@ -1,10 +1,11 @@
+import { PageHeader } from "@/components/ui";
 import { RequestsInbox } from "@/components/RequestsInbox";
 import { RoleLayout } from "@/components/RoleHome";
 
 export default function RequestsPage() {
   return (
     <RoleLayout area="trainer">
-      <h1 className="text-lg font-semibold">요청함</h1>
+      <PageHeader title="요청함" />
       <RequestsInbox />
     </RoleLayout>
   );

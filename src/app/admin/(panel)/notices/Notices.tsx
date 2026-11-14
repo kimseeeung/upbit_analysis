@@ -3,7 +3,13 @@
 import { useCallback, useEffect, useState } from "react";
 import { api } from "@/components/api";
 import { fmtDateTime } from "@/components/fmt";
-import { Button, Card, Notice as Msg, TextField } from "@/components/ui";
+import {
+  Button,
+  Card,
+  Notice as Msg,
+  PageHeader,
+  TextField,
+} from "@/components/ui";
 
 interface Item {
   id: string;
@@ -47,7 +53,7 @@ export function Notices() {
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-lg font-semibold">공지사항</h1>
+      <PageHeader title="공지사항" />
       <Card title={editing.id ? "공지 수정" : "새 공지"}>
         <form onSubmit={save} className="flex flex-col gap-3">
           <TextField

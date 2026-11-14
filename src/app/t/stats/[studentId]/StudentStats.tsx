@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { api } from "@/components/api";
 import { APPROVAL_METHOD_LABEL } from "@/components/approval-types";
 import { STATUS_STYLE, fmtDateTime, fmtRange } from "@/components/fmt";
-import { Card, EmptyState, Notice } from "@/components/ui";
+import { Card, EmptyState, Notice, PageHeader } from "@/components/ui";
 
 interface Item {
   id: string;
@@ -46,9 +46,13 @@ export function StudentStats({ studentId }: { studentId: string }) {
       <Link href="/t/stats" className="text-muted text-sm">
         ← 수강 현황
       </Link>
-      <h1 className="text-lg font-semibold">
-        {data.studentName} · {from}~{to}
-      </h1>
+      <PageHeader
+        title={
+          <>
+            {data.studentName} · {from}~{to}
+          </>
+        }
+      />
       {!data.current && (
         <Notice>이전 담당 수강생입니다. 직접 진행한 수업만 보입니다.</Notice>
       )}

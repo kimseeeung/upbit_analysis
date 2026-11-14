@@ -8,7 +8,7 @@ import { enqueue } from "@/lib/offline/store";
 import { KakaoShareButton } from "@/components/KakaoShareButton";
 import { PassSummary, type PassView } from "@/components/PassCards";
 import { StudentNotify } from "./StudentNotify";
-import { Button, Card, EmptyState, Notice } from "@/components/ui";
+import { Button, Card, EmptyState, Notice, PageHeader } from "@/components/ui";
 
 interface Detail {
   studentId: string;
@@ -88,10 +88,16 @@ export function StudentDetail({ id }: { id: string }) {
       <Link href="/t/students" className="text-muted text-sm">
         ← 수강생 목록
       </Link>
-      <h1 className="text-lg font-semibold">
-        {d.name}{" "}
-        {!d.registered && <span className="text-muted text-xs">미가입</span>}
-      </h1>
+      <PageHeader
+        title={
+          <>
+            {d.name}{" "}
+            {!d.registered && (
+              <span className="text-muted text-xs">미가입</span>
+            )}
+          </>
+        }
+      />
       <Card title="기본 정보">
         <dl className="grid grid-cols-[6rem_1fr] gap-y-1 text-sm">
           <dt className="text-muted">전화번호</dt>

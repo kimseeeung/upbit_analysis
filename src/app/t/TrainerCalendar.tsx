@@ -23,7 +23,7 @@ import { readSnapshot } from "@/lib/offline/client";
 import { listQueue, type QueueRow } from "@/lib/offline/store";
 import { STATUS_STYLE, fmtRange, kstDateKey } from "@/components/fmt";
 import { CalendarPlus } from "lucide-react";
-import { Notice, SELECT } from "@/components/ui";
+import { FilterBar, Notice, PageHeader, SELECT } from "@/components/ui";
 import { NOTICE_ICON } from "./BookingNoticeControls";
 import { CreateBookingSheet } from "./CreateBookingSheet";
 import {
@@ -277,8 +277,7 @@ export function TrainerCalendar() {
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-lg font-semibold">캘린더</h1>
+      <PageHeader title="캘린더">
         <div className="flex items-center gap-2">
           {data && data.pendingRequests > 0 && (
             <Link
@@ -303,7 +302,7 @@ export function TrainerCalendar() {
             예약 등록
           </button>
         </div>
-      </div>
+      </PageHeader>
       {data && !data.hasAvailability && (
         <Notice tone="warning">
           근무 가능 시간을 설정하지 않아 수강생이 예약을 신청할 수 없습니다.{" "}
@@ -312,22 +311,24 @@ export function TrainerCalendar() {
           </Link>
         </Notice>
       )}
-      <label className="flex flex-col gap-1.5">
-        <span className="text-sm font-semibold">수강생별 보기</span>
-        <select
-          aria-label="수강생별 보기"
-          className={SELECT}
-          value={nameFilter}
-          onChange={(e) => setNameFilter(e.target.value)}
-        >
-          <option value="">전체 수강생</option>
-          {studentNames.map((n) => (
-            <option key={n} value={n}>
-              {n}
-            </option>
-          ))}
-        </select>
-      </label>
+      <FilterBar title="보기 조건">
+        <label className="flex flex-col gap-1.5">
+          <span className="text-sm font-semibold">수강생별 보기</span>
+          <select
+            aria-label="수강생별 보기"
+            className={SELECT}
+            value={nameFilter}
+            onChange={(e) => setNameFilter(e.target.value)}
+          >
+            <option value="">전체 수강생</option>
+            {studentNames.map((n) => (
+              <option key={n} value={n}>
+                {n}
+              </option>
+            ))}
+          </select>
+        </label>
+      </FilterBar>
       {msg && <Notice tone={msg.tone}>{msg.text}</Notice>}
       <div className="text-sm [&_.fc-button]:whitespace-nowrap [&_.fc-toolbar]:flex-wrap [&_.fc-toolbar]:gap-2 [&_.fc-toolbar-title]:text-base max-sm:[&_.fc-toolbar-title]:text-sm">
         <FullCalendar

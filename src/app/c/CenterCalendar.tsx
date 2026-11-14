@@ -12,7 +12,7 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import { useCallback, useMemo, useState } from "react";
 import { api } from "@/components/api";
 import { STATUS_STYLE, fmtRange, kstDateKey } from "@/components/fmt";
-import { Card, Notice } from "@/components/ui";
+import { Card, FilterBar, Notice, PageHeader } from "@/components/ui";
 
 const COLORS = [
   "#2563eb",
@@ -93,36 +93,38 @@ export function CenterCalendar() {
   );
   return (
     <div className="flex flex-col gap-3">
-      <h1 className="text-lg font-semibold">센터 캘린더</h1>
+      <PageHeader title="센터 캘린더" />
       {error && <Notice tone="error">{error}</Notice>}
-      <div
-        className="flex flex-wrap gap-2"
-        role="group"
-        aria-label="트레이너 필터"
-      >
-        {data?.trainers.map((t) => (
-          <button
-            key={t.id}
-            type="button"
-            aria-pressed={!hidden.includes(t.id)}
-            onClick={() =>
-              setHidden((h) =>
-                h.includes(t.id) ? h.filter((x) => x !== t.id) : [...h, t.id],
-              )
-            }
-            className={`flex items-center gap-1 rounded-full border px-2.5 py-1 text-sm ${hidden.includes(t.id) ? "opacity-40" : ""}`}
-          >
-            <span
-              className="inline-block size-3 rounded-full"
-              style={{ background: COLORS[t.colorIndex % COLORS.length] }}
-            />
-            {t.name}
-            {!t.current && (
-              <span className="text-muted text-xs">(이전 소속)</span>
-            )}
-          </button>
-        ))}
-      </div>
+      <FilterBar title="트레이너별 보기">
+        <div
+          className="flex flex-wrap gap-2"
+          role="group"
+          aria-label="트레이너 필터"
+        >
+          {data?.trainers.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              aria-pressed={!hidden.includes(t.id)}
+              onClick={() =>
+                setHidden((h) =>
+                  h.includes(t.id) ? h.filter((x) => x !== t.id) : [...h, t.id],
+                )
+              }
+              className={`bg-surface border-line flex items-center gap-1 rounded-full border px-2.5 py-1 text-sm font-semibold ${hidden.includes(t.id) ? "opacity-40" : ""}`}
+            >
+              <span
+                className="inline-block size-3 rounded-full"
+                style={{ background: COLORS[t.colorIndex % COLORS.length] }}
+              />
+              {t.name}
+              {!t.current && (
+                <span className="text-muted text-xs">(이전 소속)</span>
+              )}
+            </button>
+          ))}
+        </div>
+      </FilterBar>
       <div className="text-sm [&_.fc-button]:whitespace-nowrap [&_.fc-toolbar]:flex-wrap [&_.fc-toolbar]:gap-2 [&_.fc-toolbar-title]:text-base max-sm:[&_.fc-toolbar-title]:text-sm">
         <FullCalendar
           key={displayMode}

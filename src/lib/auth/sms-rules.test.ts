@@ -77,3 +77,16 @@ describe("인증번호 확인", () => {
     for (let i = 0; i < 50; i++) expect(generateSmsCode()).toMatch(/^\d{6}$/);
   });
 });
+
+describe("테스트 모드 고정 인증번호 000000", () => {
+  it("실제 문자를 보내지 않는 console 발송일 때만 켜진다", async () => {
+    const { smsTestMode, TEST_SMS_CODE } = await import("./sms-rules");
+    expect(TEST_SMS_CODE).toBe("000000");
+    expect(smsTestMode({})).toBe(true);
+    expect(smsTestMode({ SMS_PROVIDER: "console" })).toBe(true);
+    expect(smsTestMode({ SMS_PROVIDER: "console", SMS_FIXED_CODE: "0" })).toBe(
+      false,
+    );
+    expect(smsTestMode({ SMS_PROVIDER: "aligo" })).toBe(false);
+  });
+});

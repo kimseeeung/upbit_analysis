@@ -53,6 +53,7 @@ export function PhoneVerification({
       verificationId: string;
       expiresAt: string;
       resendAfterSec: number;
+      testCode?: string;
     }>("/api/auth/sms/send", { body: { phone, purpose } });
     setBusy(false);
     if (!r.ok) {
@@ -63,8 +64,13 @@ export function PhoneVerification({
     setExpiresAt(new Date(r.data.expiresAt).getTime());
     setResendAt(Date.now() + r.data.resendAfterSec * 1000);
     setNow(Date.now());
-    setCode("");
-    setInfo("인증번호를 보냈습니다. 3분 안에 입력해 주세요");
+    // 테스트 모드(실제 문자 미발송): 인증번호 000000을 미리 채운다
+    setCode(r.data.testCode ?? "");
+    setInfo(
+      r.data.testCode
+        ? `테스트 모드: 문자를 보내지 않습니다. 인증번호 ${r.data.testCode}을 입력해 두었으니 확인을 누르세요`
+        : "인증번호를 보냈습니다. 3분 안에 입력해 주세요",
+    );
   }
 
   async function verify() {

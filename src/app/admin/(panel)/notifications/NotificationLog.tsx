@@ -1,5 +1,7 @@
 "use client";
 
+import { Card, FilterBar, PageHeader } from "@/components/ui";
+
 import { useEffect, useState } from "react";
 import { api } from "@/components/api";
 import { fmtDateTime } from "@/components/fmt";
@@ -33,52 +35,56 @@ export function NotificationLog() {
   }, [status]);
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-lg font-semibold">알림 발송 내역</h1>
-      <select
-        aria-label="상태"
-        value={status}
-        onChange={(e) => setStatus(e.target.value)}
-        className="border-line bg-surface w-40 rounded-lg border px-3 py-2 text-sm"
-      >
-        <option value="">전체</option>
-        {Object.entries(STATUS).map(([k, v]) => (
-          <option key={k} value={k}>
-            {v}
-          </option>
-        ))}
-      </select>
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[640px] text-sm">
-          <thead>
-            <tr className="border-line border-b text-left">
-              <th className="px-2 py-2">보낼 시각</th>
-              <th className="px-2 py-2">받는 사람</th>
-              <th className="px-2 py-2">종류</th>
-              <th className="px-2 py-2">제목</th>
-              <th className="px-2 py-2">상태</th>
-            </tr>
-          </thead>
-          <tbody>
-            {(rows ?? []).map((n) => (
-              <tr key={n.id} className="border-line border-b">
-                <td className="px-2 py-2">{fmtDateTime(n.sendAt)}</td>
-                <td className="px-2 py-2">{n.recipient}</td>
-                <td className="px-2 py-2">{n.type}</td>
-                <td className="px-2 py-2">{n.title}</td>
-                <td className="px-2 py-2">
-                  {STATUS[n.status] ?? n.status}
-                  {n.failReason && (
-                    <span className="text-muted text-xs">
-                      {" "}
-                      · {n.failReason}
-                    </span>
-                  )}
-                </td>
+      <PageHeader title="알림 발송 내역" />
+      <FilterBar>
+        <select
+          aria-label="상태"
+          value={status}
+          onChange={(e) => setStatus(e.target.value)}
+          className="border-line bg-surface w-40 rounded-lg border px-3 py-2 text-sm"
+        >
+          <option value="">전체</option>
+          {Object.entries(STATUS).map(([k, v]) => (
+            <option key={k} value={k}>
+              {v}
+            </option>
+          ))}
+        </select>
+      </FilterBar>
+      <Card title="발송 내역" icon="history" count={rows?.length ?? 0}>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[640px] text-sm">
+            <thead>
+              <tr className="border-line border-b text-left">
+                <th className="px-2 py-2">보낼 시각</th>
+                <th className="px-2 py-2">받는 사람</th>
+                <th className="px-2 py-2">종류</th>
+                <th className="px-2 py-2">제목</th>
+                <th className="px-2 py-2">상태</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {(rows ?? []).map((n) => (
+                <tr key={n.id} className="border-line border-b">
+                  <td className="px-2 py-2">{fmtDateTime(n.sendAt)}</td>
+                  <td className="px-2 py-2">{n.recipient}</td>
+                  <td className="px-2 py-2">{n.type}</td>
+                  <td className="px-2 py-2">{n.title}</td>
+                  <td className="px-2 py-2">
+                    {STATUS[n.status] ?? n.status}
+                    {n.failReason && (
+                      <span className="text-muted text-xs">
+                        {" "}
+                        · {n.failReason}
+                      </span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Card>
     </div>
   );
 }

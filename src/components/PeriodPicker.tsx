@@ -1,5 +1,7 @@
 "use client";
 
+import { FilterBar } from "./ui";
+
 import { DateSelect } from "@/components/pickers";
 
 export function kstToday() {
@@ -28,18 +30,20 @@ export function PeriodPicker({
   onChange: (v: { from: string; to: string }) => void;
 }) {
   return (
-    <div className="flex flex-wrap items-end gap-2">
-      <DateSelect
-        label="시작일"
-        value={value.from}
-        onChange={(v) => onChange({ ...value, from: v })}
-      />
-      <DateSelect
-        label="종료일"
-        value={value.to}
-        onChange={(v) => onChange({ ...value, to: v })}
-      />
-      <div className="flex gap-1">
+    <FilterBar title="조회 기간">
+      <div className="flex flex-wrap items-end gap-3">
+        <DateSelect
+          label="시작일"
+          value={value.from}
+          onChange={(v) => onChange({ ...value, from: v })}
+        />
+        <DateSelect
+          label="종료일"
+          value={value.to}
+          onChange={(v) => onChange({ ...value, to: v })}
+        />
+      </div>
+      <div className="flex flex-wrap gap-1.5">
         {(
           [
             ["이번 달", monthRange(0)],
@@ -51,12 +55,12 @@ export function PeriodPicker({
             key={label}
             type="button"
             onClick={() => onChange(r)}
-            className="bg-brand-50 dark:bg-brand-700/20 rounded-full px-3 py-1 text-sm"
+            className="bg-surface border-line hover:border-brand-300 rounded-full border px-3 py-1 text-sm font-semibold"
           >
             {label}
           </button>
         ))}
       </div>
-    </div>
+    </FilterBar>
   );
 }

@@ -24,7 +24,7 @@ import {
   fmtRange,
   kstDateKey,
 } from "@/components/fmt";
-import { Button, Card, Modal, Notice } from "@/components/ui";
+import { Button, Card, IconBubble, Modal, Notice } from "@/components/ui";
 import {
   StudentBookingSheet,
   type StudentBooking,
@@ -167,21 +167,24 @@ export function StudentCalendar() {
       {s && (
         <Card>
           <div className="grid grid-cols-3 gap-2 text-center text-sm">
-            <div>
+            <div className="flex flex-col items-center gap-1">
+              <IconBubble name="calendar" size="sm" />
               <p className="text-muted text-xs">다음 수업</p>
-              <p className="font-medium">
+              <p className="font-bold">
                 {s.nextBooking ? fmtDateTime(s.nextBooking.startAt) : "없음"}
               </p>
             </div>
-            <div>
+            <div className="flex flex-col items-center gap-1">
+              <IconBubble name="ticket" size="sm" />
               <p className="text-muted text-xs">잔여 / 전체</p>
-              <p className="font-medium">
+              <p className="font-bold">
                 {s.remaining} / {s.total}회
               </p>
             </div>
-            <div>
+            <div className="flex flex-col items-center gap-1">
+              <IconBubble name="clock" size="sm" />
               <p className="text-muted text-xs">만료일</p>
-              <p className="font-medium">{s.expiry ?? "-"}</p>
+              <p className="font-bold">{s.expiry ?? "-"}</p>
             </div>
           </div>
         </Card>

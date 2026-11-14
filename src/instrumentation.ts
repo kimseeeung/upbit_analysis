@@ -6,6 +6,12 @@
  */
 export async function register() {
   if (process.env.NEXT_RUNTIME !== "nodejs") return;
+  const { smsTestMode } = await import("@/lib/auth/sms-rules");
+  if (smsTestMode() && process.env.NODE_ENV === "production") {
+    console.warn(
+      "[sms] 테스트 모드: 실제 문자를 보내지 않고 인증번호가 000000으로 고정됩니다. 운영 배포 전 SMS_PROVIDER를 실제 대행사로 바꾸세요",
+    );
+  }
   if (process.env.DATABASE_URL) {
     try {
       const { getDb } = await import("@/lib/db");

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { api } from "@/components/api";
 import { fmtDateTime } from "@/components/fmt";
-import { Button, Card, Notice, TextField } from "@/components/ui";
+import { Button, Card, Notice, PageHeader, TextField } from "@/components/ui";
 
 interface Op {
   id: string;
@@ -81,57 +81,61 @@ export function Operators() {
   if (!data) return <p className="text-muted text-sm">불러오는 중…</p>;
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-lg font-semibold">관리자</h1>
+      <PageHeader title="관리자" />
       {msg && <Notice tone={msg.tone}>{msg.text}</Notice>}
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[640px] text-sm">
-          <thead>
-            <tr className="border-line border-b text-left">
-              <th className="px-2 py-2">이름</th>
-              <th className="px-2 py-2">아이디</th>
-              <th className="px-2 py-2">상태</th>
-              <th className="px-2 py-2">추가한 사람</th>
-              <th className="px-2 py-2">추가일</th>
-              <th className="px-2 py-2">마지막 로그인</th>
-              <th className="px-2 py-2" />
-            </tr>
-          </thead>
-          <tbody>
-            {data.operators.map((o) => (
-              <tr
-                key={o.id}
-                data-operator={o.name}
-                className="border-line border-b"
-              >
-                <td className="px-2 py-2">
-                  {o.name}
-                  {o.id === data.me && (
-                    <span className="text-muted ml-1 text-xs">(나)</span>
-                  )}
-                </td>
-                <td className="px-2 py-2">{o.loginId ?? "-"}</td>
-                <td className="px-2 py-2">{STATUS[o.status]}</td>
-                <td className="px-2 py-2">{o.invitedByName ?? "환경 변수"}</td>
-                <td className="px-2 py-2">{fmtDateTime(o.createdAt)}</td>
-                <td className="px-2 py-2">
-                  {o.lastLoginAt ? fmtDateTime(o.lastLoginAt) : "-"}
-                </td>
-                <td className="px-2 py-2">
-                  {o.status !== "DISABLED" && (
-                    <button
-                      type="button"
-                      className="text-rose-600 underline"
-                      onClick={() => disable(o)}
-                    >
-                      {o.status === "INVITED" ? "초대 취소" : "비활성화"}
-                    </button>
-                  )}
-                </td>
+      <Card title="관리자 목록" icon="users" count={data.operators.length}>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[640px] text-sm">
+            <thead>
+              <tr className="border-line border-b text-left">
+                <th className="px-2 py-2">이름</th>
+                <th className="px-2 py-2">아이디</th>
+                <th className="px-2 py-2">상태</th>
+                <th className="px-2 py-2">추가한 사람</th>
+                <th className="px-2 py-2">추가일</th>
+                <th className="px-2 py-2">마지막 로그인</th>
+                <th className="px-2 py-2" />
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {data.operators.map((o) => (
+                <tr
+                  key={o.id}
+                  data-operator={o.name}
+                  className="border-line border-b"
+                >
+                  <td className="px-2 py-2">
+                    {o.name}
+                    {o.id === data.me && (
+                      <span className="text-muted ml-1 text-xs">(나)</span>
+                    )}
+                  </td>
+                  <td className="px-2 py-2">{o.loginId ?? "-"}</td>
+                  <td className="px-2 py-2">{STATUS[o.status]}</td>
+                  <td className="px-2 py-2">
+                    {o.invitedByName ?? "환경 변수"}
+                  </td>
+                  <td className="px-2 py-2">{fmtDateTime(o.createdAt)}</td>
+                  <td className="px-2 py-2">
+                    {o.lastLoginAt ? fmtDateTime(o.lastLoginAt) : "-"}
+                  </td>
+                  <td className="px-2 py-2">
+                    {o.status !== "DISABLED" && (
+                      <button
+                        type="button"
+                        className="text-rose-600 underline"
+                        onClick={() => disable(o)}
+                      >
+                        {o.status === "INVITED" ? "초대 취소" : "비활성화"}
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Card>
       <p className="text-muted text-xs">
         활성 관리자는 최소 1명 있어야 합니다.
       </p>
