@@ -11,7 +11,10 @@ test("트레이너 등록 → 수강생 확정 → 트레이너 변경 요청 �
   const student = await sc.newPage();
   const { studentName, studentId } = await setup(trainer, student);
   const day = nextWeekday(1); // 다음 주 월요일
-  const day2 = nextWeekday(2); // 다음 주 화요일
+  // 월요일 다음 날 (요일에 따라 nextWeekday(2)가 월요일보다 앞설 수 있어 직접 계산)
+  const day2 = new Date(Date.parse(`${day}T00:00:00Z`) + 86_400_000)
+    .toISOString()
+    .slice(0, 10);
 
   // 1) 트레이너가 예약 등록 → 확정 대기
   await trainer.goto(`/t?date=${day}`);

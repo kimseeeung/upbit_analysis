@@ -1,9 +1,10 @@
 import { expect, test } from "@playwright/test";
 
-test("시작 화면이 열린다", async ({ page }) => {
+test("첫 화면은 바로 로그인", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { name: "머슬매니아" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "로그인" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "로그인" })).toBeVisible();
+  await expect(page.getByLabel("아이디", { exact: true })).toBeVisible();
+  await expect(page.getByRole("link", { name: "회원가입" })).toBeVisible();
 });
 
 test("헬스 체크가 응답한다", async ({ request }) => {
